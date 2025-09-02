@@ -1,145 +1,185 @@
-// DOM-IGNORE-BEGIN
 /*******************************************************************************
-* Copyright (C) 2018 Microchip Technology Inc. and its subsidiaries.
-*
-* Subject to your compliance with these terms, you may use Microchip software
-* and any derivatives exclusively with Microchip products. It is your
-* responsibility to comply with third party license terms applicable to your
-* use of third party software (including open source software) that may
-* accompany Microchip software.
-*
-* THIS SOFTWARE IS SUPPLIED BY MICROCHIP "AS IS". NO WARRANTIES, WHETHER
-* EXPRESS, IMPLIED OR STATUTORY, APPLY TO THIS SOFTWARE, INCLUDING ANY IMPLIED
-* WARRANTIES OF NON-INFRINGEMENT, MERCHANTABILITY, AND FITNESS FOR A
-* PARTICULAR PURPOSE.
-*
-* IN NO EVENT WILL MICROCHIP BE LIABLE FOR ANY INDIRECT, SPECIAL, PUNITIVE,
-* INCIDENTAL OR CONSEQUENTIAL LOSS, DAMAGE, COST OR EXPENSE OF ANY KIND
-* WHATSOEVER RELATED TO THE SOFTWARE, HOWEVER CAUSED, EVEN IF MICROCHIP HAS
-* BEEN ADVISED OF THE POSSIBILITY OR THE DAMAGES ARE FORESEEABLE. TO THE
-* FULLEST EXTENT ALLOWED BY LAW, MICROCHIP'S TOTAL LIABILITY ON ALL CLAIMS IN
-* ANY WAY RELATED TO THIS SOFTWARE WILL NOT EXCEED THE AMOUNT OF FEES, IF ANY,
-* THAT YOU HAVE PAID DIRECTLY TO MICROCHIP FOR THIS SOFTWARE.
-*******************************************************************************/
-// DOM-IGNORE-END
+ * ARM GCC Startup File for SAMD21J18A
+ * Modern CMSIS-style with MPLAB Harmony peripheral compatibility
+ * No XC32 dependencies
+ *******************************************************************************/
 
-#include <libpic32c.h>
-#include <stdbool.h>
-#include <stddef.h>
 #include "device.h"
-#include "interrupts.h"
+#include "definitions.h"
 
-/*
- *  The MPLAB X Simulator does not yet support simulation of programming the
- *  GPNVM bits yet. We can remove this once it supports the FRDY bit.
- */
- /* MISRAC 2012 deviation block start */
-/* MISRA C-2012 Rule 21.1 deviated 1 time. Deviation record ID -  H3_MISRAC_2012_R_21_1_DR_1 */
-#ifdef __MPLAB_DEBUGGER_SIMULATOR
-#define __XC32_SKIP_STARTUP_GPNVM_WAIT
-#endif
-/* MISRAC 2012 deviation block end */
+/*----------------------------------------------------------------------------
+ * Linker-provided symbols
+ *----------------------------------------------------------------------------*/
+extern uint32_t __StackTop;
+extern uint32_t __copy_table_start__;
+extern uint32_t __copy_table_end__;
+extern uint32_t __zero_table_start__;
+extern uint32_t __zero_table_end__;
 
-/*
- *  This startup code relies on features that are specific to the MPLAB XC32
- *  toolchain. Do not use it with other toolchains.
- */
-#ifndef __XC32
-#warning This startup code is intended for use with the MPLAB XC32 Compiler only.
-#endif
-
-/* MISRAC 2012 deviation block start */
-/* MISRA C-2012 Rule 21.2 deviated 5 times. Deviation record ID -  H3_MISRAC_2012_R_21_2_DR_1 */
-/* MISRA C-2012 Rule 8.6 deviated 6 times.  Deviation record ID -  H3_MISRAC_2012_R_8_6_DR_1 */
-
-/* array initialization  function */
-extern void __attribute__((long_call)) __libc_init_array(void);
-
-/* Optional application-provided functions */
-extern void __attribute__((weak,long_call, alias("Dummy_App_Func"))) _on_reset(void);
-extern void __attribute__((weak,long_call, alias("Dummy_App_Func"))) _on_bootstrap(void);
-
-/* Reserved for use by the MPLAB XC32 Compiler */
-extern void __attribute__((weak,long_call, alias("Dummy_App_Func"))) __xc32_on_reset(void);
-extern void __attribute__((weak,long_call, alias("Dummy_App_Func"))) __xc32_on_bootstrap(void);
-
-/* Linker defined variables */
-extern uint32_t __svectors;
-#if defined (__REINIT_STACK_POINTER)
-extern uint32_t _stack;
-#endif
-
-/* MISRAC 2012 deviation block end */
-
-
+/*----------------------------------------------------------------------------
+ * External function prototypes
+ *----------------------------------------------------------------------------*/
 extern int main(void);
+extern void __libc_init_array(void);
 
+/*----------------------------------------------------------------------------
+ * Internal function prototypes
+ *----------------------------------------------------------------------------*/
+void Reset_Handler(void) __attribute__((noreturn));
+void Default_Handler(void);
 
+/*----------------------------------------------------------------------------
+ * Exception handlers (use existing MPLAB handlers where available)
+ *----------------------------------------------------------------------------*/
+void NMI_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void HardFault_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void SVC_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void PendSV_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void SysTick_Handler(void) __attribute__((weak, alias("Default_Handler")));
 
-/* Brief default application function used as a weak reference */
-extern void Dummy_App_Func(void);
-void __attribute__((optimize("-O1"),long_call))Dummy_App_Func(void)
+/* SAMD21 Peripheral Handlers - use MPLAB naming */
+void PM_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void SYSCTRL_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void WDT_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void RTC_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void EIC_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void NVMCTRL_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void DMAC_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void USB_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void EVSYS_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void SERCOM0_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void SERCOM1_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void SERCOM2_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void SERCOM3_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void SERCOM4_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void SERCOM5_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void TCC0_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void TCC1_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void TCC2_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void TC3_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void TC4_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void TC5_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void TC6_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void TC7_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void ADC_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void AC_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void DAC_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void PTC_Handler(void) __attribute__((weak, alias("Default_Handler")));
+void I2S_Handler(void) __attribute__((weak, alias("Default_Handler")));
+
+/*----------------------------------------------------------------------------
+ * Vector Table
+ *----------------------------------------------------------------------------*/
+typedef void (*pFunc)(void);
+
+__attribute__((section(".vectors"), used))
+const pFunc g_pfnVectors[] = {
+    /* Core exceptions */
+    (pFunc)((uint32_t)&__StackTop),    /* Initial stack pointer */
+    Reset_Handler,                     /* Reset Handler */
+    NMI_Handler,                       /* NMI Handler */
+    HardFault_Handler,                 /* Hard Fault Handler */
+    0,                                 /* Reserved */
+    0,                                 /* Reserved */
+    0,                                 /* Reserved */
+    0,                                 /* Reserved */
+    0,                                 /* Reserved */
+    0,                                 /* Reserved */
+    0,                                 /* Reserved */
+    SVC_Handler,                       /* SVCall Handler */
+    0,                                 /* Reserved */
+    0,                                 /* Reserved */
+    PendSV_Handler,                    /* PendSV Handler */
+    SysTick_Handler,                   /* SysTick Handler */
+
+    /* SAMD21 Peripheral interrupts */
+    PM_Handler,                        /* 0  Power Manager */
+    SYSCTRL_Handler,                   /* 1  System Controller */
+    WDT_Handler,                       /* 2  Watchdog Timer */
+    RTC_Handler,                       /* 3  Real Time Counter */
+    EIC_Handler,                       /* 4  External Interrupt Controller */
+    NVMCTRL_Handler,                   /* 5  Non-Volatile Memory Controller */
+    DMAC_Handler,                      /* 6  Direct Memory Controller */
+    USB_Handler,                       /* 7  Universal Serial Bus */
+    EVSYS_Handler,                     /* 8  Event System */
+    SERCOM0_Handler,                   /* 9  Serial Communication Interface 0 */
+    SERCOM1_Handler,                   /* 10 Serial Communication Interface 1 */
+    SERCOM2_Handler,                   /* 11 Serial Communication Interface 2 */
+    SERCOM3_Handler,                   /* 12 Serial Communication Interface 3 */
+    SERCOM4_Handler,                   /* 13 Serial Communication Interface 4 */
+    SERCOM5_Handler,                   /* 14 Serial Communication Interface 5 */
+    TCC0_Handler,                      /* 15 Timer/Counter Control 0 */
+    TCC1_Handler,                      /* 16 Timer/Counter Control 1 */
+    TCC2_Handler,                      /* 17 Timer/Counter Control 2 */
+    TC3_Handler,                       /* 18 Timer/Counter 3 */
+    TC4_Handler,                       /* 19 Timer/Counter 4 */
+    TC5_Handler,                       /* 20 Timer/Counter 5 */
+    TC6_Handler,                       /* 21 Timer/Counter 6 */
+    TC7_Handler,                       /* 22 Timer/Counter 7 */
+    ADC_Handler,                       /* 23 Analog-to-Digital Converter */
+    AC_Handler,                        /* 24 Analog Comparators */
+    DAC_Handler,                       /* 25 Digital-to-Analog Converter */
+    PTC_Handler,                       /* 26 Peripheral Touch Controller */
+    I2S_Handler,                       /* 27 Inter-IC Sound */
+};
+
+/*----------------------------------------------------------------------------
+ * Reset Handler - Modern CMSIS with SAMD21 optimizations
+ *----------------------------------------------------------------------------*/
+void Reset_Handler(void)
 {
-    /* Do nothing */
-    return;
-}
+    /* CMSIS table-driven data initialization */
+    uint32_t *pTable = &__copy_table_start__;
+    for (; pTable < &__copy_table_end__; pTable += 3) {
+        uint32_t *pSrc  = (uint32_t *)pTable[0];   /* source address */
+        uint32_t *pDest = (uint32_t *)pTable[1];   /* destination address */
+        uint32_t  count = pTable[2];               /* word count */
+        
+        for (uint32_t i = 0; i < count; i++) {
+            pDest[i] = pSrc[i];
+        }
+    }
 
-/**
- * \brief This is the code that gets called on processor reset.
- * To initialize the device, and call the main() routine.
- */
-void __attribute__((optimize("-O1"), section(".text.Reset_Handler"), long_call, noreturn)) Reset_Handler(void)
-{
-#ifdef SCB_VTOR_TBLOFF_Msk
-    uint32_t *pSrc;
+    /* CMSIS table-driven zero initialization */
+    pTable = &__zero_table_start__;
+    for (; pTable < &__zero_table_end__; pTable += 2) {
+        uint32_t *pDest = (uint32_t *)pTable[0];   /* destination address */
+        uint32_t  count = pTable[1];               /* word count */
+        
+        for (uint32_t i = 0; i < count; i++) {
+            pDest[i] = 0;
+        }
+    }
+
+    /* SAMD21-specific hardware optimizations (from MPLAB) */
+    /* Change default QOS values for best performance and USB behavior */
+    SBMATRIX_REGS->HMATRIXB_SFR[4] = 2;
+#if defined(ID_USB)
+    USB_REGS->DEVICE.USB_QOSCTRL = 0xA;
 #endif
+    DMAC_REGS->DMAC_QOSCTRL = 0x2A;
+    
+    /* Fix for NVMCTRL.CTRLB.MANW bit (errata reference 13134) */
+    NVMCTRL_REGS->NVMCTRL_CTRLB |= 1 << 7;
 
-#if defined (__REINIT_STACK_POINTER)
-    /* Initialize SP from linker-defined _stack symbol. */
-    __set_MSP((uint32_t)&_stack);
-
-#ifdef SCB_VTOR_TBLOFF_Msk
-    /* Buy stack for locals */
-    __asm__ volatile ("sub sp, sp, #8" : : : "sp");
-#endif
-    __asm__ volatile ("add r7, sp, #0" : : : "r7");
-#endif
-
-    /* Call the optional application-provided _on_reset() function. */
-    _on_reset();
-
-    /* Reserved for use by MPLAB XC32. */
-    __xc32_on_reset();
-
-    /* Initialize data after TCM is enabled.
-     * Data initialization from the XC32 .dinit template */
-    __pic32c_data_initialization();
-
-
-#  ifdef SCB_VTOR_TBLOFF_Msk
-    /*  Set the vector-table base address in FLASH */
-    pSrc = (uint32_t *) & __svectors;
-    SCB->VTOR = ((uint32_t) pSrc & SCB_VTOR_TBLOFF_Msk);
-#  endif /* SCB_VTOR_TBLOFF_Msk */
-
-    /* Initialize the C library */
+    /* Initialize C library */
     __libc_init_array();
 
-    /* Call the optional application-provided _on_bootstrap() function. */
-    _on_bootstrap();
+    /* Call main function */
+    main();
 
-    /* Reserved for use by MPLAB XC32. */
-    __xc32_on_bootstrap();
+    /* Infinite loop */
+    while (1) {
+        /* Should never reach here */
+    }
+}
 
-    /* Branch to application's main function */
-    (void)main();
-
-#if (defined(__DEBUG) || defined(__DEBUG_D)) && defined(__XC32)
-    __builtin_software_breakpoint();
-#endif
-
-    while (true)
-    {
-        /* Infinite loop */
+/*----------------------------------------------------------------------------
+ * Default Handler
+ *----------------------------------------------------------------------------*/
+void Default_Handler(void)
+{
+    while (1) {
+        /* Stay here */
     }
 }

@@ -1,436 +1,302 @@
 Archive member included to satisfy reference by file (symbol)
 
-/home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(data_init.o)
-                              build/sam_d21_xpro/production/_ext/128142748/startup_xc32.o (__pic32c_data_initialization)
-/home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-size-musl.a(memcpy.o)
-                              build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o (memcpy)
-/home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__libc_start_main.o)
-                              build/sam_d21_xpro/production/_ext/128142748/startup_xc32.o (__libc_init_array)
-/home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(libc.o)
-                              /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__libc_start_main.o) (__progname_full)
-/home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__environ.o)
-                              /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__libc_start_main.o) (__environ)
-/home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
+/usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
                               build/sam_d21_xpro/production/_ext/869718558/plib_systick.o (__aeabi_uidiv)
-/home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
-                              /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o) (__aeabi_idiv0)
-/home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_clear.o)
-                              (__dinit_clear_needed)
-/home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_copy.o)
-                              (__dinit_copy_needed)
-
-Microchip PIC32 Memory-Usage Report
-
-ROM Program-Memory Usage
-section                    address  length [bytes]      (dec)  Description
--------                 ----------  -------------------------  -----------
-.vectors                         0           0xb0         176   
-.text                         0xb0           0x20          32  App's exec code 
-.text.CLOCK_Initialize        0xd0           0xb0         176   
-.text.TCC_PeriodEventHa      0x180           0x88         136   
-.text.__libc_start_init      0x208           0x5c          92   
-.dinit                       0x264           0x50          80   
-.text.TCC0_PWMInitializ      0x2b4           0x4c          76   
-.text                        0x300           0x48          72  App's exec code 
-.text.Reset_Handler          0x348           0x48          72   
-.text.PORT_Initialize        0x390           0x38          56   
-.text.__pic32c_data_ini      0x3c8           0x38          56   
-.text.NVIC_Initialize        0x400           0x28          40   
-.text.SysTick_Handler        0x428           0x28          40   
-.text.TCC0_InterruptHan      0x450           0x28          40   
-.text.SYS_Initialize         0x478           0x28          40   
-.text.main                   0x4a0           0x28          40   
-.text.SYSTICK_TimerInit      0x4c8           0x24          36   
-.text.__dinit_copy           0x4ec           0x1e          30   
-.text.Dummy_Handler          0x50a            0x2           2   
-.text.TCC0_PWMStart          0x50c           0x1c          28   
-.text.TCC0_PWM24bitPeri      0x528           0x18          24   
-.rodata                      0x540           0x14          20  Read-only const 
-.text.__dinit_clear          0x554           0x12          18   
-.text.NonMaskableInt_Ha      0x566            0x2           2   
-.text.NVMCTRL_Initializ      0x568            0xc          12   
-.text.TCC0_PWMCallbackR      0x574            0xc          12   
-.text.__dummy_decompres      0x580            0x4           4   
-.text.HardFault_Handler      0x584            0x2           2   
-.text.Dummy_App_Func         0x586            0x2           2   
-.text.__dummy_init_tls       0x588            0x2           2   
-.text.__dummy                0x58a            0x2           2   
-      Total ROM used  :       0x58c        1420  0.5% of 0x40000
-        --------------------------------------------------------------------------
-         Total Program Memory used  :       0x58c        1420  0.5% of 0x40000
-        --------------------------------------------------------------------------
-
-
-RAM Data-Memory Usage
-section                    address  length [bytes]      (dec)  Description
--------                 ----------  -------------------------  -----------
-.bss                    0x20000000           0x50          80  Uninitialized data 
-.bss                    0x20000050           0x1c          28  Uninitialized data 
-.bss.systick            0x2000006c            0xc          12   
-.bss.TCC0_CallbackObj   0x20000078            0x8           8   
-.bss.duty0.5950         0x20000080            0x4           4   
-.bss.period             0x20000084            0x4           4   
-.bss                    0x20000088            0x4           4  Uninitialized data 
-.bss                    0x2000008c            0x4           4  Uninitialized data 
-.data.duty1.5951        0x20000090            0x4           4   
-.data.duty2.5952        0x20000094            0x4           4   
-         Total RAM used  :        0x98         152  0.5% of 0x8000
-        --------------------------------------------------------------------------
-            Total Data Memory used  :        0x98         152  0.5% of 0x8000
-        --------------------------------------------------------------------------
-
-
-Dynamic Data-Memory Reservation
-section                    address  length [bytes]      (dec)  Description
--------                 ----------  -------------------------  -----------
-heap                    0x200000a0          0x200         512  Reserved for heap 
-stack                   0x200002b8         0x7d40       32064  Reserved for stack 
-
-        --------------------------------------------------------------------------
-
-Microchip PIC32 Memory-Usage Report By Module
-
-        text        data         bss         dec         hex    basename                   filename
---------------------------------------------------------------------------------
-         176           8           8         192          c0    main.o                 build/sam_d21_xpro/production/_ext/1360937237/main.o
-         180           0           8         188          bc    plib_tcc0.o            build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
-         178           0           0         178          b2    interrupts.o           build/sam_d21_xpro/production/_ext/128142748/interrupts.o
-         176           0           0         176          b0    plib_clock.o           build/sam_d21_xpro/production/_ext/600686086/plib_clock.o
-          80           0          28         108          6c    crtbegin.o             /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtbegin.o
-          94           0           0          94          5e    __libc_start_main.o    libc-musl.a
-          76           0          12          88          58    plib_systick.o         build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
-          82           0           4          86          56    data_init.o            libpic32c.a
-          80           0           0          80          50    data_init              data_init
-           0           0          80          80          50    libc.o                 libc-musl.a
-          74           0           0          74          4a    startup_xc32.o         build/sam_d21_xpro/production/_ext/128142748/startup_xc32.o
-          56           0           0          56          38    plib_port.o            build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
-          48           0           0          48          30    initialization.o       build/sam_d21_xpro/production/_ext/128142748/initialization.o
-          40           0           0          40          28    plib_nvic.o            build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
-          30           0           0          30          1e    pic32_data_init_copy.o libpic32c.a
-          18           0           0          18          12    pic32_data_init_clear.olibpic32c.a
-          16           0           0          16          10    crtn.o                 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtn.o
-          12           0           0          12           c    plib_nvmctrl.o         build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
-           8           0           0           8           8    crti.o                 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crti.o
-           0           0           4           4           4    __environ.o            libc-musl.a
-           4           0           0           4           4    exceptions.o           build/sam_d21_xpro/production/_ext/128142748/exceptions.o
---------------------------------------------------------------------------------
-        1428           8         144        1580         62c    dist/sam_d21_xpro/production/motor-controller-samd21.X.production.elf
-
+/usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
+                              /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o) (__aeabi_idiv0)
+/usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-atexit.o)
+                              /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/crt0.o (atexit)
+/usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-exit.o)
+                              /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/crt0.o (exit)
+/usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-fini.o)
+                              /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/crt0.o (__libc_fini_array)
+/usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-impure.o)
+                              /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-exit.o) (_global_impure_ptr)
+/usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-init.o)
+                              /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/crt0.o (__libc_init_array)
+/usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memcpy-stub.o)
+                              build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o (memcpy)
+/usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memset.o)
+                              /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/crt0.o (memset)
+/usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__atexit.o)
+                              /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-atexit.o) (__register_exitproc)
+/usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__call_atexit.o)
+                              /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-exit.o) (__call_exitprocs)
 
 Discarded input sections
 
- .text          0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crti.o
- .data          0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crti.o
- .bss           0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crti.o
- .xc_stack_usage.hdr
-                0x0000000000000000        0xe /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crti.o
- .xc_stack_usage
-                0x0000000000000000       0x26 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crti.o
- .data          0x0000000000000000        0x4 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtbegin.o
- .xc_stack_usage
-                0x0000000000000000       0x3c /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtbegin.o
- .xc_stack_usage.hdr
-                0x0000000000000000        0xe /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtbegin.o
- .text          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/600686086/plib_clock.o
- .data          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/600686086/plib_clock.o
- .bss           0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/600686086/plib_clock.o
- .text          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/602835572/plib_evsys.o
- .data          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/602835572/plib_evsys.o
- .bss           0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/602835572/plib_evsys.o
+ .text          0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crti.o
+ .data          0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crti.o
+ .bss           0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crti.o
+ .data          0x00000000        0x4 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtbegin.o
+ .rodata        0x00000000       0x24 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtbegin.o
+ .text          0x00000000       0x74 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/crt0.o
+ .data          0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/crt0.o
+ .bss           0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/crt0.o
+ .ARM.extab     0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/crt0.o
+ .ARM.exidx     0x00000000       0x10 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/crt0.o
+ .debug_line    0x00000000       0x7a /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/crt0.o
+ .debug_line_str
+                0x00000000       0x82 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/crt0.o
+ .debug_info    0x00000000       0x24 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/crt0.o
+ .debug_abbrev  0x00000000       0x14 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/crt0.o
+ .debug_aranges
+                0x00000000       0x20 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/crt0.o
+ .debug_str     0x00000000       0x8e /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/crt0.o
+ .ARM.attributes
+                0x00000000       0x1b /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/crt0.o
+ .text          0x00000000        0x0 build/sam_d21_xpro/production/_ext/600686086/plib_clock.o
+ .data          0x00000000        0x0 build/sam_d21_xpro/production/_ext/600686086/plib_clock.o
+ .bss           0x00000000        0x0 build/sam_d21_xpro/production/_ext/600686086/plib_clock.o
+ .text          0x00000000        0x0 build/sam_d21_xpro/production/_ext/602835572/plib_evsys.o
+ .data          0x00000000        0x0 build/sam_d21_xpro/production/_ext/602835572/plib_evsys.o
+ .bss           0x00000000        0x0 build/sam_d21_xpro/production/_ext/602835572/plib_evsys.o
  .text.EVSYS_Initialize
-                0x0000000000000000        0x2 build/sam_d21_xpro/production/_ext/602835572/plib_evsys.o
- .debug_info    0x0000000000000000       0x9b build/sam_d21_xpro/production/_ext/602835572/plib_evsys.o
- .debug_abbrev  0x0000000000000000       0x46 build/sam_d21_xpro/production/_ext/602835572/plib_evsys.o
- .debug_aranges
-                0x0000000000000000       0x20 build/sam_d21_xpro/production/_ext/602835572/plib_evsys.o
- .debug_ranges  0x0000000000000000       0x10 build/sam_d21_xpro/production/_ext/602835572/plib_evsys.o
- .debug_line    0x0000000000000000       0x6b build/sam_d21_xpro/production/_ext/602835572/plib_evsys.o
- .debug_str     0x0000000000000000      0x2de build/sam_d21_xpro/production/_ext/602835572/plib_evsys.o
- .comment       0x0000000000000000       0x2c build/sam_d21_xpro/production/_ext/602835572/plib_evsys.o
- .debug_frame   0x0000000000000000       0x20 build/sam_d21_xpro/production/_ext/602835572/plib_evsys.o
+                0x00000000        0x2 build/sam_d21_xpro/production/_ext/602835572/plib_evsys.o
+ .comment       0x00000000       0x27 build/sam_d21_xpro/production/_ext/602835572/plib_evsys.o
  .ARM.attributes
-                0x0000000000000000       0x2c build/sam_d21_xpro/production/_ext/602835572/plib_evsys.o
- .text          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
- .data          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
- .bss           0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
+                0x00000000       0x2c build/sam_d21_xpro/production/_ext/602835572/plib_evsys.o
+ .text          0x00000000        0x0 build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
+ .data          0x00000000        0x0 build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
+ .bss           0x00000000        0x0 build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
  .text.NVIC_INT_Enable
-                0x0000000000000000        0x8 build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
+                0x00000000        0x8 build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
  .text.NVIC_INT_Disable
-                0x0000000000000000       0x12 build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
+                0x00000000       0x12 build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
  .text.NVIC_INT_Restore
-                0x0000000000000000       0x14 build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
+                0x00000000       0x14 build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
  .text.NVIC_INT_SourceDisable
-                0x0000000000000000       0x3c build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
+                0x00000000       0x44 build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
  .text.NVIC_INT_SourceRestore
-                0x0000000000000000       0x1c build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
- .text          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
- .data          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
- .bss           0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
+                0x00000000       0x1c build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
+ .text          0x00000000        0x0 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
+ .data          0x00000000        0x0 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
+ .bss           0x00000000        0x0 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
  .text.NVMCTRL_CacheInvalidate
-                0x0000000000000000       0x10 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
+                0x00000000       0x10 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
  .text.NVMCTRL_Read
-                0x0000000000000000       0x10 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
+                0x00000000       0x14 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
  .text.NVMCTRL_PageBufferWrite
-                0x0000000000000000       0x14 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
+                0x00000000       0x12 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
  .text.NVMCTRL_PageBufferCommit
-                0x0000000000000000       0x18 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
+                0x00000000       0x18 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
  .text.NVMCTRL_PageWrite
-                0x0000000000000000       0x28 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
+                0x00000000       0x28 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
  .text.NVMCTRL_RowErase
-                0x0000000000000000       0x18 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
+                0x00000000       0x18 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
  .text.NVMCTRL_USER_ROW_PageWrite
-                0x0000000000000000       0x38 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
+                0x00000000       0x38 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
  .text.NVMCTRL_USER_ROW_RowErase
-                0x0000000000000000       0x2c build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
+                0x00000000       0x2c build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
  .text.NVMCTRL_ErrorGet
-                0x0000000000000000       0x18 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
+                0x00000000       0x18 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
  .text.NVMCTRL_IsBusy
-                0x0000000000000000       0x14 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
+                0x00000000       0x10 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
  .text.NVMCTRL_RegionLock
-                0x0000000000000000       0x14 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
+                0x00000000       0x14 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
  .text.NVMCTRL_RegionUnlock
-                0x0000000000000000       0x14 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
+                0x00000000       0x14 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
  .text.NVMCTRL_SecurityBitSet
-                0x0000000000000000       0x10 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
- .text          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
- .data          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
- .bss           0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
+                0x00000000       0x10 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
+ .text          0x00000000        0x0 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
+ .data          0x00000000        0x0 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
+ .bss           0x00000000        0x0 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
  .text.PORT_GroupRead
-                0x0000000000000000        0x4 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
+                0x00000000        0x4 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
  .text.PORT_GroupWrite
-                0x0000000000000000        0xc build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
+                0x00000000        0xc build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
  .text.PORT_GroupLatchRead
-                0x0000000000000000        0x4 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
+                0x00000000        0x4 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
  .text.PORT_GroupSet
-                0x0000000000000000        0x4 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
+                0x00000000        0x4 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
  .text.PORT_GroupClear
-                0x0000000000000000        0x4 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
+                0x00000000        0x4 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
  .text.PORT_GroupToggle
-                0x0000000000000000        0x4 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
+                0x00000000        0x4 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
  .text.PORT_GroupInputEnable
-                0x0000000000000000       0x2a build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
+                0x00000000       0x24 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
  .text.PORT_GroupOutputEnable
-                0x0000000000000000        0x4 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
+                0x00000000        0x4 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
  .text.PORT_PinPeripheralFunctionConfig
-                0x0000000000000000       0x48 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
+                0x00000000       0x48 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
  .text.PORT_PinGPIOConfig
-                0x0000000000000000       0x20 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
- .text          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
- .data          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
- .bss           0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
+                0x00000000       0x20 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
+ .text          0x00000000        0x0 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
+ .data          0x00000000        0x0 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
  .text.SYSTICK_TimerRestart
-                0x0000000000000000       0x1c build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
+                0x00000000       0x1c build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
  .text.SYSTICK_TimerStart
-                0x0000000000000000       0x14 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
+                0x00000000       0x14 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
  .text.SYSTICK_TimerStop
-                0x0000000000000000       0x10 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
+                0x00000000       0x10 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
  .text.SYSTICK_TimerPeriodSet
-                0x0000000000000000        0xc build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
+                0x00000000        0xc build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
  .text.SYSTICK_TimerPeriodGet
-                0x0000000000000000        0xc build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
+                0x00000000        0xc build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
  .text.SYSTICK_TimerCounterGet
-                0x0000000000000000        0xc build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
+                0x00000000        0xc build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
  .text.SYSTICK_TimerFrequencyGet
-                0x0000000000000000        0x8 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
+                0x00000000        0x8 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
  .text.SYSTICK_DelayMs
-                0x0000000000000000       0x40 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
+                0x00000000       0x3c build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
  .text.SYSTICK_DelayUs
-                0x0000000000000000       0x3c build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
+                0x00000000       0x38 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
  .text.SYSTICK_GetTickCounter
-                0x0000000000000000        0xc build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
+                0x00000000        0xc build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
  .text.SYSTICK_StartTimeOut
-                0x0000000000000000       0x24 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
+                0x00000000       0x24 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
  .text.SYSTICK_ResetTimeOut
-                0x0000000000000000        0xc build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
+                0x00000000        0xc build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
  .text.SYSTICK_IsTimeoutReached
-                0x0000000000000000       0x18 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
+                0x00000000       0x18 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
  .text.SYSTICK_TimerCallbackSet
-                0x0000000000000000        0xc build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
- .text          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
- .data          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
- .bss           0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
+                0x00000000        0xc build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
+ .text          0x00000000        0x0 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
+ .data          0x00000000        0x0 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
  .text.TCC0_PWMStop
-                0x0000000000000000       0x1c build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
+                0x00000000       0x18 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
  .text.TCC0_PWM24bitPeriodSet
-                0x0000000000000000       0x1c build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
+                0x00000000       0x1c build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
  .text.TCC0_PWMDeadTimeSet
-                0x0000000000000000       0x1c build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
+                0x00000000       0x1c build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
  .text.TCC0_PWMPatternSet
-                0x0000000000000000       0x20 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
+                0x00000000       0x20 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
  .text.TCC0_PWM24bitCounterGet
-                0x0000000000000000       0x28 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
+                0x00000000       0x20 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
  .text.TCC0_PWM24bitCounterSet
-                0x0000000000000000       0x18 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
+                0x00000000       0x18 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
  .text.TCC0_PWMForceUpdate
-                0x0000000000000000       0x1c build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
+                0x00000000       0x18 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
  .text.TCC0_PWMPeriodInterruptEnable
-                0x0000000000000000        0xc build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
+                0x00000000        0xc build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
  .text.TCC0_PWMPeriodInterruptDisable
-                0x0000000000000000        0xc build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
- .text          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/1497164574/xc32_monitor.o
- .data          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/1497164574/xc32_monitor.o
- .bss           0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/1497164574/xc32_monitor.o
- .text.read     0x0000000000000000        0x6 build/sam_d21_xpro/production/_ext/1497164574/xc32_monitor.o
- .text.write    0x0000000000000000        0x6 build/sam_d21_xpro/production/_ext/1497164574/xc32_monitor.o
- .debug_info    0x0000000000000000       0xf5 build/sam_d21_xpro/production/_ext/1497164574/xc32_monitor.o
- .debug_abbrev  0x0000000000000000       0xb2 build/sam_d21_xpro/production/_ext/1497164574/xc32_monitor.o
- .debug_loc     0x0000000000000000       0x4a build/sam_d21_xpro/production/_ext/1497164574/xc32_monitor.o
+                0x00000000        0xc build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
+ .text          0x00000000        0x0 build/sam_d21_xpro/production/_ext/128142748/initialization.o
+ .data          0x00000000        0x0 build/sam_d21_xpro/production/_ext/128142748/initialization.o
+ .bss           0x00000000        0x0 build/sam_d21_xpro/production/_ext/128142748/initialization.o
+ .text          0x00000000        0x0 build/sam_d21_xpro/production/_ext/128142748/interrupts.o
+ .data          0x00000000        0x0 build/sam_d21_xpro/production/_ext/128142748/interrupts.o
+ .bss           0x00000000        0x0 build/sam_d21_xpro/production/_ext/128142748/interrupts.o
+ .text          0x00000000        0x0 build/sam_d21_xpro/production/_ext/128142748/exceptions.o
+ .data          0x00000000        0x0 build/sam_d21_xpro/production/_ext/128142748/exceptions.o
+ .bss           0x00000000        0x0 build/sam_d21_xpro/production/_ext/128142748/exceptions.o
+ .text          0x00000000        0x0 build/sam_d21_xpro/production/_ext/128142748/libc_syscalls.o
+ .data          0x00000000        0x0 build/sam_d21_xpro/production/_ext/128142748/libc_syscalls.o
+ .bss           0x00000000        0x4 build/sam_d21_xpro/production/_ext/128142748/libc_syscalls.o
+ .text._exit    0x00000000        0x2 build/sam_d21_xpro/production/_ext/128142748/libc_syscalls.o
+ .text._sbrk    0x00000000       0x20 build/sam_d21_xpro/production/_ext/128142748/libc_syscalls.o
+ .comment       0x00000000       0x27 build/sam_d21_xpro/production/_ext/128142748/libc_syscalls.o
+ .ARM.attributes
+                0x00000000       0x2c build/sam_d21_xpro/production/_ext/128142748/libc_syscalls.o
+ .text          0x00000000        0x0 build/sam_d21_xpro/production/_ext/1360937237/main.o
+ .text          0x00000000        0x0 build/sam_d21_xpro/production/_ext/128142748/startup_gcc.o
+ .data          0x00000000        0x0 build/sam_d21_xpro/production/_ext/128142748/startup_gcc.o
+ .bss           0x00000000        0x0 build/sam_d21_xpro/production/_ext/128142748/startup_gcc.o
+ .text          0x00000000      0x114 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
+ .data          0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
+ .bss           0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
+ .debug_frame   0x00000000       0x20 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
+ .debug_line    0x00000000       0x56 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
+ .debug_line_str
+                0x00000000       0x97 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
+ .debug_info    0x00000000       0x3b /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
+ .debug_abbrev  0x00000000       0x21 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
  .debug_aranges
-                0x0000000000000000       0x28 build/sam_d21_xpro/production/_ext/1497164574/xc32_monitor.o
- .debug_ranges  0x0000000000000000       0x18 build/sam_d21_xpro/production/_ext/1497164574/xc32_monitor.o
- .debug_line    0x0000000000000000       0xc9 build/sam_d21_xpro/production/_ext/1497164574/xc32_monitor.o
- .debug_str     0x0000000000000000      0x27c build/sam_d21_xpro/production/_ext/1497164574/xc32_monitor.o
- .comment       0x0000000000000000       0x2c build/sam_d21_xpro/production/_ext/1497164574/xc32_monitor.o
- .debug_frame   0x0000000000000000       0x30 build/sam_d21_xpro/production/_ext/1497164574/xc32_monitor.o
+                0x00000000       0x20 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
+ .debug_str     0x00000000       0xbe /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
  .ARM.attributes
-                0x0000000000000000       0x2c build/sam_d21_xpro/production/_ext/1497164574/xc32_monitor.o
- .text          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/128142748/initialization.o
- .data          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/128142748/initialization.o
- .bss           0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/128142748/initialization.o
- .text          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/128142748/interrupts.o
- .data          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/128142748/interrupts.o
- .bss           0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/128142748/interrupts.o
- .text          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/128142748/exceptions.o
- .data          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/128142748/exceptions.o
- .bss           0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/128142748/exceptions.o
- .text          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/128142748/startup_xc32.o
- .data          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/128142748/startup_xc32.o
- .bss           0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/128142748/startup_xc32.o
- .text          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/128142748/libc_syscalls.o
- .data          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/128142748/libc_syscalls.o
- .bss           0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/128142748/libc_syscalls.o
- .text._exit    0x0000000000000000        0x2 build/sam_d21_xpro/production/_ext/128142748/libc_syscalls.o
- .debug_info    0x0000000000000000       0xaa build/sam_d21_xpro/production/_ext/128142748/libc_syscalls.o
- .debug_abbrev  0x0000000000000000       0x5d build/sam_d21_xpro/production/_ext/128142748/libc_syscalls.o
- .debug_loc     0x0000000000000000       0x15 build/sam_d21_xpro/production/_ext/128142748/libc_syscalls.o
+                0x00000000       0x1e /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
+ .text          0x00000000        0x4 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
+ .data          0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
+ .bss           0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
+ .debug_line    0x00000000       0x4a /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
+ .debug_line_str
+                0x00000000       0x97 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
+ .debug_info    0x00000000       0x39 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
+ .debug_abbrev  0x00000000       0x1f /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
  .debug_aranges
-                0x0000000000000000       0x20 build/sam_d21_xpro/production/_ext/128142748/libc_syscalls.o
- .debug_ranges  0x0000000000000000       0x10 build/sam_d21_xpro/production/_ext/128142748/libc_syscalls.o
- .debug_line    0x0000000000000000       0x60 build/sam_d21_xpro/production/_ext/128142748/libc_syscalls.o
- .debug_str     0x0000000000000000      0x2c0 build/sam_d21_xpro/production/_ext/128142748/libc_syscalls.o
- .comment       0x0000000000000000       0x2c build/sam_d21_xpro/production/_ext/128142748/libc_syscalls.o
- .debug_frame   0x0000000000000000       0x20 build/sam_d21_xpro/production/_ext/128142748/libc_syscalls.o
+                0x00000000       0x20 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
+ .debug_str     0x00000000       0xbf /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
  .ARM.attributes
-                0x0000000000000000       0x2c build/sam_d21_xpro/production/_ext/128142748/libc_syscalls.o
- .text          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/1360937237/main.o
- .data          0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/1360937237/main.o
- .bss           0x0000000000000000        0x0 build/sam_d21_xpro/production/_ext/1360937237/main.o
- .text          0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(data_init.o)
- .data          0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(data_init.o)
- .xc_stack_usage
-                0x0000000000000000       0x68 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(data_init.o)
- .xc_stack_usage.hdr
-                0x0000000000000000        0xe /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(data_init.o)
- .text          0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-size-musl.a(memcpy.o)
- .data          0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-size-musl.a(memcpy.o)
- .bss           0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-size-musl.a(memcpy.o)
- .xc_stack_usage
-                0x0000000000000000       0x14 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-size-musl.a(memcpy.o)
- .text.memcpy   0x0000000000000000       0x14 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-size-musl.a(memcpy.o)
- .xc_stack_usage.hdr
-                0x0000000000000000        0xe /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-size-musl.a(memcpy.o)
- .debug_info    0x0000000000000000       0xed /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-size-musl.a(memcpy.o)
- .debug_abbrev  0x0000000000000000       0xbb /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-size-musl.a(memcpy.o)
- .debug_loc     0x0000000000000000      0x12d /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-size-musl.a(memcpy.o)
+                0x00000000       0x1e /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
+ .data          0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-atexit.o)
+ .bss           0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-atexit.o)
+ .text          0x00000000       0x20 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-exit.o)
+ .data          0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-exit.o)
+ .bss           0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-exit.o)
+ .debug_info    0x00000000      0x90c /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-exit.o)
+ .debug_abbrev  0x00000000      0x22d /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-exit.o)
+ .debug_loclists
+                0x00000000       0x1b /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-exit.o)
  .debug_aranges
-                0x0000000000000000       0x20 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-size-musl.a(memcpy.o)
- .debug_ranges  0x0000000000000000       0x10 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-size-musl.a(memcpy.o)
- .debug_line    0x0000000000000000       0xee /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-size-musl.a(memcpy.o)
- .debug_str     0x0000000000000000      0x225 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-size-musl.a(memcpy.o)
- .comment       0x0000000000000000       0x2c /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-size-musl.a(memcpy.o)
- .note.GNU-stack
-                0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-size-musl.a(memcpy.o)
- .debug_frame   0x0000000000000000       0x28 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-size-musl.a(memcpy.o)
+                0x00000000       0x20 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-exit.o)
+ .debug_line    0x00000000      0x16d /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-exit.o)
+ .debug_str     0x00000000      0x574 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-exit.o)
+ .comment       0x00000000       0x27 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-exit.o)
+ .debug_frame   0x00000000       0x28 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-exit.o)
  .ARM.attributes
-                0x0000000000000000       0x2e /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-size-musl.a(memcpy.o)
- .text          0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__libc_start_main.o)
- .data          0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__libc_start_main.o)
- .bss           0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__libc_start_main.o)
- .xc_stack_usage
-                0x0000000000000000       0x34 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__libc_start_main.o)
- .xc_stack_usage.hdr
-                0x0000000000000000        0xe /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__libc_start_main.o)
- .text          0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(libc.o)
- .data          0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(libc.o)
- .xc_stack_usage.hdr
-                0x0000000000000000        0xe /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(libc.o)
- .text          0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__environ.o)
- .data          0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__environ.o)
- .xc_stack_usage.hdr
-                0x0000000000000000        0xe /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__environ.o)
- .text          0x0000000000000000       0x8c /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
- .data          0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
- .bss           0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
- .debug_frame   0x0000000000000000       0x20 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
- .xc_stack_usage.hdr
-                0x0000000000000000        0xe /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
- .xc_stack_usage
-                0x0000000000000000       0x35 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
- .debug_line    0x0000000000000000       0xa8 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
- .debug_info    0x0000000000000000       0x26 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
- .debug_abbrev  0x0000000000000000       0x14 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
+                0x00000000       0x2c /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-exit.o)
+ .data          0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-fini.o)
+ .bss           0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-fini.o)
+ .text          0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-impure.o)
+ .bss           0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-impure.o)
+ .data          0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-init.o)
+ .bss           0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-init.o)
+ .text          0x00000000       0x90 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memcpy-stub.o)
+ .data          0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memcpy-stub.o)
+ .bss           0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memcpy-stub.o)
+ .debug_info    0x00000000      0x152 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memcpy-stub.o)
+ .debug_abbrev  0x00000000       0xca /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memcpy-stub.o)
+ .debug_loclists
+                0x00000000      0x2a3 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memcpy-stub.o)
  .debug_aranges
-                0x0000000000000000       0x20 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
- .debug_str     0x0000000000000000       0xd6 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
+                0x00000000       0x20 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memcpy-stub.o)
+ .debug_line    0x00000000      0x1e8 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memcpy-stub.o)
+ .debug_str     0x00000000      0x1c9 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memcpy-stub.o)
+ .comment       0x00000000       0x27 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memcpy-stub.o)
+ .debug_frame   0x00000000       0x30 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memcpy-stub.o)
  .ARM.attributes
-                0x0000000000000000       0x1e /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
- .text          0x0000000000000000        0x4 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
- .data          0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
- .bss           0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
- .xc_stack_usage.hdr
-                0x0000000000000000        0xe /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
- .xc_stack_usage
-                0x0000000000000000       0x36 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
- .debug_line    0x0000000000000000       0x91 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
- .debug_info    0x0000000000000000       0x26 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
- .debug_abbrev  0x0000000000000000       0x14 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
+                0x00000000       0x2c /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memcpy-stub.o)
+ .text          0x00000000       0xa8 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memset.o)
+ .data          0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memset.o)
+ .bss           0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memset.o)
+ .debug_info    0x00000000      0x135 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memset.o)
+ .debug_abbrev  0x00000000       0xb7 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memset.o)
+ .debug_loclists
+                0x00000000      0x1ba /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memset.o)
  .debug_aranges
-                0x0000000000000000       0x20 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
- .debug_str     0x0000000000000000       0xd6 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
+                0x00000000       0x20 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memset.o)
+ .debug_line    0x00000000      0x1c3 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memset.o)
+ .debug_str     0x00000000      0x1a4 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memset.o)
+ .comment       0x00000000       0x27 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memset.o)
+ .debug_frame   0x00000000       0x30 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memset.o)
  .ARM.attributes
-                0x0000000000000000       0x1e /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
- .text          0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtend.o
- .data          0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtend.o
- .bss           0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtend.o
- .eh_frame      0x0000000000000000        0x4 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtend.o
- .xc_stack_usage.hdr
-                0x0000000000000000        0xe /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtend.o
- .comment       0x0000000000000000       0x2c /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtend.o
- .ARM.attributes
-                0x0000000000000000       0x2c /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtend.o
- .text          0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtn.o
- .data          0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtn.o
- .bss           0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtn.o
- .xc_stack_usage.hdr
-                0x0000000000000000        0xe /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtn.o
- .text          0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_clear.o)
- .data          0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_clear.o)
- .bss           0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_clear.o)
- .xc_stack_usage
-                0x0000000000000000       0x1b /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_clear.o)
- .xc_stack_usage.hdr
-                0x0000000000000000        0xe /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_clear.o)
- .text          0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_copy.o)
- .data          0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_copy.o)
- .bss           0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_copy.o)
- .xc_stack_usage
-                0x0000000000000000       0x1a /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_copy.o)
- .xc_stack_usage.hdr
-                0x0000000000000000        0xe /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_copy.o)
+                0x00000000       0x2c /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-memset.o)
+ .data          0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__atexit.o)
+ .bss           0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__atexit.o)
+ .text          0x00000000       0xe0 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__call_atexit.o)
+ .data          0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__call_atexit.o)
+ .bss           0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__call_atexit.o)
+ .text          0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtend.o
+ .data          0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtend.o
+ .bss           0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtend.o
+ .rodata        0x00000000       0x24 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtend.o
+ .text          0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtn.o
+ .data          0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtn.o
+ .bss           0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtn.o
 
 Memory Configuration
 
 Name             Origin             Length             Attributes
-rom              0x0000000000000000 0x0000000000040000 xrl
-ram              0x0000000020000000 0x0000000000008000 xw !r
-config_00804000  0x0000000000804000 0x0000000000000004
-config_00804004  0x0000000000804004 0x0000000000000004
-*default*        0x0000000000000000 0xffffffffffffffff
+FLASH            0x00000000         0x00040000         xr
+RAM              0x20000000         0x00008000         xrw
+*default*        0x00000000         0xffffffff
 
 Linker script and memory map
 
-LOAD /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crti.o
-LOAD /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtbegin.o
+LOAD /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crti.o
+LOAD /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtbegin.o
+LOAD /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/crt0.o
 LOAD build/sam_d21_xpro/production/_ext/600686086/plib_clock.o
 LOAD build/sam_d21_xpro/production/_ext/602835572/plib_evsys.o
 LOAD build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
@@ -438,614 +304,440 @@ LOAD build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
 LOAD build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
 LOAD build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
 LOAD build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
-LOAD build/sam_d21_xpro/production/_ext/1497164574/xc32_monitor.o
 LOAD build/sam_d21_xpro/production/_ext/128142748/initialization.o
 LOAD build/sam_d21_xpro/production/_ext/128142748/interrupts.o
 LOAD build/sam_d21_xpro/production/_ext/128142748/exceptions.o
-LOAD build/sam_d21_xpro/production/_ext/128142748/startup_xc32.o
 LOAD build/sam_d21_xpro/production/_ext/128142748/libc_syscalls.o
 LOAD build/sam_d21_xpro/production/_ext/1360937237/main.o
-                0x0000000000000001                __MPLAB_BUILD = 0x1
-                0x0000000000040000                __rom_end = (ORIGIN (rom) + LENGTH (rom))
-                0x0000000020008000                __ram_end = (ORIGIN (ram) + LENGTH (ram))
+LOAD build/sam_d21_xpro/production/_ext/128142748/startup_gcc.o
+                0x00000001                        __MPLAB_BUILD = 0x1
+START GROUP
+LOAD /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a
+LOAD /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a
+END GROUP
+START GROUP
+LOAD /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/libgcc.a
+LOAD /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a
+LOAD /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libnosys.a
+END GROUP
+LOAD /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtend.o
+LOAD /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtn.o
+                0x00000000                        __ROM_BASE = 0x0
+                0x00040000                        __ROM_SIZE = 0x40000
+                0x20000000                        __RAM_BASE = 0x20000000
+                0x00008000                        __RAM_SIZE = 0x8000
+                0x00002000                        __STACK_SIZE = 0x2000
+                0x00001000                        __HEAP_SIZE = 0x1000
 
-.config_00804000
- *(.config_00804000)
-
-.config_00804004
- *(.config_00804004)
-
-.vectors        0x0000000000000000       0xb0
-                0x0000000000000000                . = ALIGN (0x4)
-                0x0000000000000000                _sfixed = .
- *(.vectors .vectors.* .vectors_default .vectors_default.*)
- .vectors.exception_table
-                0x0000000000000000       0xb0 build/sam_d21_xpro/production/_ext/128142748/interrupts.o
-                0x0000000000000000                exception_table
- *(.isr_vector)
- *(.reset*)
- *(.after_vectors)
-
-.text           0x00000000000000b0       0x20
-                0x00000000000000b0                . = ALIGN (0x4)
- *(.glue_7t)
- .glue_7t       0x00000000000000b0        0x0 linker stubs
- *(.glue_7)
- .glue_7        0x00000000000000b0        0x0 linker stubs
- *(.gnu.linkonce.r.*)
- *(.ARM.extab* .gnu.linkonce.armextab.*)
-                0x00000000000000b0                . = ALIGN (0x4)
+.text           0x00000000      0x63c
+ *(.vectors)
+ .vectors       0x00000000       0xb0 build/sam_d21_xpro/production/_ext/128142748/interrupts.o
+                0x00000000                g_pfnVectors
+ *(.text*)
+ .text          0x000000b0       0x98 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtbegin.o
+ .text.CLOCK_Initialize
+                0x00000148       0x98 build/sam_d21_xpro/production/_ext/600686086/plib_clock.o
+                0x00000148                CLOCK_Initialize
+ .text.NVIC_Initialize
+                0x000001e0       0x28 build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
+                0x000001e0                NVIC_Initialize
+ .text.NVMCTRL_Initialize
+                0x00000208        0xc build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
+                0x00000208                NVMCTRL_Initialize
+ .text.PORT_Initialize
+                0x00000214       0x38 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
+                0x00000214                PORT_Initialize
+ .text.SYSTICK_TimerInitialize
+                0x0000024c       0x24 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
+                0x0000024c                SYSTICK_TimerInitialize
+ .text.SysTick_Handler
+                0x00000270       0x24 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
+                0x00000270                SysTick_Handler
+ .text.TCC0_PWMInitialize
+                0x00000294       0x48 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
+                0x00000294                TCC0_PWMInitialize
+ .text.TCC0_PWMStart
+                0x000002dc       0x18 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
+                0x000002dc                TCC0_PWMStart
+ .text.TCC0_PWM24bitPeriodGet
+                0x000002f4       0x18 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
+                0x000002f4                TCC0_PWM24bitPeriodGet
+ .text.TCC0_PWMCallbackRegister
+                0x0000030c        0xc build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
+                0x0000030c                TCC0_PWMCallbackRegister
+ .text.TCC0_InterruptHandler
+                0x00000318       0x28 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
+                0x00000318                TCC0_InterruptHandler
+ .text.SYS_Initialize
+                0x00000340       0x40 build/sam_d21_xpro/production/_ext/128142748/initialization.o
+                0x00000340                SYS_Initialize
+ .text.Dummy_Handler
+                0x00000380        0x2 build/sam_d21_xpro/production/_ext/128142748/interrupts.o
+                0x00000380                SVCall_Handler
+                0x00000380                DMAC_Handler
+                0x00000380                AC_Handler
+                0x00000380                PendSV_Handler
+                0x00000380                TC7_Handler
+                0x00000380                SERCOM1_Handler
+                0x00000380                ADC_Handler
+                0x00000380                TCC1_Handler
+                0x00000380                SERCOM2_Handler
+                0x00000380                RTC_Handler
+                0x00000380                EIC_Handler
+                0x00000380                TC6_Handler
+                0x00000380                WDT_Handler
+                0x00000380                TC4_Handler
+                0x00000380                USB_Handler
+                0x00000380                TC3_Handler
+                0x00000380                Dummy_Handler
+                0x00000380                PM_Handler
+                0x00000380                SERCOM5_Handler
+                0x00000380                TCC2_Handler
+                0x00000380                EVSYS_Handler
+                0x00000380                SERCOM3_Handler
+                0x00000380                SERCOM4_Handler
+                0x00000380                I2S_Handler
+                0x00000380                NVMCTRL_Handler
+                0x00000380                SERCOM0_Handler
+                0x00000380                DAC_Handler
+                0x00000380                PTC_Handler
+                0x00000380                TC5_Handler
+                0x00000380                SYSCTRL_Handler
+ .text.NonMaskableInt_Handler
+                0x00000382        0x2 build/sam_d21_xpro/production/_ext/128142748/exceptions.o
+                0x00000382                NonMaskableInt_Handler
+ .text.HardFault_Handler
+                0x00000384        0x2 build/sam_d21_xpro/production/_ext/128142748/exceptions.o
+                0x00000384                HardFault_Handler
+ *fill*         0x00000386        0x2 
+ .text.TCC_PeriodEventHandler
+                0x00000388       0x68 build/sam_d21_xpro/production/_ext/1360937237/main.o
+                0x00000388                TCC_PeriodEventHandler
+ .text.startup.main
+                0x000003f0       0x38 build/sam_d21_xpro/production/_ext/1360937237/main.o
+                0x000003f0                main
+ .text.Dummy_App_Func
+                0x00000428        0x2 build/sam_d21_xpro/production/_ext/128142748/startup_gcc.o
+                0x00000428                _on_reset
+                0x00000428                _on_bootstrap
+                0x00000428                Dummy_App_Func
+ *fill*         0x0000042a        0x2 
+ .text.Reset_Handler
+                0x0000042c       0xd8 build/sam_d21_xpro/production/_ext/128142748/startup_gcc.o
+                0x0000042c                Reset_Handler
+ .text          0x00000504       0x10 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-atexit.o)
+                0x00000504                atexit
+ .text          0x00000514       0x28 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-fini.o)
+                0x00000514                __libc_fini_array
+ .text          0x0000053c       0x48 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-init.o)
+                0x0000053c                __libc_init_array
+ .text          0x00000584       0x80 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__atexit.o)
+                0x00000584                __register_exitproc
+ .text.startup  0x00000604       0x18 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__call_atexit.o)
  *(.init)
- .init          0x00000000000000b0        0x4 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crti.o
-                0x00000000000000b0                _init
- .init          0x00000000000000b4        0x8 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtn.o
-                0x00000000000000bc                . = ALIGN (0x4)
-                0x00000000000000bc                __preinit_array_start = .
- *(.preinit_array)
-                0x00000000000000bc                __preinit_array_end = .
-                0x00000000000000bc                . = ALIGN (0x4)
-                0x00000000000000bc                __init_array_start = .
- *(SORT_BY_NAME(.init_array.*))
- *(.init_array)
- .init_array    0x00000000000000bc        0x4 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtbegin.o
-                0x00000000000000c0                __init_array_end = .
-                0x00000000000000c0                . = ALIGN (0x4)
- *crtbegin.o(.ctors)
- *(EXCLUDE_FILE(*crtend.o) .ctors)
- *(SORT_BY_NAME(.ctors.*))
- *crtend.o(.ctors)
-                0x00000000000000c0                . = ALIGN (0x4)
+ .init          0x0000061c        0x4 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crti.o
+                0x0000061c                _init
+ .init          0x00000620        0x8 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtn.o
  *(.fini)
- .fini          0x00000000000000c0        0x4 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crti.o
-                0x00000000000000c0                _fini
- .fini          0x00000000000000c4        0x8 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtn.o
-                0x00000000000000cc                . = ALIGN (0x4)
-                0x00000000000000cc                __fini_array_start = .
- *(.fini_array)
- .fini_array    0x00000000000000cc        0x4 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtbegin.o
- *(SORT_BY_NAME(.fini_array.*))
-                0x00000000000000d0                __fini_array_end = .
+ .fini          0x00000628        0x4 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crti.o
+                0x00000628                _fini
+ .fini          0x0000062c        0x8 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtn.o
+ *crtbegin.o(.ctors)
+ *crtbegin?.o(.ctors)
+ *(EXCLUDE_FILE(*crtend.o *crtend?.o) .ctors)
+ *(SORT_BY_NAME(.ctors.*))
+ *(.ctors)
  *crtbegin.o(.dtors)
- *(EXCLUDE_FILE(*crtend.o) .dtors)
+ *crtbegin?.o(.dtors)
+ *(EXCLUDE_FILE(*crtend.o *crtend?.o) .dtors)
  *(SORT_BY_NAME(.dtors.*))
- *crtend.o(.dtors)
-                0x00000000000000d0                . = ALIGN (0x4)
-                0x00000000000000d0                _efixed = .
-                [!provide]                        PROVIDE (__exidx_start = .)
+ *(.dtors)
+ *(.rodata*)
+ .rodata        0x00000634        0x4 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-impure.o)
+                0x00000634                _global_impure_ptr
+ *(.eh_frame*)
+ .eh_frame      0x00000638        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtbegin.o
+ .eh_frame      0x00000638        0x4 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtend.o
+
+.glue_7         0x0000063c        0x0
+ .glue_7        0x0000063c        0x0 linker stubs
+
+.glue_7t        0x0000063c        0x0
+ .glue_7t       0x0000063c        0x0 linker stubs
+
+.vfp11_veneer   0x0000063c        0x0
+ .vfp11_veneer  0x0000063c        0x0 linker stubs
+
+.v4_bx          0x0000063c        0x0
+ .v4_bx         0x0000063c        0x0 linker stubs
+
+.iplt           0x0000063c        0x0
+ .iplt          0x0000063c        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtbegin.o
+
+.rel.dyn        0x0000063c        0x0
+ .rel.iplt      0x0000063c        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtbegin.o
+
+.ARM.extab
+ *(.ARM.extab* .gnu.linkonce.armextab.*)
+                0x0000063c                        __exidx_start = .
 
 .ARM.exidx
  *(.ARM.exidx* .gnu.linkonce.armexidx.*)
-                [!provide]                        PROVIDE (__exidx_end = .)
-                0x00000000000000d0                . = ALIGN (0x4)
-                0x00000000000000d0                _etext = .
+                0x0000063c                        __exidx_end = .
 
-.bss            0x0000000020000000        0x0
-                0x0000000020000000                . = ALIGN (0x4)
-                0x0000000020000000                __bss_start__ = .
-                0x0000000020000000                _sbss = .
-                0x0000000020000000                _szero = .
+.copy.table     0x0000063c       0x18
+                0x0000063c                        . = ALIGN (0x4)
+                0x0000063c                        __copy_table_start__ = .
+                0x0000063c        0x4 LONG 0x65c __etext
+                0x00000640        0x4 LONG 0x20000000 __data_start__
+                0x00000644        0x4 LONG 0x111 ((__data_end__ - __data_start__) / 0x4)
+                0x00000648        0x4 LONG 0xaa0 __etext2
+                0x0000064c        0x4 LONG 0x20000444 __ramfunc_start__
+                0x00000650        0x4 LONG 0x0 ((__ramfunc_end__ - __ramfunc_start__) / 0x4)
+                0x00000654                        __copy_table_end__ = .
+
+.zero.table     0x00000654        0x8
+                0x00000654                        . = ALIGN (0x4)
+                0x00000654                        __zero_table_start__ = .
+                0x00000654        0x4 LONG 0x20000444 __bss_start__
+                0x00000658        0x4 LONG 0xe ((__bss_end__ - __bss_start__) / 0x4)
+                0x0000065c                        __zero_table_end__ = .
+                0x0000065c                        __etext = ALIGN (0x4)
+
+.data           0x20000000      0x444 load address 0x0000065c
+                0x20000000                        __data_start__ = .
+ *(vtable)
+ *(.data)
+ .data          0x20000000        0x8 build/sam_d21_xpro/production/_ext/1360937237/main.o
+ .data          0x20000008      0x430 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-impure.o)
+                0x20000008                _impure_ptr
+ *(.data.*)
+                0x20000438                        . = ALIGN (0x4)
+                0x20000438                        PROVIDE (__preinit_array_start = .)
+ *(.preinit_array)
+                0x20000438                        PROVIDE (__preinit_array_end = .)
+                0x20000438                        . = ALIGN (0x4)
+                0x20000438                        PROVIDE (__init_array_start = .)
+ *(SORT_BY_NAME(.init_array.*))
+ .init_array.00000
+                0x20000438        0x4 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__call_atexit.o)
+ *(.init_array)
+ .init_array    0x2000043c        0x4 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtbegin.o
+                0x20000440                        PROVIDE (__init_array_end = .)
+                0x20000440                        . = ALIGN (0x4)
+                0x20000440                        PROVIDE (__fini_array_start = .)
+ *(SORT_BY_NAME(.fini_array.*))
+ *(.fini_array)
+ .fini_array    0x20000440        0x4 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtbegin.o
+                0x20000444                        PROVIDE (__fini_array_end = .)
+ *(.jcr*)
+                0x20000444                        . = ALIGN (0x4)
+                0x20000444                        __data_end__ = .
+                0x00000aa0                        __etext2 = (__etext + SIZEOF (.data))
+
+.tm_clone_table
+                0x20000444        0x0 load address 0x00000aa0
+ .tm_clone_table
+                0x20000444        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtbegin.o
+ .tm_clone_table
+                0x20000444        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtend.o
+
+.igot.plt       0x20000444        0x0 load address 0x00000aa0
+ .igot.plt      0x20000444        0x0 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtbegin.o
+
+.ramfunc        0x20000444        0x0 load address 0x00000aa0
+                0x20000444                        . = ALIGN (0x4)
+                0x20000444                        __ramfunc_start__ = .
+ *(.ramfunc)
+ *(.ramfunc.*)
+                0x20000444                        . = ALIGN (0x4)
+                0x20000444                        __ramfunc_end__ = .
+
+.bss            0x20000444       0x38
+                0x20000444                        . = ALIGN (0x4)
+                0x20000444                        __bss_start__ = .
+ *(.bss)
+ .bss           0x20000444       0x1c /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtbegin.o
+ .bss           0x20000460        0xc build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
+ .bss           0x2000046c        0x8 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
+ .bss           0x20000474        0x8 build/sam_d21_xpro/production/_ext/1360937237/main.o
+ *(.bss.*)
  *(COMMON)
-                0x0000000020000000                . = ALIGN (0x4)
-                0x0000000020000000                __bss_end__ = .
-                0x0000000020000000                _ebss = .
-                0x0000000020000000                _ezero = .
-                0x0000000020000000                . = ALIGN (0x4)
-                0x0000000020000000                _end = .
-                0x0000000020007fff                _ram_end_ = ((ORIGIN (ram) + LENGTH (ram)) - 0x1)
-                0x0000000000000200                _min_heap_size = 0x200
-START GROUP
-LOAD /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a
-LOAD /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-size-musl.a
-LOAD /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/liblmalloc-musl.a
-LOAD /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libm-fast-emfloat.a
-LOAD /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libm-musl.a
-LOAD /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a
-LOAD /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libm-fast-emfloat.a
-LOAD /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libm-musl.a
-LOAD /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/libgcc.a
-END GROUP
-LOAD /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtend.o
-LOAD /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtn.o
+                0x2000047c                        . = ALIGN (0x4)
+                0x2000047c                        __bss_end__ = .
+
+.heap           0x2000047c     0x1004
+                0x20000480                        . = ALIGN (0x8)
+ *fill*         0x2000047c        0x4 
+                0x20000480                        __end__ = .
+                [!provide]                        PROVIDE (end = .)
+                0x20001480                        . = (. + __HEAP_SIZE)
+ *fill*         0x20000480     0x1000 
+                0x20001480                        . = ALIGN (0x8)
+                0x20001480                        __HeapLimit = .
+
+.stack          0x20006000     0x2000
+                0x20006000                        . = ALIGN (0x8)
+                0x20006000                        __StackLimit = .
+                0x20008000                        . = (. + __STACK_SIZE)
+ *fill*         0x20006000     0x2000 
+                0x20008000                        . = ALIGN (0x8)
+                0x20008000                        __StackTop = .
+                0x20008000                        PROVIDE (__stack = __StackTop)
+                0x00000000                        PROVIDE (_sfixed = ADDR (.text))
+                [!provide]                        PROVIDE (_efixed = (ADDR (.text) + SIZEOF (.text)))
+                [!provide]                        PROVIDE (_etext = __etext)
+                [!provide]                        PROVIDE (_srelocate = __data_start__)
+                [!provide]                        PROVIDE (_erelocate = __data_end__)
+                [!provide]                        PROVIDE (_szero = __bss_start__)
+                [!provide]                        PROVIDE (_ezero = __bss_end__)
+                [!provide]                        PROVIDE (_sstack = __StackLimit)
+                [!provide]                        PROVIDE (_estack = __StackTop)
+                [!provide]                        PROVIDE (_stack = __StackTop)
+                0x00000001                        ASSERT ((__StackLimit >= __HeapLimit), region RAM overflowed with stack)
 OUTPUT(dist/sam_d21_xpro/production/motor-controller-samd21.X.production.elf elf32-littlearm)
-LOAD data_init
-LOAD stack
+LOAD linker stubs
 
 .ARM.attributes
-                0x0000000000000000       0x2c
+                0x00000000       0x28
  .ARM.attributes
-                0x0000000000000000       0x1e /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crti.o
+                0x00000000       0x1e /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crti.o
  .ARM.attributes
-                0x000000000000001e       0x2c /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtbegin.o
+                0x0000001e       0x2c /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtbegin.o
  .ARM.attributes
-                0x000000000000004a       0x2c build/sam_d21_xpro/production/_ext/600686086/plib_clock.o
+                0x0000004a       0x2c build/sam_d21_xpro/production/_ext/600686086/plib_clock.o
  .ARM.attributes
-                0x0000000000000076       0x2c build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
+                0x00000076       0x2c build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
  .ARM.attributes
-                0x00000000000000a2       0x2c build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
+                0x000000a2       0x2c build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
  .ARM.attributes
-                0x00000000000000ce       0x2c build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
+                0x000000ce       0x2c build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
  .ARM.attributes
-                0x00000000000000fa       0x2c build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
+                0x000000fa       0x2c build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
  .ARM.attributes
-                0x0000000000000126       0x2c build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
+                0x00000126       0x2c build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
  .ARM.attributes
-                0x0000000000000152       0x2c build/sam_d21_xpro/production/_ext/128142748/initialization.o
+                0x00000152       0x2c build/sam_d21_xpro/production/_ext/128142748/initialization.o
  .ARM.attributes
-                0x000000000000017e       0x2c build/sam_d21_xpro/production/_ext/128142748/interrupts.o
+                0x0000017e       0x2c build/sam_d21_xpro/production/_ext/128142748/interrupts.o
  .ARM.attributes
-                0x00000000000001aa       0x2c build/sam_d21_xpro/production/_ext/128142748/exceptions.o
+                0x000001aa       0x2c build/sam_d21_xpro/production/_ext/128142748/exceptions.o
  .ARM.attributes
-                0x00000000000001d6       0x2c build/sam_d21_xpro/production/_ext/128142748/startup_xc32.o
+                0x000001d6       0x2c build/sam_d21_xpro/production/_ext/1360937237/main.o
  .ARM.attributes
-                0x0000000000000202       0x2c build/sam_d21_xpro/production/_ext/1360937237/main.o
+                0x00000202       0x2c build/sam_d21_xpro/production/_ext/128142748/startup_gcc.o
  .ARM.attributes
-                0x000000000000022e       0x2c /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(data_init.o)
+                0x0000022e       0x2c /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-atexit.o)
  .ARM.attributes
-                0x000000000000025a       0x2e /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__libc_start_main.o)
+                0x0000025a       0x2c /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-fini.o)
  .ARM.attributes
-                0x0000000000000288       0x2e /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(libc.o)
+                0x00000286       0x2c /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-impure.o)
  .ARM.attributes
-                0x00000000000002b6       0x2e /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__environ.o)
+                0x000002b2       0x2c /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-init.o)
  .ARM.attributes
-                0x00000000000002e4       0x1e /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtn.o
+                0x000002de       0x2c /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__atexit.o)
  .ARM.attributes
-                0x0000000000000302       0x2c /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_clear.o)
+                0x0000030a       0x2c /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__call_atexit.o)
  .ARM.attributes
-                0x000000000000032e       0x2c /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_copy.o)
+                0x00000336       0x2c /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtend.o
+ .ARM.attributes
+                0x00000362       0x1e /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtn.o
 
-.comment        0x0000000000000000       0x2b
- .comment       0x0000000000000000       0x2b /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtbegin.o
-                                         0x2c (size before relaxing)
- .comment       0x000000000000002b       0x2c build/sam_d21_xpro/production/_ext/600686086/plib_clock.o
- .comment       0x000000000000002b       0x2c build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
- .comment       0x000000000000002b       0x2c build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
- .comment       0x000000000000002b       0x2c build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
- .comment       0x000000000000002b       0x2c build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
- .comment       0x000000000000002b       0x2c build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
- .comment       0x000000000000002b       0x2c build/sam_d21_xpro/production/_ext/128142748/initialization.o
- .comment       0x000000000000002b       0x2c build/sam_d21_xpro/production/_ext/128142748/interrupts.o
- .comment       0x000000000000002b       0x2c build/sam_d21_xpro/production/_ext/128142748/exceptions.o
- .comment       0x000000000000002b       0x2c build/sam_d21_xpro/production/_ext/128142748/startup_xc32.o
- .comment       0x000000000000002b       0x2c build/sam_d21_xpro/production/_ext/1360937237/main.o
- .comment       0x000000000000002b       0x2c /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(data_init.o)
- .comment       0x000000000000002b       0x2c /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__libc_start_main.o)
- .comment       0x000000000000002b       0x2c /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(libc.o)
- .comment       0x000000000000002b       0x2c /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__environ.o)
- .comment       0x000000000000002b       0x2c /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_clear.o)
- .comment       0x000000000000002b       0x2c /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_copy.o)
+.comment        0x00000000       0x26
+ .comment       0x00000000       0x26 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtbegin.o
+                                 0x27 (size before relaxing)
+ .comment       0x00000026       0x27 build/sam_d21_xpro/production/_ext/600686086/plib_clock.o
+ .comment       0x00000026       0x27 build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
+ .comment       0x00000026       0x27 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
+ .comment       0x00000026       0x27 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
+ .comment       0x00000026       0x27 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
+ .comment       0x00000026       0x27 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
+ .comment       0x00000026       0x27 build/sam_d21_xpro/production/_ext/128142748/initialization.o
+ .comment       0x00000026       0x27 build/sam_d21_xpro/production/_ext/128142748/interrupts.o
+ .comment       0x00000026       0x27 build/sam_d21_xpro/production/_ext/128142748/exceptions.o
+ .comment       0x00000026       0x27 build/sam_d21_xpro/production/_ext/1360937237/main.o
+ .comment       0x00000026       0x27 build/sam_d21_xpro/production/_ext/128142748/startup_gcc.o
+ .comment       0x00000026       0x27 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-atexit.o)
+ .comment       0x00000026       0x27 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-fini.o)
+ .comment       0x00000026       0x27 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-impure.o)
+ .comment       0x00000026       0x27 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-init.o)
+ .comment       0x00000026       0x27 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__atexit.o)
+ .comment       0x00000026       0x27 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__call_atexit.o)
+ .comment       0x00000026       0x27 /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v6-m/nofp/crtend.o
 
-.debug_info     0x0000000000000000     0x3aa2
- .debug_info    0x0000000000000000      0x5c0 build/sam_d21_xpro/production/_ext/600686086/plib_clock.o
- .debug_info    0x00000000000005c0      0x774 build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
- .debug_info    0x0000000000000d34      0x5a0 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
- .debug_info    0x00000000000012d4      0x6fa build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
- .debug_info    0x00000000000019ce      0x558 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
- .debug_info    0x0000000000001f26      0x5e6 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
- .debug_info    0x000000000000250c      0x2a7 build/sam_d21_xpro/production/_ext/128142748/initialization.o
- .debug_info    0x00000000000027b3      0x3ab build/sam_d21_xpro/production/_ext/128142748/interrupts.o
- .debug_info    0x0000000000002b5e       0xb3 build/sam_d21_xpro/production/_ext/128142748/exceptions.o
- .debug_info    0x0000000000002c11      0x205 build/sam_d21_xpro/production/_ext/128142748/startup_xc32.o
- .debug_info    0x0000000000002e16      0x59d build/sam_d21_xpro/production/_ext/1360937237/main.o
- .debug_info    0x00000000000033b3       0x68 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(data_init.o)
- .debug_info    0x000000000000341b      0x2fb /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__libc_start_main.o)
- .debug_info    0x0000000000003716      0x276 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(libc.o)
- .debug_info    0x000000000000398c       0x97 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__environ.o)
- .debug_info    0x0000000000003a23       0x3f /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_clear.o)
- .debug_info    0x0000000000003a62       0x40 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_copy.o)
+.debug_info     0x00000000     0x1eeb
+ .debug_info    0x00000000      0x118 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-atexit.o)
+ .debug_info    0x00000118       0xf7 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-fini.o)
+ .debug_info    0x0000020f      0x8be /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-impure.o)
+ .debug_info    0x00000acd      0x10b /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-init.o)
+ .debug_info    0x00000bd8      0x941 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__atexit.o)
+ .debug_info    0x00001519      0x9d2 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__call_atexit.o)
 
-.debug_abbrev   0x0000000000000000     0x129e
- .debug_abbrev  0x0000000000000000      0x138 build/sam_d21_xpro/production/_ext/600686086/plib_clock.o
- .debug_abbrev  0x0000000000000138      0x255 build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
- .debug_abbrev  0x000000000000038d      0x1a6 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
- .debug_abbrev  0x0000000000000533      0x206 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
- .debug_abbrev  0x0000000000000739      0x1ef build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
- .debug_abbrev  0x0000000000000928      0x199 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
- .debug_abbrev  0x0000000000000ac1       0xf4 build/sam_d21_xpro/production/_ext/128142748/initialization.o
- .debug_abbrev  0x0000000000000bb5       0xc0 build/sam_d21_xpro/production/_ext/128142748/interrupts.o
- .debug_abbrev  0x0000000000000c75       0x49 build/sam_d21_xpro/production/_ext/128142748/exceptions.o
- .debug_abbrev  0x0000000000000cbe      0x118 build/sam_d21_xpro/production/_ext/128142748/startup_xc32.o
- .debug_abbrev  0x0000000000000dd6      0x1bf build/sam_d21_xpro/production/_ext/1360937237/main.o
- .debug_abbrev  0x0000000000000f95       0x44 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(data_init.o)
- .debug_abbrev  0x0000000000000fd9      0x133 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__libc_start_main.o)
- .debug_abbrev  0x000000000000110c       0xd4 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(libc.o)
- .debug_abbrev  0x00000000000011e0       0x62 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__environ.o)
- .debug_abbrev  0x0000000000001242       0x2e /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_clear.o)
- .debug_abbrev  0x0000000000001270       0x2e /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_copy.o)
+.debug_abbrev   0x00000000      0x929
+ .debug_abbrev  0x00000000       0xbe /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-atexit.o)
+ .debug_abbrev  0x000000be       0xc9 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-fini.o)
+ .debug_abbrev  0x00000187      0x1ca /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-impure.o)
+ .debug_abbrev  0x00000351       0xc9 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-init.o)
+ .debug_abbrev  0x0000041a      0x251 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__atexit.o)
+ .debug_abbrev  0x0000066b      0x2be /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__call_atexit.o)
 
-.debug_loc      0x0000000000000000      0xfce
- .debug_loc     0x0000000000000000       0x31 build/sam_d21_xpro/production/_ext/600686086/plib_clock.o
- .debug_loc     0x0000000000000031      0x153 build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
- .debug_loc     0x0000000000000184      0x42e build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
- .debug_loc     0x00000000000005b2      0x29b build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
- .debug_loc     0x000000000000084d      0x3bf build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
- .debug_loc     0x0000000000000c0c      0x18a build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
- .debug_loc     0x0000000000000d96       0x45 build/sam_d21_xpro/production/_ext/128142748/initialization.o
- .debug_loc     0x0000000000000ddb       0x20 build/sam_d21_xpro/production/_ext/128142748/startup_xc32.o
- .debug_loc     0x0000000000000dfb      0x14d build/sam_d21_xpro/production/_ext/1360937237/main.o
- .debug_loc     0x0000000000000f48       0x14 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(data_init.o)
- .debug_loc     0x0000000000000f5c       0x5e /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__libc_start_main.o)
- .debug_loc     0x0000000000000fba       0x14 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_copy.o)
+.debug_loclists
+                0x00000000      0x2f7
+ .debug_loclists
+                0x00000000       0x25 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-atexit.o)
+ .debug_loclists
+                0x00000025       0x2c /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-fini.o)
+ .debug_loclists
+                0x00000051       0x5a /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-init.o)
+ .debug_loclists
+                0x000000ab       0xd8 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__atexit.o)
+ .debug_loclists
+                0x00000183      0x174 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__call_atexit.o)
 
-.debug_aranges  0x0000000000000000      0x400
+.debug_aranges  0x00000000       0xc0
  .debug_aranges
-                0x0000000000000000       0x20 build/sam_d21_xpro/production/_ext/600686086/plib_clock.o
+                0x00000000       0x20 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-atexit.o)
  .debug_aranges
-                0x0000000000000020       0x48 build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
+                0x00000020       0x20 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-fini.o)
  .debug_aranges
-                0x0000000000000068       0x88 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
+                0x00000040       0x18 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-impure.o)
  .debug_aranges
-                0x00000000000000f0       0x70 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
+                0x00000058       0x20 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-init.o)
  .debug_aranges
-                0x0000000000000160       0x98 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
+                0x00000078       0x20 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__atexit.o)
  .debug_aranges
-                0x00000000000001f8       0x88 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
- .debug_aranges
-                0x0000000000000280       0x20 build/sam_d21_xpro/production/_ext/128142748/initialization.o
- .debug_aranges
-                0x00000000000002a0       0x20 build/sam_d21_xpro/production/_ext/128142748/interrupts.o
- .debug_aranges
-                0x00000000000002c0       0x28 build/sam_d21_xpro/production/_ext/128142748/exceptions.o
- .debug_aranges
-                0x00000000000002e8       0x28 build/sam_d21_xpro/production/_ext/128142748/startup_xc32.o
- .debug_aranges
-                0x0000000000000310       0x28 build/sam_d21_xpro/production/_ext/1360937237/main.o
- .debug_aranges
-                0x0000000000000338       0x30 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(data_init.o)
- .debug_aranges
-                0x0000000000000368       0x28 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__libc_start_main.o)
- .debug_aranges
-                0x0000000000000390       0x18 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(libc.o)
- .debug_aranges
-                0x00000000000003a8       0x18 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__environ.o)
- .debug_aranges
-                0x00000000000003c0       0x20 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_clear.o)
- .debug_aranges
-                0x00000000000003e0       0x20 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_copy.o)
+                0x00000098       0x28 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__call_atexit.o)
 
-.debug_ranges   0x0000000000000000      0x328
- .debug_ranges  0x0000000000000000       0x28 build/sam_d21_xpro/production/_ext/600686086/plib_clock.o
- .debug_ranges  0x0000000000000028       0x50 build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
- .debug_ranges  0x0000000000000078       0x78 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
- .debug_ranges  0x00000000000000f0       0x60 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
- .debug_ranges  0x0000000000000150       0x88 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
- .debug_ranges  0x00000000000001d8       0x78 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
- .debug_ranges  0x0000000000000250       0x10 build/sam_d21_xpro/production/_ext/128142748/initialization.o
- .debug_ranges  0x0000000000000260       0x10 build/sam_d21_xpro/production/_ext/128142748/interrupts.o
- .debug_ranges  0x0000000000000270       0x18 build/sam_d21_xpro/production/_ext/128142748/exceptions.o
- .debug_ranges  0x0000000000000288       0x18 build/sam_d21_xpro/production/_ext/128142748/startup_xc32.o
- .debug_ranges  0x00000000000002a0       0x18 build/sam_d21_xpro/production/_ext/1360937237/main.o
- .debug_ranges  0x00000000000002b8       0x20 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(data_init.o)
- .debug_ranges  0x00000000000002d8       0x30 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__libc_start_main.o)
- .debug_ranges  0x0000000000000308       0x10 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_clear.o)
- .debug_ranges  0x0000000000000318       0x10 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_copy.o)
+.debug_line     0x00000000      0x7d8
+ .debug_line    0x00000000       0xbd /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-atexit.o)
+ .debug_line    0x000000bd       0xe3 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-fini.o)
+ .debug_line    0x000001a0       0xde /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-impure.o)
+ .debug_line    0x0000027e      0x113 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-init.o)
+ .debug_line    0x00000391      0x1b8 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__atexit.o)
+ .debug_line    0x00000549      0x28f /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__call_atexit.o)
 
-.debug_line     0x0000000000000000     0x2037
- .debug_line    0x0000000000000000      0x20d build/sam_d21_xpro/production/_ext/600686086/plib_clock.o
- .debug_line    0x000000000000020d      0x37f build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
- .debug_line    0x000000000000058c      0x398 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
- .debug_line    0x0000000000000924      0x2ef build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
- .debug_line    0x0000000000000c13      0x42c build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
- .debug_line    0x000000000000103f      0x408 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
- .debug_line    0x0000000000001447      0x25a build/sam_d21_xpro/production/_ext/128142748/initialization.o
- .debug_line    0x00000000000016a1       0xb5 build/sam_d21_xpro/production/_ext/128142748/interrupts.o
- .debug_line    0x0000000000001756       0x74 build/sam_d21_xpro/production/_ext/128142748/exceptions.o
- .debug_line    0x00000000000017ca      0x148 build/sam_d21_xpro/production/_ext/128142748/startup_xc32.o
- .debug_line    0x0000000000001912      0x21d build/sam_d21_xpro/production/_ext/1360937237/main.o
- .debug_line    0x0000000000001b2f       0xa5 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(data_init.o)
- .debug_line    0x0000000000001bd4      0x1bc /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__libc_start_main.o)
- .debug_line    0x0000000000001d90       0xb5 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(libc.o)
- .debug_line    0x0000000000001e45       0xfb /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__environ.o)
- .debug_line    0x0000000000001f40       0x6f /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_clear.o)
- .debug_line    0x0000000000001faf       0x88 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_copy.o)
+.debug_str      0x00000000      0x7f7
+ .debug_str     0x00000000      0x18d /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-atexit.o)
+                                0x1cd (size before relaxing)
+ .debug_str     0x0000018d       0xbe /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-fini.o)
+                                0x1c5 (size before relaxing)
+ .debug_str     0x0000024b      0x449 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-impure.o)
+                                0x56b (size before relaxing)
+ .debug_str     0x00000694       0x96 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-init.o)
+                                0x1ef (size before relaxing)
+ .debug_str     0x0000072a       0x3b /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__atexit.o)
+                                0x5a5 (size before relaxing)
+ .debug_str     0x00000765       0x92 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__call_atexit.o)
+                                0x5d1 (size before relaxing)
 
-.debug_str      0x0000000000000000     0x4911
- .debug_str     0x0000000000000000      0x5e1 build/sam_d21_xpro/production/_ext/600686086/plib_clock.o
- .debug_str     0x00000000000005e1      0x61f build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
- .debug_str     0x0000000000000c00      0x548 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
- .debug_str     0x0000000000001148      0x878 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
- .debug_str     0x00000000000019c0      0x51e build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
- .debug_str     0x0000000000001ede      0x609 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
- .debug_str     0x00000000000024e7      0x428 build/sam_d21_xpro/production/_ext/128142748/initialization.o
- .debug_str     0x000000000000290f      0x5e3 build/sam_d21_xpro/production/_ext/128142748/interrupts.o
- .debug_str     0x0000000000002ef2      0x2e5 build/sam_d21_xpro/production/_ext/128142748/exceptions.o
- .debug_str     0x00000000000031d7      0x357 build/sam_d21_xpro/production/_ext/128142748/startup_xc32.o
- .debug_str     0x000000000000352e      0x50b build/sam_d21_xpro/production/_ext/1360937237/main.o
- .debug_str     0x0000000000003a39      0x1fc /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(data_init.o)
- .debug_str     0x0000000000003c35      0x3ca /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__libc_start_main.o)
- .debug_str     0x0000000000003fff      0x335 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(libc.o)
- .debug_str     0x0000000000004334      0x235 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__environ.o)
- .debug_str     0x0000000000004569      0x1d5 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_clear.o)
- .debug_str     0x000000000000473e      0x1d3 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_copy.o)
+.debug_frame    0x00000000      0x108
+ .debug_frame   0x00000000       0x28 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-atexit.o)
+ .debug_frame   0x00000028       0x2c /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-fini.o)
+ .debug_frame   0x00000054       0x2c /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-init.o)
+ .debug_frame   0x00000080       0x34 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__atexit.o)
+ .debug_frame   0x000000b4       0x54 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__call_atexit.o)
 
-.debug_frame    0x0000000000000000      0x664
- .debug_frame   0x0000000000000000       0x20 build/sam_d21_xpro/production/_ext/600686086/plib_clock.o
- .debug_frame   0x0000000000000020       0x7c build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
- .debug_frame   0x000000000000009c      0x108 build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
- .debug_frame   0x00000000000001a4       0xd8 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
- .debug_frame   0x000000000000027c      0x138 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
- .debug_frame   0x00000000000003b4       0xf8 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
- .debug_frame   0x00000000000004ac       0x28 build/sam_d21_xpro/production/_ext/128142748/initialization.o
- .debug_frame   0x00000000000004d4       0x20 build/sam_d21_xpro/production/_ext/128142748/interrupts.o
- .debug_frame   0x00000000000004f4       0x30 build/sam_d21_xpro/production/_ext/128142748/exceptions.o
- .debug_frame   0x0000000000000524       0x38 build/sam_d21_xpro/production/_ext/128142748/startup_xc32.o
- .debug_frame   0x000000000000055c       0x40 build/sam_d21_xpro/production/_ext/1360937237/main.o
- .debug_frame   0x000000000000059c       0x48 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(data_init.o)
- .debug_frame   0x00000000000005e4       0x38 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__libc_start_main.o)
- .debug_frame   0x000000000000061c       0x20 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_clear.o)
- .debug_frame   0x000000000000063c       0x28 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_copy.o)
-
-.note.GNU-stack
-                0x0000000000000000        0x0
- .note.GNU-stack
-                0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__libc_start_main.o)
- .note.GNU-stack
-                0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(libc.o)
- .note.GNU-stack
-                0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__environ.o)
-
-.stack          0x00000000200002b8      0x100
- .stack         0x00000000200002b8      0x100 stack
-
-.bss%1          0x0000000020000000       0x50
- .bss           0x0000000020000000       0x50 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(libc.o)
-                0x0000000020000000                program_invocation_name
-                0x0000000020000000                __progname_full
-                0x0000000020000004                __progname
-                0x0000000020000004                program_invocation_short_name
-                0x0000000020000008                __sysinfo
-                0x000000002000000c                __hwcap
-                0x0000000020000010                __libc
-
-.bss%2          0x0000000020000050       0x1c
- .bss           0x0000000020000050       0x1c /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtbegin.o
-
-.bss.systick%3  0x000000002000006c        0xc
- .bss.systick   0x000000002000006c        0xc build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
-
-.bss.TCC0_CallbackObj%4
-                0x0000000020000078        0x8
- .bss.TCC0_CallbackObj
-                0x0000000020000078        0x8 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
-
-.bss.duty0.5950%5
-                0x0000000020000080        0x4
- .bss.duty0.5950
-                0x0000000020000080        0x4 build/sam_d21_xpro/production/_ext/1360937237/main.o
-
-.bss.period%6   0x0000000020000084        0x4
- .bss.period    0x0000000020000084        0x4 build/sam_d21_xpro/production/_ext/1360937237/main.o
-
-.bss%7          0x0000000020000088        0x4
- .bss           0x0000000020000088        0x4 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(data_init.o)
-
-.bss%8          0x000000002000008c        0x4
- .bss           0x000000002000008c        0x4 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__environ.o)
-                0x000000002000008c                _environ
-                0x000000002000008c                __environ
-                0x000000002000008c                environ
-                0x000000002000008c                ___environ
-
-.data.duty1.5951%9
-                0x0000000020000090        0x4
- .data.duty1.5951
-                0x0000000020000090        0x4 build/sam_d21_xpro/production/_ext/1360937237/main.o
-
-.data.duty2.5952%10
-                0x0000000020000094        0x4
- .data.duty2.5952
-                0x0000000020000094        0x4 build/sam_d21_xpro/production/_ext/1360937237/main.o
-
-.eh_frame%z1    0x0000000000000000        0x0
- .eh_frame      0x0000000000000000        0x0 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtbegin.o
-
-.config_00804000.__config_00804000%11
-                0x0000000000804000        0x4
- .config_00804000.__config_00804000
-                0x0000000000804000        0x4 build/sam_d21_xpro/production/_ext/128142748/initialization.o
-                0x0000000000804000                __config_00804000
-
-.config_00804004.__config_00804004%12
-                0x0000000000804004        0x4
- .config_00804004.__config_00804004
-                0x0000000000804004        0x4 build/sam_d21_xpro/production/_ext/128142748/initialization.o
-                0x0000000000804004                __config_00804004
-
-.text.CLOCK_Initialize%13
-                0x00000000000000d0       0xb0
- .text.CLOCK_Initialize
-                0x00000000000000d0       0xb0 build/sam_d21_xpro/production/_ext/600686086/plib_clock.o
-                0x00000000000000d0                CLOCK_Initialize
-
-.text.TCC_PeriodEventHandler%14
-                0x0000000000000180       0x88
- .text.TCC_PeriodEventHandler
-                0x0000000000000180       0x88 build/sam_d21_xpro/production/_ext/1360937237/main.o
-                0x0000000000000180                TCC_PeriodEventHandler
-
-.text.__libc_start_init%15
-                0x0000000000000208       0x5c
- .text.__libc_start_init
-                0x0000000000000208       0x5c /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__libc_start_main.o)
-                0x0000000000000208                __libc_init_array
-
-.dinit%16       0x0000000000000264       0x50
- .dinit         0x0000000000000264       0x50 data_init
-
-.text.TCC0_PWMInitialize%17
-                0x00000000000002b4       0x4c
- .text.TCC0_PWMInitialize
-                0x00000000000002b4       0x4c build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
-                0x00000000000002b4                TCC0_PWMInitialize
-
-.text%18        0x0000000000000300       0x48
- .text          0x0000000000000300       0x48 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/thumb/v6-m/nofp/crtbegin.o
-
-.text.Reset_Handler%19
-                0x0000000000000348       0x48
- .text.Reset_Handler
-                0x0000000000000348       0x48 build/sam_d21_xpro/production/_ext/128142748/startup_xc32.o
-                0x0000000000000348                Reset_Handler
-
-.text.PORT_Initialize%20
-                0x0000000000000390       0x38
- .text.PORT_Initialize
-                0x0000000000000390       0x38 build/sam_d21_xpro/production/_ext/2097977225/plib_port.o
-                0x0000000000000390                PORT_Initialize
-
-.text.__pic32c_data_initialization%21
-                0x00000000000003c8       0x38
- .text.__pic32c_data_initialization
-                0x00000000000003c8       0x38 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(data_init.o)
-                0x00000000000003c8                __pic32c_data_initialization
-
-.text.NVIC_Initialize%22
-                0x0000000000000400       0x28
- .text.NVIC_Initialize
-                0x0000000000000400       0x28 build/sam_d21_xpro/production/_ext/2097924074/plib_nvic.o
-                0x0000000000000400                NVIC_Initialize
-
-.text.SysTick_Handler%23
-                0x0000000000000428       0x28
- .text.SysTick_Handler
-                0x0000000000000428       0x28 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
-                0x0000000000000428                SysTick_Handler
-
-.text.TCC0_InterruptHandler%24
-                0x0000000000000450       0x28
- .text.TCC0_InterruptHandler
-                0x0000000000000450       0x28 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
-                0x0000000000000450                TCC0_InterruptHandler
-
-.text.SYS_Initialize%25
-                0x0000000000000478       0x28
- .text.SYS_Initialize
-                0x0000000000000478       0x28 build/sam_d21_xpro/production/_ext/128142748/initialization.o
-                0x0000000000000478                SYS_Initialize
-
-.text.main%26   0x00000000000004a0       0x28
- .text.main     0x00000000000004a0       0x28 build/sam_d21_xpro/production/_ext/1360937237/main.o
-                0x00000000000004a0                main
-
-.text.SYSTICK_TimerInitialize%27
-                0x00000000000004c8       0x24
- .text.SYSTICK_TimerInitialize
-                0x00000000000004c8       0x24 build/sam_d21_xpro/production/_ext/869718558/plib_systick.o
-                0x00000000000004c8                SYSTICK_TimerInitialize
-
-.text.__dinit_copy%28
-                0x00000000000004ec       0x1e
- .text.__dinit_copy
-                0x00000000000004ec       0x1e /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_copy.o)
-                0x00000000000004ec                __dinit_copy
-                0x00000000000004ec                __dinit_copy_needed
-
-.text.TCC0_PWMStart%29
-                0x000000000000050c       0x1c
- .text.TCC0_PWMStart
-                0x000000000000050c       0x1c build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
-                0x000000000000050c                TCC0_PWMStart
-
-.text.TCC0_PWM24bitPeriodGet%30
-                0x0000000000000528       0x18
- .text.TCC0_PWM24bitPeriodGet
-                0x0000000000000528       0x18 build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
-                0x0000000000000528                TCC0_PWM24bitPeriodGet
-
-.rodata%31      0x0000000000000540       0x14
- .rodata        0x0000000000000540       0x14 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(data_init.o)
-
-.text.__dinit_clear%32
-                0x0000000000000554       0x12
- .text.__dinit_clear
-                0x0000000000000554       0x12 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(pic32_data_init_clear.o)
-                0x0000000000000554                __dinit_clear_needed
-                0x0000000000000554                __dinit_clear
-
-.text.NVMCTRL_Initialize%33
-                0x0000000000000568        0xc
- .text.NVMCTRL_Initialize
-                0x0000000000000568        0xc build/sam_d21_xpro/production/_ext/1104193656/plib_nvmctrl.o
-                0x0000000000000568                NVMCTRL_Initialize
-
-.text.TCC0_PWMCallbackRegister%34
-                0x0000000000000574        0xc
- .text.TCC0_PWMCallbackRegister
-                0x0000000000000574        0xc build/sam_d21_xpro/production/_ext/2010529844/plib_tcc0.o
-                0x0000000000000574                TCC0_PWMCallbackRegister
-
-.text.__dummy_decompress%35
-                0x0000000000000580        0x4
- .text.__dummy_decompress
-                0x0000000000000580        0x4 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(data_init.o)
-                0x0000000000000580                __dinit_copy_emb
-                0x0000000000000580                __dinit_decompress
-                0x0000000000000580                __dinit_copy_val_data
-
-.text.Dummy_Handler%36
-                0x000000000000050a        0x2
- .text.Dummy_Handler
-                0x000000000000050a        0x2 build/sam_d21_xpro/production/_ext/128142748/interrupts.o
-                0x000000000000050a                SVCall_Handler
-                0x000000000000050a                DMAC_Handler
-                0x000000000000050a                AC_Handler
-                0x000000000000050a                PendSV_Handler
-                0x000000000000050a                TC7_Handler
-                0x000000000000050a                SERCOM1_Handler
-                0x000000000000050a                ADC_Handler
-                0x000000000000050a                TCC1_Handler
-                0x000000000000050a                SERCOM2_Handler
-                0x000000000000050a                RTC_Handler
-                0x000000000000050a                EIC_Handler
-                0x000000000000050a                TC6_Handler
-                0x000000000000050a                WDT_Handler
-                0x000000000000050a                TC4_Handler
-                0x000000000000050a                USB_Handler
-                0x000000000000050a                TC3_Handler
-                0x000000000000050a                Dummy_Handler
-                0x000000000000050a                PM_Handler
-                0x000000000000050a                SERCOM5_Handler
-                0x000000000000050a                TCC2_Handler
-                0x000000000000050a                EVSYS_Handler
-                0x000000000000050a                SERCOM3_Handler
-                0x000000000000050a                SERCOM4_Handler
-                0x000000000000050a                I2S_Handler
-                0x000000000000050a                NVMCTRL_Handler
-                0x000000000000050a                SERCOM0_Handler
-                0x000000000000050a                DAC_Handler
-                0x000000000000050a                PTC_Handler
-                0x000000000000050a                TC5_Handler
-                0x000000000000050a                SYSCTRL_Handler
-
-.text.NonMaskableInt_Handler%37
-                0x0000000000000566        0x2
- .text.NonMaskableInt_Handler
-                0x0000000000000566        0x2 build/sam_d21_xpro/production/_ext/128142748/exceptions.o
-                0x0000000000000566                NonMaskableInt_Handler
-
-.text.HardFault_Handler%38
-                0x0000000000000584        0x2
- .text.HardFault_Handler
-                0x0000000000000584        0x2 build/sam_d21_xpro/production/_ext/128142748/exceptions.o
-                0x0000000000000584                HardFault_Handler
-
-.text.Dummy_App_Func%39
-                0x0000000000000586        0x2
- .text.Dummy_App_Func
-                0x0000000000000586        0x2 build/sam_d21_xpro/production/_ext/128142748/startup_xc32.o
-                0x0000000000000586                __xc32_on_bootstrap
-                0x0000000000000586                _on_reset
-                0x0000000000000586                _on_bootstrap
-                0x0000000000000586                __xc32_on_reset
-                0x0000000000000586                Dummy_App_Func
-
-.text.__dummy_init_tls%40
-                0x0000000000000588        0x2
- .text.__dummy_init_tls
-                0x0000000000000588        0x2 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libpic32c.a(data_init.o)
-                0x0000000000000588                xc32_init_tls
-
-.text.__dummy%41
-                0x000000000000058a        0x2
- .text.__dummy  0x000000000000058a        0x2 /home/ggkogkou/.local/v4.60/bin/bin/../../lib/gcc/pic32c/8.3.1/../../../../pic32c/lib/thumb/v6-m/nofp/libc-musl.a(__libc_start_main.o)
-                0x000000000000058a                __init_host
-                0x000000000000058a                __init_stdio
+.debug_rnglists
+                0x00000000       0x2f
+ .debug_rnglists
+                0x00000000       0x2f /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(lib_a-__call_atexit.o)

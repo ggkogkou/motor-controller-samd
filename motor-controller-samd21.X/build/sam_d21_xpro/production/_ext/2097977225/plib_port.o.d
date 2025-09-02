@@ -2,220 +2,147 @@ build/sam_d21_xpro/production/_ext/2097977225/plib_port.o: \
  ../src/config/sam_d21_xpro/peripheral/port/plib_port.c \
  ../src/config/sam_d21_xpro/peripheral/port/plib_port.h \
  ../src/config/sam_d21_xpro/device.h \
- ../src/packs/ATSAMD21J18A_DFP/samd21j18a.h \
- ../src/packs/CMSIS/CMSIS/Core/Include/core_cm0plus.h \
- ../src/packs/CMSIS/CMSIS/Core/Include/cmsis_version.h \
- ../src/packs/CMSIS/CMSIS/Core/Include/cmsis_compiler.h \
- ../src/packs/CMSIS/CMSIS/Core/Include/cmsis_gcc.h \
- ../src/packs/ATSAMD21J18A_DFP/component/ac.h \
- ../src/packs/ATSAMD21J18A_DFP/component/adc.h \
- ../src/packs/ATSAMD21J18A_DFP/component/dac.h \
- ../src/packs/ATSAMD21J18A_DFP/component/dmac.h \
- ../src/packs/ATSAMD21J18A_DFP/component/dsu.h \
- ../src/packs/ATSAMD21J18A_DFP/component/eic.h \
- ../src/packs/ATSAMD21J18A_DFP/component/evsys.h \
- ../src/packs/ATSAMD21J18A_DFP/component/fuses.h \
- ../src/packs/ATSAMD21J18A_DFP/component/gclk.h \
- ../src/packs/ATSAMD21J18A_DFP/component/hmatrixb.h \
- ../src/packs/ATSAMD21J18A_DFP/component/i2s.h \
- ../src/packs/ATSAMD21J18A_DFP/component/mtb.h \
- ../src/packs/ATSAMD21J18A_DFP/component/nvmctrl.h \
- ../src/packs/ATSAMD21J18A_DFP/component/pac.h \
- ../src/packs/ATSAMD21J18A_DFP/component/pm.h \
- ../src/packs/ATSAMD21J18A_DFP/component/port.h \
- ../src/packs/ATSAMD21J18A_DFP/component/ptc.h \
- ../src/packs/ATSAMD21J18A_DFP/component/rtc.h \
- ../src/packs/ATSAMD21J18A_DFP/component/sercom.h \
- ../src/packs/ATSAMD21J18A_DFP/component/sysctrl.h \
- ../src/packs/ATSAMD21J18A_DFP/component/tc.h \
- ../src/packs/ATSAMD21J18A_DFP/component/tcc.h \
- ../src/packs/ATSAMD21J18A_DFP/component/usb.h \
- ../src/packs/ATSAMD21J18A_DFP/component/wdt.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/ac.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/adc.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/dac.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/dmac.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/dsu.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/eic.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/evsys.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/fuses.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/gclk.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/i2s.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/mtb.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/nvmctrl.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/pac0.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/pac1.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/pac2.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/pm.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/port.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/ptc.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/rtc.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/sbmatrix.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/sercom0.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/sercom1.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/sercom2.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/sercom3.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/sercom4.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/sercom5.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/sysctrl.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/tc3.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/tc4.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/tc5.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/tc6.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/tc7.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/tcc0.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/tcc1.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/tcc2.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/usb.h \
- ../src/packs/ATSAMD21J18A_DFP/instance/wdt.h \
- ../src/packs/ATSAMD21J18A_DFP/pio/samd21j18a.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/samd21j18a.h \
+ /home/ggkogkou/.local/v6.25/packs/arm/CMSIS/5.4.0/CMSIS/Core/Include/core_cm0plus.h \
+ /home/ggkogkou/.local/v6.25/packs/arm/CMSIS/5.4.0/CMSIS/Core/Include/cmsis_version.h \
+ /home/ggkogkou/.local/v6.25/packs/arm/CMSIS/5.4.0/CMSIS/Core/Include/cmsis_compiler.h \
+ /home/ggkogkou/.local/v6.25/packs/arm/CMSIS/5.4.0/CMSIS/Core/Include/cmsis_gcc.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/ac.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/adc.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/dac.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/dmac.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/dsu.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/eic.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/evsys.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/fuses.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/gclk.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/hmatrixb.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/i2s.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/mtb.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/nvmctrl.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/pac.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/pm.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/port.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/ptc.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/rtc.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/sercom.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/sysctrl.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/tc.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/tcc.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/usb.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/wdt.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/ac.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/adc.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/dac.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/dmac.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/dsu.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/eic.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/evsys.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/fuses.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/gclk.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/i2s.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/mtb.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/nvmctrl.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/pac0.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/pac1.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/pac2.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/pm.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/port.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/ptc.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/rtc.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/sbmatrix.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/sercom0.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/sercom1.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/sercom2.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/sercom3.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/sercom4.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/sercom5.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/sysctrl.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/tc3.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/tc4.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/tc5.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/tc6.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/tc7.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/tcc0.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/tcc1.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/tcc2.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/usb.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/wdt.h \
+ /home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/pio/samd21j18a.h \
  ../src/config/sam_d21_xpro/device_cache.h \
  ../src/config/sam_d21_xpro/device.h \
  ../src/config/sam_d21_xpro/toolchain_specifics.h \
- ../src/packs/CMSIS/CMSIS/Core/Include/cmsis_compiler.h
-
+ /home/ggkogkou/.local/v6.25/packs/arm/CMSIS/5.4.0/CMSIS/Core/Include/cmsis_compiler.h
 ../src/config/sam_d21_xpro/peripheral/port/plib_port.h:
-
 ../src/config/sam_d21_xpro/device.h:
-
-../src/packs/ATSAMD21J18A_DFP/samd21j18a.h:
-
-../src/packs/CMSIS/CMSIS/Core/Include/core_cm0plus.h:
-
-../src/packs/CMSIS/CMSIS/Core/Include/cmsis_version.h:
-
-../src/packs/CMSIS/CMSIS/Core/Include/cmsis_compiler.h:
-
-../src/packs/CMSIS/CMSIS/Core/Include/cmsis_gcc.h:
-
-../src/packs/ATSAMD21J18A_DFP/component/ac.h:
-
-../src/packs/ATSAMD21J18A_DFP/component/adc.h:
-
-../src/packs/ATSAMD21J18A_DFP/component/dac.h:
-
-../src/packs/ATSAMD21J18A_DFP/component/dmac.h:
-
-../src/packs/ATSAMD21J18A_DFP/component/dsu.h:
-
-../src/packs/ATSAMD21J18A_DFP/component/eic.h:
-
-../src/packs/ATSAMD21J18A_DFP/component/evsys.h:
-
-../src/packs/ATSAMD21J18A_DFP/component/fuses.h:
-
-../src/packs/ATSAMD21J18A_DFP/component/gclk.h:
-
-../src/packs/ATSAMD21J18A_DFP/component/hmatrixb.h:
-
-../src/packs/ATSAMD21J18A_DFP/component/i2s.h:
-
-../src/packs/ATSAMD21J18A_DFP/component/mtb.h:
-
-../src/packs/ATSAMD21J18A_DFP/component/nvmctrl.h:
-
-../src/packs/ATSAMD21J18A_DFP/component/pac.h:
-
-../src/packs/ATSAMD21J18A_DFP/component/pm.h:
-
-../src/packs/ATSAMD21J18A_DFP/component/port.h:
-
-../src/packs/ATSAMD21J18A_DFP/component/ptc.h:
-
-../src/packs/ATSAMD21J18A_DFP/component/rtc.h:
-
-../src/packs/ATSAMD21J18A_DFP/component/sercom.h:
-
-../src/packs/ATSAMD21J18A_DFP/component/sysctrl.h:
-
-../src/packs/ATSAMD21J18A_DFP/component/tc.h:
-
-../src/packs/ATSAMD21J18A_DFP/component/tcc.h:
-
-../src/packs/ATSAMD21J18A_DFP/component/usb.h:
-
-../src/packs/ATSAMD21J18A_DFP/component/wdt.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/ac.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/adc.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/dac.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/dmac.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/dsu.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/eic.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/evsys.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/fuses.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/gclk.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/i2s.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/mtb.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/nvmctrl.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/pac0.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/pac1.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/pac2.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/pm.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/port.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/ptc.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/rtc.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/sbmatrix.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/sercom0.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/sercom1.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/sercom2.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/sercom3.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/sercom4.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/sercom5.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/sysctrl.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/tc3.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/tc4.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/tc5.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/tc6.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/tc7.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/tcc0.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/tcc1.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/tcc2.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/usb.h:
-
-../src/packs/ATSAMD21J18A_DFP/instance/wdt.h:
-
-../src/packs/ATSAMD21J18A_DFP/pio/samd21j18a.h:
-
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/samd21j18a.h:
+/home/ggkogkou/.local/v6.25/packs/arm/CMSIS/5.4.0/CMSIS/Core/Include/core_cm0plus.h:
+/home/ggkogkou/.local/v6.25/packs/arm/CMSIS/5.4.0/CMSIS/Core/Include/cmsis_version.h:
+/home/ggkogkou/.local/v6.25/packs/arm/CMSIS/5.4.0/CMSIS/Core/Include/cmsis_compiler.h:
+/home/ggkogkou/.local/v6.25/packs/arm/CMSIS/5.4.0/CMSIS/Core/Include/cmsis_gcc.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/ac.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/adc.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/dac.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/dmac.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/dsu.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/eic.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/evsys.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/fuses.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/gclk.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/hmatrixb.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/i2s.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/mtb.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/nvmctrl.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/pac.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/pm.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/port.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/ptc.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/rtc.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/sercom.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/sysctrl.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/tc.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/tcc.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/usb.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/component/wdt.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/ac.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/adc.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/dac.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/dmac.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/dsu.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/eic.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/evsys.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/fuses.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/gclk.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/i2s.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/mtb.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/nvmctrl.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/pac0.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/pac1.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/pac2.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/pm.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/port.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/ptc.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/rtc.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/sbmatrix.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/sercom0.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/sercom1.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/sercom2.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/sercom3.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/sercom4.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/sercom5.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/sysctrl.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/tc3.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/tc4.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/tc5.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/tc6.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/tc7.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/tcc0.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/tcc1.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/tcc2.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/usb.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/instance/wdt.h:
+/home/ggkogkou/.local/v6.25/packs/Microchip/SAMD21_DFP/3.6.144/samd21a/include/pio/samd21j18a.h:
 ../src/config/sam_d21_xpro/device_cache.h:
-
 ../src/config/sam_d21_xpro/device.h:
-
 ../src/config/sam_d21_xpro/toolchain_specifics.h:
-
-../src/packs/CMSIS/CMSIS/Core/Include/cmsis_compiler.h:
+/home/ggkogkou/.local/v6.25/packs/arm/CMSIS/5.4.0/CMSIS/Core/Include/cmsis_compiler.h:

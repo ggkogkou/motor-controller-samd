@@ -48,11 +48,8 @@
 // Section: Included Files
 // *****************************************************************************
 // *****************************************************************************
-#include "device_vectors.h"
 #include "interrupts.h"
 #include "definitions.h"
-
-
 
 // *****************************************************************************
 // *****************************************************************************
@@ -61,8 +58,7 @@
 // *****************************************************************************
 
 /* MISRA C-2012 Rule 8.6 deviated below. Deviation record ID -  H3_MISRAC_2012_R_8_6_DR_1 */
-extern uint32_t _stack;
-extern const H3DeviceVectors exception_table;
+extern uint32_t __StackTop;
 
 extern void Dummy_Handler(void);
 
@@ -107,55 +103,57 @@ extern void DAC_Handler                ( void ) __attribute__((weak, alias("Dumm
 extern void PTC_Handler                ( void ) __attribute__((weak, alias("Dummy_Handler")));
 extern void I2S_Handler                ( void ) __attribute__((weak, alias("Dummy_Handler")));
 
-
 /* MISRAC 2012 deviation block end */
 
 /* Multiple handlers for vector */
 
-
+/* ARM GCC Compatible Vector Table - replaces H3DeviceVectors struct */
+typedef void (*pFunc)(void);
 
 __attribute__ ((section(".vectors"), used))
-const H3DeviceVectors exception_table=
+const pFunc g_pfnVectors[] =
 {
     /* Configure Initial Stack Pointer, using linker-generated symbols */
-    .pvStack = &_stack,
+    (pFunc)((uint32_t)&__StackTop),
 
-    .pfnReset_Handler              = Reset_Handler,
-    .pfnNonMaskableInt_Handler     = NonMaskableInt_Handler,
-    .pfnHardFault_Handler          = HardFault_Handler,
-    .pfnSVCall_Handler             = SVCall_Handler,
-    .pfnPendSV_Handler             = PendSV_Handler,
-    .pfnSysTick_Handler            = SysTick_Handler,
-    .pfnPM_Handler                 = PM_Handler,
-    .pfnSYSCTRL_Handler            = SYSCTRL_Handler,
-    .pfnWDT_Handler                = WDT_Handler,
-    .pfnRTC_Handler                = RTC_Handler,
-    .pfnEIC_Handler                = EIC_Handler,
-    .pfnNVMCTRL_Handler            = NVMCTRL_Handler,
-    .pfnDMAC_Handler               = DMAC_Handler,
-    .pfnUSB_Handler                = USB_Handler,
-    .pfnEVSYS_Handler              = EVSYS_Handler,
-    .pfnSERCOM0_Handler            = SERCOM0_Handler,
-    .pfnSERCOM1_Handler            = SERCOM1_Handler,
-    .pfnSERCOM2_Handler            = SERCOM2_Handler,
-    .pfnSERCOM3_Handler            = SERCOM3_Handler,
-    .pfnSERCOM4_Handler            = SERCOM4_Handler,
-    .pfnSERCOM5_Handler            = SERCOM5_Handler,
-    .pfnTCC0_Handler               = TCC0_InterruptHandler,
-    .pfnTCC1_Handler               = TCC1_Handler,
-    .pfnTCC2_Handler               = TCC2_Handler,
-    .pfnTC3_Handler                = TC3_Handler,
-    .pfnTC4_Handler                = TC4_Handler,
-    .pfnTC5_Handler                = TC5_Handler,
-    .pfnTC6_Handler                = TC6_Handler,
-    .pfnTC7_Handler                = TC7_Handler,
-    .pfnADC_Handler                = ADC_Handler,
-    .pfnAC_Handler                 = AC_Handler,
-    .pfnDAC_Handler                = DAC_Handler,
-    .pfnPTC_Handler                = PTC_Handler,
-    .pfnI2S_Handler                = I2S_Handler,
+    Reset_Handler,
+    NonMaskableInt_Handler,
+    HardFault_Handler,
+    0, 0, 0, 0, 0, 0, 0,                    /* Reserved */
+    SVCall_Handler,
+    0, 0,                                   /* Reserved */
+    PendSV_Handler,
+    SysTick_Handler,
 
-
+    /* Peripheral Interrupts */
+    PM_Handler,
+    SYSCTRL_Handler,
+    WDT_Handler,
+    RTC_Handler,
+    EIC_Handler,
+    NVMCTRL_Handler,
+    DMAC_Handler,
+    USB_Handler,
+    EVSYS_Handler,
+    SERCOM0_Handler,
+    SERCOM1_Handler,
+    SERCOM2_Handler,
+    SERCOM3_Handler,
+    SERCOM4_Handler,
+    SERCOM5_Handler,
+    TCC0_InterruptHandler,                  /* Keep your custom handler name */
+    TCC1_Handler,
+    TCC2_Handler,
+    TC3_Handler,
+    TC4_Handler,
+    TC5_Handler,
+    TC6_Handler,
+    TC7_Handler,
+    ADC_Handler,
+    AC_Handler,
+    DAC_Handler,
+    PTC_Handler,
+    I2S_Handler,
 };
 
 /*******************************************************************************
