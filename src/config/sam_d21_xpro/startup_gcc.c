@@ -111,7 +111,7 @@ void __attribute__((optimize("-O1"), section(".text.Reset_Handler"), long_call, 
     /* Branch to application's main function */
     (void)main();
 
-#if (defined(__DEBUG) || defined(__DEBUG_D)) && defined(__XC32)
+#if (defined(__DEBUG) || defined(__DEBUG_D))
     __builtin_software_breakpoint();
 #endif
 
