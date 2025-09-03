@@ -1,0 +1,61 @@
+# Build directories
+build/
+build-*/
+dist/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Testing/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+
+# Generated files
+*.elf
+*.hex
+*.bin
+*.map
+*.lst
+*.sym
+*.disasm
+
+# IDE files
+.vscode/
+.idea/
+*.code-workspace
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*~
+*.swp
+*.swo
+
+# Original MPLAB X files (keep for reference but don't track changes)
+motor-controller-samd21.X/build/
+motor-controller-samd21.X/dist/
+motor-controller-samd21.X/nbproject/private/
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Backup files
+*.bak
+*.orig

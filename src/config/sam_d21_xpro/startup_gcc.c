@@ -30,15 +30,16 @@
 
 /*
  * ARM GCC startup code for SAMD21J18A
- * Uses CMSIS table-driven initialization
+ * Uses traditional GCC startup initialization
  * Compatible with existing MPLAB Harmony peripheral drivers
  */
 
-/* CMSIS table symbols from linker script */
-extern uint32_t __copy_table_start__;
-extern uint32_t __copy_table_end__;
-extern uint32_t __zero_table_start__;
-extern uint32_t __zero_table_end__;
+/* Symbols from linker script */
+extern uint32_t __etext;          /* End of .text section in FLASH */
+extern uint32_t __data_start__;   /* Start of .data section in RAM */
+extern uint32_t __data_end__;     /* End of .data section in RAM */
+extern uint32_t __bss_start__;    /* Start of .bss section in RAM */
+extern uint32_t __bss_end__;      /* End of .bss section in RAM */
 
 /* Legacy Harmony symbols for compatibility */
 extern uint32_t _sfixed;
@@ -70,27 +71,18 @@ void __attribute__((optimize("-O1"), section(".text.Reset_Handler"), long_call, 
     /* Call the optional application-provided _on_reset() function. */
     _on_reset();
 
-    /* CMSIS table-driven data initialization - replaces __pic32c_data_initialization() */
-    uint32_t *pTable = &__copy_table_start__;
-    for (; pTable < &__copy_table_end__; pTable += 3) {
-        uint32_t *pSrc  = (uint32_t *)pTable[0];   /* source address */
-        uint32_t *pDest = (uint32_t *)pTable[1];   /* destination address */
-        uint32_t  count = pTable[2];               /* word count */
-        
-        for (uint32_t i = 0; i < count; i++) {
-            pDest[i] = pSrc[i];
-        }
+    /* Traditional data initialization instead of CMSIS tables */
+    /* Initialize .data section (copy from flash to RAM) */
+    uint32_t *src = &__etext;
+    uint32_t *dst = &__data_start__;
+    while (dst < &__data_end__) {
+        *dst++ = *src++;
     }
 
-    /* CMSIS table-driven zero initialization */
-    pTable = &__zero_table_start__;
-    for (; pTable < &__zero_table_end__; pTable += 2) {
-        uint32_t *pDest = (uint32_t *)pTable[0];   /* destination address */
-        uint32_t  count = pTable[1];               /* word count */
-        
-        for (uint32_t i = 0; i < count; i++) {
-            pDest[i] = 0;
-        }
+    /* Initialize .bss section (zero fill) */
+    dst = &__bss_start__;
+    while (dst < &__bss_end__) {
+        *dst++ = 0;
     }
 
 #ifdef SCB_VTOR_TBLOFF_Msk
@@ -119,7 +111,7 @@ void __attribute__((optimize("-O1"), section(".text.Reset_Handler"), long_call, 
     /* Branch to application's main function */
     (void)main();
 
-#if (defined(__DEBUG) || defined(__DEBUG_D)) && defined(__XC32)
+#if (defined(__DEBUG) || defined(__DEBUG_D))
     __builtin_software_breakpoint();
 #endif
 

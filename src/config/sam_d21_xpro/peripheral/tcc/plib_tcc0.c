@@ -56,7 +56,7 @@
 
 
 /* Object to hold callback function and context */
-volatile static TCC_CALLBACK_OBJECT TCC0_CallbackObj;
+static volatile TCC_CALLBACK_OBJECT TCC0_CallbackObj;
 
 /* Initialize TCC module */
 void TCC0_PWMInitialize(void)
