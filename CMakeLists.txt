@@ -22,7 +22,7 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 # ============================================================================
 # PROJECT DEFINITION - NOW CMake knows to use ARM toolchain
 # ============================================================================
-project(motor-controller-samd21 LANGUAGES C ASM)
+project(motor-controller-samd21 LANGUAGES C CXX ASM)
 
 # MCU specific settings
 set(MCU_FAMILY "samd21")
@@ -35,12 +35,15 @@ set(COMMON_FLAGS "-mcpu=${MCU_ARCH} -mthumb -mfloat-abi=soft -ffunction-sections
 # C specific flags
 set(CMAKE_C_FLAGS "${COMMON_FLAGS} -std=gnu99" CACHE INTERNAL "C compiler flags")
 
+# C++ specific flags with C++20 standard and embedded-friendly settings
+set(CMAKE_CXX_FLAGS "${COMMON_FLAGS} -std=c++20 -fno-exceptions -fno-rtti -fno-threadsafe-statics" CACHE INTERNAL "C++ compiler flags")
+
 # ASM specific flags
 set(CMAKE_ASM_FLAGS "${COMMON_FLAGS} -x assembler-with-cpp" CACHE INTERNAL "ASM compiler flags")
 
-# Linker flags
+# Linker flags with C++ libraries
 set(CMAKE_EXE_LINKER_FLAGS
-        "-mcpu=${MCU_ARCH} -mthumb -mfloat-abi=soft -specs=nano.specs -T${CMAKE_CURRENT_SOURCE_DIR}/src/config/sam_d21_xpro/ATSAMD21J18A.ld -Wl,--gc-sections -Wl,-Map=${PROJECT_NAME}.map,--cref -Wl,--no-warn-mismatch"
+        "-mcpu=${MCU_ARCH} -mthumb -mfloat-abi=soft -specs=nano.specs -specs=nosys.specs -lstdc++ -T${CMAKE_CURRENT_SOURCE_DIR}/src/config/sam_d21_xpro/ATSAMD21J18A.ld -Wl,--gc-sections -Wl,-Map=${PROJECT_NAME}.map,--cref -Wl,--no-warn-mismatch"
         CACHE INTERNAL "Linker flags"
 )
 
@@ -73,7 +76,7 @@ include_directories(
 # Source files
 set(SOURCES
         # Main application
-        src/main.c
+        src/main.cpp
         src/logger.c
 
         # System initialization and configuration
@@ -130,5 +133,6 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "Target MCU: ${MCU_MODEL}")
 message(STATUS "Target architecture: ${MCU_ARCH}")
 message(STATUS "C Compiler: ${CMAKE_C_COMPILER}")
+message(STATUS "CXX Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "ASM Compiler: ${CMAKE_ASM_COMPILER}")
 message(STATUS "Linker script: ${CMAKE_CURRENT_SOURCE_DIR}/src/config/sam_d21_xpro/ATSAMD21J18A.ld")

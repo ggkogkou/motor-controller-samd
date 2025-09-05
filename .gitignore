@@ -46,8 +46,11 @@ Thumbs.db
 *.swo
 
 # Original MPLAB X files (keep for reference but don't track changes)
+motor-controller-samd21.X/.generated_files
 motor-controller-samd21.X/build/
 motor-controller-samd21.X/dist/
+motor-controller-samd21.X/nbproject/Makefile-*
+motor-controller-samd21.X/nbproject/Package-*
 motor-controller-samd21.X/nbproject/private/
 
 # Debug files
