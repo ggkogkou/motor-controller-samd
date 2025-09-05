@@ -4,6 +4,8 @@
 #include "definitions.h"                // SYS function prototypes
 #include "logger.h"                     // Logger utility
 
+#include "as5047p.hpp"
+
 /***************************************
  * Check PWM outputs on pins
  * Channel 0 PWMH - PA08
@@ -26,6 +28,8 @@ char messageError[] = "**** USART error occurred ****\r\n";
 static bool errorStatus = false;
 static bool writeStatus = true;
 static bool readStatus = false;
+
+AS5047P as5047p;
 
 void APP_WriteCallback(uintptr_t context)
 {
@@ -102,7 +106,8 @@ int main ( void )
 
         /* Simple periodic message */
         if (++loopCounter >= 10000000) {
-            Logger_Info("Heartbeat\r\n");
+            // Logger_Info("Heartbeat\r\n");
+            as5047p.read_angle();
             loopCounter = 0;
         }
     }
