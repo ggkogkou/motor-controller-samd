@@ -71,6 +71,7 @@ include_directories(
         src/packs/ATSAMD21J18A_DFP/instance
         src/packs/ATSAMD21J18A_DFP/pio
         src/packs/CMSIS/CMSIS/Core/Include
+        drivers
 )
 
 # Source files
@@ -98,6 +99,8 @@ set(SOURCES
 
         # Standard I/O (optional)
         src/config/sam_d21_xpro/stdio/xc32_monitor.c
+
+        drivers/as5047p.cpp
 )
 
 # Create executable

@@ -27,10 +27,10 @@ Pin Number,Pin ID,Custom Name,Function,Mode, Direction,Latch,Pull Up,Pull Down,D
 30,PA13,,Available,,,,,,NORMAL
 31,PA14,,Available,,,,,,NORMAL
 32,PA15,,Available,,,,,,NORMAL
-35,PA16,,Available,,,,,,NORMAL
-36,PA17,,Available,,,,,,NORMAL
-37,PA18,,Available,,,,,,NORMAL
-38,PA19,,Available,,,,,,NORMAL
+35,PA16,,SERCOM1_PAD0,Digital,High Impedance,n/a,No,No,NORMAL
+36,PA17,,SERCOM1_PAD1,Digital,High Impedance,n/a,No,No,NORMAL
+37,PA18,,SERCOM1_PAD2,Digital,High Impedance,n/a,No,No,NORMAL
+38,PA19,,SERCOM1_PAD3,Digital,High Impedance,n/a,No,No,NORMAL
 39,PB16,,Available,,,,,,NORMAL
 40,PB17,,Available,,,,,,NORMAL
 41,PA20,,Available,,,,,,NORMAL

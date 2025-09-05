@@ -145,8 +145,10 @@ void SYS_Initialize ( void* data )
 
     NVMCTRL_Initialize( );
 
-    TCC0_PWMInitialize();
+    SERCOM1_SPI_Initialize();
 
+
+    TCC0_PWMInitialize();
 
 	SYSTICK_TimerInitialize();
 
