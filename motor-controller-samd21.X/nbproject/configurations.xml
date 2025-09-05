@@ -146,11 +146,6 @@
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
                    projectFiles="true">
-      <logicalFolder name="f1" displayName="config" projectFiles="true">
-        <logicalFolder name="f1" displayName="sam_d21_xpro" projectFiles="true">
-          <itemPath>../src/config/sam_d21_xpro/ATSAMD21J18A.ld</itemPath>
-        </logicalFolder>
-      </logicalFolder>
     </logicalFolder>
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
@@ -196,8 +191,8 @@
           <itemPath>../src/config/sam_d21_xpro/startup_gcc.c</itemPath>
         </logicalFolder>
       </logicalFolder>
-      <itemPath>../src/main.c</itemPath>
       <itemPath>../src/config/sam_d21_xpro/pin_configurations.csv</itemPath>
+      <itemPath>../src/main.cpp</itemPath>
     </logicalFolder>
   </logicalFolder>
   <sourceRootList>
