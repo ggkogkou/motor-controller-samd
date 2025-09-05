@@ -24,14 +24,20 @@
 extern "C" {
 #endif
 
-    /* Initialize the logger */
-    void Logger_Initialize(void);
+  /* Initialize the logger */
+  void Logger_Initialize(void);
 
-    /* Check if logger is ready for new message */
-    bool Logger_IsReady(void);
+  /* Check if logger is ready for new message */
+  bool Logger_IsReady(void);
 
-    /* Send a simple message */
-    void Logger_Send(const char* message);
+  /* Send a simple message */
+  void Logger_Send(const char* message);
+
+  /* Send INFO message (no color) */
+  void Logger_Info(const char* message);
+
+  /* Send ERROR message (red color) */
+  void Logger_Error(const char* message);
 
 #ifdef __cplusplus
 }

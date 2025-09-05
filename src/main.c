@@ -69,7 +69,7 @@
 /* Save PWM period */
 static uint32_t period;
 
-char myData[] = {"Software is running\n\r"};
+char myData[] = {"\r\nSoftware is running\n\r"};
 char messageError[] = "**** USART error occurred ****\r\n";
 
 static bool errorStatus = false;
@@ -129,11 +129,11 @@ int main ( void )
 
     /* Read the period */
     period = TCC0_PWM24bitPeriodGet();
-    Logger_Send("PWM period configured\r\n");
+    Logger_Info("PWM period configured\r\n");
 
     /* Start PWM*/
     TCC0_PWMStart();
-    Logger_Send("PWM started\r\n");
+    Logger_Info("PWM started\r\n");
 
     uint32_t loopCounter = 0;
 
@@ -146,8 +146,9 @@ int main ( void )
             /* Send error message to console */
             errorStatus = false;
             SERCOM3_USART_Write(&messageError[0], sizeof(messageError));
-            Logger_Send("Error occurred\r\n");
+            Logger_Error("Error occurred\r\n");
         }
+
         // else if(writeStatus == true)
         // {
         //     /* Submit buffer to read user data */
@@ -156,7 +157,7 @@ int main ( void )
 
         /* Simple periodic message */
         if (++loopCounter >= 10000000) {
-            Logger_Send("Heartbeat\r\n");
+            Logger_Info("Heartbeat\r\n");
             loopCounter = 0;
         }
     }
