@@ -51,17 +51,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=../src/config/sam_d21_xpro/peripheral/clock/plib_clock.c ../src/config/sam_d21_xpro/peripheral/evsys/plib_evsys.c ../src/config/sam_d21_xpro/peripheral/nvic/plib_nvic.c ../src/config/sam_d21_xpro/peripheral/nvmctrl/plib_nvmctrl.c ../src/config/sam_d21_xpro/peripheral/port/plib_port.c ../src/config/sam_d21_xpro/peripheral/systick/plib_systick.c ../src/config/sam_d21_xpro/peripheral/tcc/plib_tcc0.c ../src/config/sam_d21_xpro/initialization.c ../src/config/sam_d21_xpro/interrupts.c ../src/config/sam_d21_xpro/exceptions.c ../src/config/sam_d21_xpro/libc_syscalls.c ../src/main.c ../src/config/sam_d21_xpro/startup_gcc.c
+SOURCEFILES_QUOTED_IF_SPACED=../src/config/sam_d21_xpro/peripheral/clock/plib_clock.c ../src/config/sam_d21_xpro/peripheral/evsys/plib_evsys.c ../src/config/sam_d21_xpro/peripheral/nvic/plib_nvic.c ../src/config/sam_d21_xpro/peripheral/nvmctrl/plib_nvmctrl.c ../src/config/sam_d21_xpro/peripheral/port/plib_port.c ../src/config/sam_d21_xpro/peripheral/systick/plib_systick.c ../src/config/sam_d21_xpro/peripheral/tcc/plib_tcc0.c ../src/config/sam_d21_xpro/initialization.c ../src/config/sam_d21_xpro/interrupts.c ../src/config/sam_d21_xpro/exceptions.c ../src/config/sam_d21_xpro/libc_syscalls.c ../src/config/sam_d21_xpro/startup_gcc.c ../src/main.c ../src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom3_usart.c
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/_ext/600686086/plib_clock.o ${OBJECTDIR}/_ext/602835572/plib_evsys.o ${OBJECTDIR}/_ext/2097924074/plib_nvic.o ${OBJECTDIR}/_ext/1104193656/plib_nvmctrl.o ${OBJECTDIR}/_ext/2097977225/plib_port.o ${OBJECTDIR}/_ext/869718558/plib_systick.o ${OBJECTDIR}/_ext/2010529844/plib_tcc0.o ${OBJECTDIR}/_ext/128142748/initialization.o ${OBJECTDIR}/_ext/128142748/interrupts.o ${OBJECTDIR}/_ext/128142748/exceptions.o ${OBJECTDIR}/_ext/128142748/libc_syscalls.o ${OBJECTDIR}/_ext/1360937237/main.o ${OBJECTDIR}/_ext/128142748/startup_gcc.o
-POSSIBLE_DEPFILES=${OBJECTDIR}/_ext/600686086/plib_clock.o.d ${OBJECTDIR}/_ext/602835572/plib_evsys.o.d ${OBJECTDIR}/_ext/2097924074/plib_nvic.o.d ${OBJECTDIR}/_ext/1104193656/plib_nvmctrl.o.d ${OBJECTDIR}/_ext/2097977225/plib_port.o.d ${OBJECTDIR}/_ext/869718558/plib_systick.o.d ${OBJECTDIR}/_ext/2010529844/plib_tcc0.o.d ${OBJECTDIR}/_ext/128142748/initialization.o.d ${OBJECTDIR}/_ext/128142748/interrupts.o.d ${OBJECTDIR}/_ext/128142748/exceptions.o.d ${OBJECTDIR}/_ext/128142748/libc_syscalls.o.d ${OBJECTDIR}/_ext/1360937237/main.o.d ${OBJECTDIR}/_ext/128142748/startup_gcc.o.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/_ext/600686086/plib_clock.o ${OBJECTDIR}/_ext/602835572/plib_evsys.o ${OBJECTDIR}/_ext/2097924074/plib_nvic.o ${OBJECTDIR}/_ext/1104193656/plib_nvmctrl.o ${OBJECTDIR}/_ext/2097977225/plib_port.o ${OBJECTDIR}/_ext/869718558/plib_systick.o ${OBJECTDIR}/_ext/2010529844/plib_tcc0.o ${OBJECTDIR}/_ext/128142748/initialization.o ${OBJECTDIR}/_ext/128142748/interrupts.o ${OBJECTDIR}/_ext/128142748/exceptions.o ${OBJECTDIR}/_ext/128142748/libc_syscalls.o ${OBJECTDIR}/_ext/128142748/startup_gcc.o ${OBJECTDIR}/_ext/1360937237/main.o ${OBJECTDIR}/_ext/1136425057/plib_sercom3_usart.o
+POSSIBLE_DEPFILES=${OBJECTDIR}/_ext/600686086/plib_clock.o.d ${OBJECTDIR}/_ext/602835572/plib_evsys.o.d ${OBJECTDIR}/_ext/2097924074/plib_nvic.o.d ${OBJECTDIR}/_ext/1104193656/plib_nvmctrl.o.d ${OBJECTDIR}/_ext/2097977225/plib_port.o.d ${OBJECTDIR}/_ext/869718558/plib_systick.o.d ${OBJECTDIR}/_ext/2010529844/plib_tcc0.o.d ${OBJECTDIR}/_ext/128142748/initialization.o.d ${OBJECTDIR}/_ext/128142748/interrupts.o.d ${OBJECTDIR}/_ext/128142748/exceptions.o.d ${OBJECTDIR}/_ext/128142748/libc_syscalls.o.d ${OBJECTDIR}/_ext/128142748/startup_gcc.o.d ${OBJECTDIR}/_ext/1360937237/main.o.d ${OBJECTDIR}/_ext/1136425057/plib_sercom3_usart.o.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/_ext/600686086/plib_clock.o ${OBJECTDIR}/_ext/602835572/plib_evsys.o ${OBJECTDIR}/_ext/2097924074/plib_nvic.o ${OBJECTDIR}/_ext/1104193656/plib_nvmctrl.o ${OBJECTDIR}/_ext/2097977225/plib_port.o ${OBJECTDIR}/_ext/869718558/plib_systick.o ${OBJECTDIR}/_ext/2010529844/plib_tcc0.o ${OBJECTDIR}/_ext/128142748/initialization.o ${OBJECTDIR}/_ext/128142748/interrupts.o ${OBJECTDIR}/_ext/128142748/exceptions.o ${OBJECTDIR}/_ext/128142748/libc_syscalls.o ${OBJECTDIR}/_ext/1360937237/main.o ${OBJECTDIR}/_ext/128142748/startup_gcc.o
+OBJECTFILES=${OBJECTDIR}/_ext/600686086/plib_clock.o ${OBJECTDIR}/_ext/602835572/plib_evsys.o ${OBJECTDIR}/_ext/2097924074/plib_nvic.o ${OBJECTDIR}/_ext/1104193656/plib_nvmctrl.o ${OBJECTDIR}/_ext/2097977225/plib_port.o ${OBJECTDIR}/_ext/869718558/plib_systick.o ${OBJECTDIR}/_ext/2010529844/plib_tcc0.o ${OBJECTDIR}/_ext/128142748/initialization.o ${OBJECTDIR}/_ext/128142748/interrupts.o ${OBJECTDIR}/_ext/128142748/exceptions.o ${OBJECTDIR}/_ext/128142748/libc_syscalls.o ${OBJECTDIR}/_ext/128142748/startup_gcc.o ${OBJECTDIR}/_ext/1360937237/main.o ${OBJECTDIR}/_ext/1136425057/plib_sercom3_usart.o
 
 # Source Files
-SOURCEFILES=../src/config/sam_d21_xpro/peripheral/clock/plib_clock.c ../src/config/sam_d21_xpro/peripheral/evsys/plib_evsys.c ../src/config/sam_d21_xpro/peripheral/nvic/plib_nvic.c ../src/config/sam_d21_xpro/peripheral/nvmctrl/plib_nvmctrl.c ../src/config/sam_d21_xpro/peripheral/port/plib_port.c ../src/config/sam_d21_xpro/peripheral/systick/plib_systick.c ../src/config/sam_d21_xpro/peripheral/tcc/plib_tcc0.c ../src/config/sam_d21_xpro/initialization.c ../src/config/sam_d21_xpro/interrupts.c ../src/config/sam_d21_xpro/exceptions.c ../src/config/sam_d21_xpro/libc_syscalls.c ../src/main.c ../src/config/sam_d21_xpro/startup_gcc.c
+SOURCEFILES=../src/config/sam_d21_xpro/peripheral/clock/plib_clock.c ../src/config/sam_d21_xpro/peripheral/evsys/plib_evsys.c ../src/config/sam_d21_xpro/peripheral/nvic/plib_nvic.c ../src/config/sam_d21_xpro/peripheral/nvmctrl/plib_nvmctrl.c ../src/config/sam_d21_xpro/peripheral/port/plib_port.c ../src/config/sam_d21_xpro/peripheral/systick/plib_systick.c ../src/config/sam_d21_xpro/peripheral/tcc/plib_tcc0.c ../src/config/sam_d21_xpro/initialization.c ../src/config/sam_d21_xpro/interrupts.c ../src/config/sam_d21_xpro/exceptions.c ../src/config/sam_d21_xpro/libc_syscalls.c ../src/config/sam_d21_xpro/startup_gcc.c ../src/main.c ../src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom3_usart.c
 
 # Pack Options 
 PACK_COMMON_OPTIONS=-I "${DFP_DIR}/samd21a/include"  -I "${CMSIS_DIR}/CMSIS/Core/Include"
@@ -169,17 +169,23 @@ ${OBJECTDIR}/_ext/128142748/libc_syscalls.o: ../src/config/sam_d21_xpro/libc_sys
 	@${RM} ${OBJECTDIR}/_ext/128142748/libc_syscalls.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE) -mcpu=cortex-m0plus -g -D__DEBUG  -gdwarf-2  -x c -c -D__$(MP_PROCESSOR_OPTION)__  -mthumb ${PACK_COMMON_OPTIONS}  -Os -ffunction-sections -mlong-calls -I "../src/config/sam_d21_xpro" -I "../src/packs/ATSAMD21J18A_DFP" -Wall -MP -MMD -MF "${OBJECTDIR}/_ext/128142748/libc_syscalls.o.d" -o ${OBJECTDIR}/_ext/128142748/libc_syscalls.o ../src/config/sam_d21_xpro/libc_syscalls.c  -DXPRJ_sam_d21_xpro=$(CND_CONF)  $(COMPARISON_BUILD) 
 	
+${OBJECTDIR}/_ext/128142748/startup_gcc.o: ../src/config/sam_d21_xpro/startup_gcc.c  .generated_files/flags/sam_d21_xpro/1dbd03089da02ba7216ff21380bea62a4f0c5795 .generated_files/flags/sam_d21_xpro/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}/_ext/128142748" 
+	@${RM} ${OBJECTDIR}/_ext/128142748/startup_gcc.o.d 
+	@${RM} ${OBJECTDIR}/_ext/128142748/startup_gcc.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE) -mcpu=cortex-m0plus -g -D__DEBUG  -gdwarf-2  -x c -c -D__$(MP_PROCESSOR_OPTION)__  -mthumb ${PACK_COMMON_OPTIONS}  -Os -ffunction-sections -mlong-calls -I "../src/config/sam_d21_xpro" -I "../src/packs/ATSAMD21J18A_DFP" -Wall -MP -MMD -MF "${OBJECTDIR}/_ext/128142748/startup_gcc.o.d" -o ${OBJECTDIR}/_ext/128142748/startup_gcc.o ../src/config/sam_d21_xpro/startup_gcc.c  -DXPRJ_sam_d21_xpro=$(CND_CONF)  $(COMPARISON_BUILD) 
+	
 ${OBJECTDIR}/_ext/1360937237/main.o: ../src/main.c  .generated_files/flags/sam_d21_xpro/a0be3cb25c0fd6e445f6c9402033b6965596012 .generated_files/flags/sam_d21_xpro/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}/_ext/1360937237" 
 	@${RM} ${OBJECTDIR}/_ext/1360937237/main.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1360937237/main.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE) -mcpu=cortex-m0plus -g -D__DEBUG  -gdwarf-2  -x c -c -D__$(MP_PROCESSOR_OPTION)__  -mthumb ${PACK_COMMON_OPTIONS}  -Os -ffunction-sections -mlong-calls -I "../src/config/sam_d21_xpro" -I "../src/packs/ATSAMD21J18A_DFP" -Wall -MP -MMD -MF "${OBJECTDIR}/_ext/1360937237/main.o.d" -o ${OBJECTDIR}/_ext/1360937237/main.o ../src/main.c  -DXPRJ_sam_d21_xpro=$(CND_CONF)  $(COMPARISON_BUILD) 
 	
-${OBJECTDIR}/_ext/128142748/startup_gcc.o: ../src/config/sam_d21_xpro/startup_gcc.c  .generated_files/flags/sam_d21_xpro/1dbd03089da02ba7216ff21380bea62a4f0c5795 .generated_files/flags/sam_d21_xpro/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}/_ext/128142748" 
-	@${RM} ${OBJECTDIR}/_ext/128142748/startup_gcc.o.d 
-	@${RM} ${OBJECTDIR}/_ext/128142748/startup_gcc.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE) -mcpu=cortex-m0plus -g -D__DEBUG  -gdwarf-2  -x c -c -D__$(MP_PROCESSOR_OPTION)__  -mthumb ${PACK_COMMON_OPTIONS}  -Os -ffunction-sections -mlong-calls -I "../src/config/sam_d21_xpro" -I "../src/packs/ATSAMD21J18A_DFP" -Wall -MP -MMD -MF "${OBJECTDIR}/_ext/128142748/startup_gcc.o.d" -o ${OBJECTDIR}/_ext/128142748/startup_gcc.o ../src/config/sam_d21_xpro/startup_gcc.c  -DXPRJ_sam_d21_xpro=$(CND_CONF)  $(COMPARISON_BUILD) 
+${OBJECTDIR}/_ext/1136425057/plib_sercom3_usart.o: ../src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom3_usart.c  .generated_files/flags/sam_d21_xpro/486463560113f4c575f59c3942508120a8f5fc50 .generated_files/flags/sam_d21_xpro/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}/_ext/1136425057" 
+	@${RM} ${OBJECTDIR}/_ext/1136425057/plib_sercom3_usart.o.d 
+	@${RM} ${OBJECTDIR}/_ext/1136425057/plib_sercom3_usart.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE) -mcpu=cortex-m0plus -g -D__DEBUG  -gdwarf-2  -x c -c -D__$(MP_PROCESSOR_OPTION)__  -mthumb ${PACK_COMMON_OPTIONS}  -Os -ffunction-sections -mlong-calls -I "../src/config/sam_d21_xpro" -I "../src/packs/ATSAMD21J18A_DFP" -Wall -MP -MMD -MF "${OBJECTDIR}/_ext/1136425057/plib_sercom3_usart.o.d" -o ${OBJECTDIR}/_ext/1136425057/plib_sercom3_usart.o ../src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom3_usart.c  -DXPRJ_sam_d21_xpro=$(CND_CONF)  $(COMPARISON_BUILD) 
 	
 else
 ${OBJECTDIR}/_ext/600686086/plib_clock.o: ../src/config/sam_d21_xpro/peripheral/clock/plib_clock.c  .generated_files/flags/sam_d21_xpro/a85c433c31305a6bfe56582c6077db912a922e87 .generated_files/flags/sam_d21_xpro/da39a3ee5e6b4b0d3255bfef95601890afd80709
@@ -248,17 +254,23 @@ ${OBJECTDIR}/_ext/128142748/libc_syscalls.o: ../src/config/sam_d21_xpro/libc_sys
 	@${RM} ${OBJECTDIR}/_ext/128142748/libc_syscalls.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE) -mcpu=cortex-m0plus  -x c -c -D__$(MP_PROCESSOR_OPTION)__  -mthumb ${PACK_COMMON_OPTIONS}  -Os -ffunction-sections -mlong-calls -I "../src/config/sam_d21_xpro" -I "../src/packs/ATSAMD21J18A_DFP" -Wall -MP -MMD -MF "${OBJECTDIR}/_ext/128142748/libc_syscalls.o.d" -o ${OBJECTDIR}/_ext/128142748/libc_syscalls.o ../src/config/sam_d21_xpro/libc_syscalls.c  -DXPRJ_sam_d21_xpro=$(CND_CONF)  $(COMPARISON_BUILD) 
 	
+${OBJECTDIR}/_ext/128142748/startup_gcc.o: ../src/config/sam_d21_xpro/startup_gcc.c  .generated_files/flags/sam_d21_xpro/226301c3d9d721a43ead2ea5207a31a0b0a9712 .generated_files/flags/sam_d21_xpro/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}/_ext/128142748" 
+	@${RM} ${OBJECTDIR}/_ext/128142748/startup_gcc.o.d 
+	@${RM} ${OBJECTDIR}/_ext/128142748/startup_gcc.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE) -mcpu=cortex-m0plus  -x c -c -D__$(MP_PROCESSOR_OPTION)__  -mthumb ${PACK_COMMON_OPTIONS}  -Os -ffunction-sections -mlong-calls -I "../src/config/sam_d21_xpro" -I "../src/packs/ATSAMD21J18A_DFP" -Wall -MP -MMD -MF "${OBJECTDIR}/_ext/128142748/startup_gcc.o.d" -o ${OBJECTDIR}/_ext/128142748/startup_gcc.o ../src/config/sam_d21_xpro/startup_gcc.c  -DXPRJ_sam_d21_xpro=$(CND_CONF)  $(COMPARISON_BUILD) 
+	
 ${OBJECTDIR}/_ext/1360937237/main.o: ../src/main.c  .generated_files/flags/sam_d21_xpro/c6682d764f99db42990a4d87bf2643ccf354a11c .generated_files/flags/sam_d21_xpro/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}/_ext/1360937237" 
 	@${RM} ${OBJECTDIR}/_ext/1360937237/main.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1360937237/main.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE) -mcpu=cortex-m0plus  -x c -c -D__$(MP_PROCESSOR_OPTION)__  -mthumb ${PACK_COMMON_OPTIONS}  -Os -ffunction-sections -mlong-calls -I "../src/config/sam_d21_xpro" -I "../src/packs/ATSAMD21J18A_DFP" -Wall -MP -MMD -MF "${OBJECTDIR}/_ext/1360937237/main.o.d" -o ${OBJECTDIR}/_ext/1360937237/main.o ../src/main.c  -DXPRJ_sam_d21_xpro=$(CND_CONF)  $(COMPARISON_BUILD) 
 	
-${OBJECTDIR}/_ext/128142748/startup_gcc.o: ../src/config/sam_d21_xpro/startup_gcc.c  .generated_files/flags/sam_d21_xpro/226301c3d9d721a43ead2ea5207a31a0b0a9712 .generated_files/flags/sam_d21_xpro/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}/_ext/128142748" 
-	@${RM} ${OBJECTDIR}/_ext/128142748/startup_gcc.o.d 
-	@${RM} ${OBJECTDIR}/_ext/128142748/startup_gcc.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE) -mcpu=cortex-m0plus  -x c -c -D__$(MP_PROCESSOR_OPTION)__  -mthumb ${PACK_COMMON_OPTIONS}  -Os -ffunction-sections -mlong-calls -I "../src/config/sam_d21_xpro" -I "../src/packs/ATSAMD21J18A_DFP" -Wall -MP -MMD -MF "${OBJECTDIR}/_ext/128142748/startup_gcc.o.d" -o ${OBJECTDIR}/_ext/128142748/startup_gcc.o ../src/config/sam_d21_xpro/startup_gcc.c  -DXPRJ_sam_d21_xpro=$(CND_CONF)  $(COMPARISON_BUILD) 
+${OBJECTDIR}/_ext/1136425057/plib_sercom3_usart.o: ../src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom3_usart.c  .generated_files/flags/sam_d21_xpro/b9a2722b8a6e062a3840adea7268785633f0cf78 .generated_files/flags/sam_d21_xpro/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}/_ext/1136425057" 
+	@${RM} ${OBJECTDIR}/_ext/1136425057/plib_sercom3_usart.o.d 
+	@${RM} ${OBJECTDIR}/_ext/1136425057/plib_sercom3_usart.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE) -mcpu=cortex-m0plus  -x c -c -D__$(MP_PROCESSOR_OPTION)__  -mthumb ${PACK_COMMON_OPTIONS}  -Os -ffunction-sections -mlong-calls -I "../src/config/sam_d21_xpro" -I "../src/packs/ATSAMD21J18A_DFP" -Wall -MP -MMD -MF "${OBJECTDIR}/_ext/1136425057/plib_sercom3_usart.o.d" -o ${OBJECTDIR}/_ext/1136425057/plib_sercom3_usart.o ../src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom3_usart.c  -DXPRJ_sam_d21_xpro=$(CND_CONF)  $(COMPARISON_BUILD) 
 	
 endif
 
