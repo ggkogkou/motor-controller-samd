@@ -74,6 +74,7 @@ include_directories(
 set(SOURCES
         # Main application
         src/main.c
+        src/logger.c
 
         # System initialization and configuration
         src/config/sam_d21_xpro/initialization.c

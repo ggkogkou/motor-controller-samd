@@ -51,6 +51,7 @@
 #include <stdbool.h>                    // Defines true
 #include <stdlib.h>                     // Defines EXIT_FAILURE
 #include "definitions.h"                // SYS function prototypes
+#include "logger.h"                     // Logger utility
 
 /***************************************
  * Check PWM outputs on pins
@@ -68,6 +69,18 @@
 /* Save PWM period */
 static uint32_t period;
 
+char myData[] = {"Software is running\n\r"};
+char messageError[] = "**** USART error occurred ****\r\n";
+
+static bool errorStatus = false;
+static bool writeStatus = true;
+static bool readStatus = false;
+
+void APP_WriteCallback(uintptr_t context)
+{
+    writeStatus = false;
+}
+
 /* This function is called after TCC period event */
 void TCC_PeriodEventHandler(uint32_t status, uintptr_t context)
 {
@@ -79,19 +92,18 @@ void TCC_PeriodEventHandler(uint32_t status, uintptr_t context)
     TCC0_PWM24bitDutySet(TCC0_CHANNEL0, duty0);
     TCC0_PWM24bitDutySet(TCC0_CHANNEL1, duty1);
     TCC0_PWM24bitDutySet(TCC0_CHANNEL2, duty2);
-    
+
     /* Increment duty cycle values */
     duty0 += DUTY_INCREMENT;
     duty1 += DUTY_INCREMENT;
     duty2 += DUTY_INCREMENT;
-    
+
     if (duty0 > period)
         duty0 = 0U;
     if (duty1 > period)
         duty1 = 0U;
     if (duty2 > period)
         duty2 = 0U;
-
 }
 
 // *****************************************************************************
@@ -104,23 +116,53 @@ int main ( void )
 {
     /* Initialize all modules */
     SYS_Initialize ( NULL );
-    
-        /* Register callback function for period event */
+
+    /* Register callback functions and send start message */
+    SERCOM3_USART_WriteCallbackRegister(APP_WriteCallback, 0);
+    SERCOM3_USART_Write(&myData[0], sizeof(myData));
+
+    /* Initialize logger - this will override the callback */
+    Logger_Initialize();
+
+    /* Register callback function for period event */
     TCC0_PWMCallbackRegister(TCC_PeriodEventHandler, (uintptr_t)NULL);
-    
+
     /* Read the period */
     period = TCC0_PWM24bitPeriodGet();
-    
+    Logger_Send("PWM period configured\r\n");
+
     /* Start PWM*/
     TCC0_PWMStart();
+    Logger_Send("PWM started\r\n");
 
-    while ( true )
-    {
+    uint32_t loopCounter = 0;
+
+    while ( true )     {
         /* Maintain state machines of all polled MPLAB Harmony modules. */
-        SYS_Tasks ( );
+        // SYS_Tasks ( );
+
+        if(errorStatus == true)
+        {
+            /* Send error message to console */
+            errorStatus = false;
+            SERCOM3_USART_Write(&messageError[0], sizeof(messageError));
+            Logger_Send("Error occurred\r\n");
+        }
+        // else if(writeStatus == true)
+        // {
+        //     /* Submit buffer to read user data */
+        //     SERCOM3_USART_Write(&myData[0], sizeof(myData));
+        // }
+
+        /* Simple periodic message */
+        if (++loopCounter >= 10000000) {
+            Logger_Send("Heartbeat\r\n");
+            loopCounter = 0;
+        }
     }
 
     /* Execution should not come here during normal operation */
+    Logger_Send("Main loop exited!\r\n");
 
     return ( EXIT_FAILURE );
 }
@@ -129,4 +171,3 @@ int main ( void )
 /*******************************************************************************
  End of File
 */
-
