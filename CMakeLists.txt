@@ -66,6 +66,7 @@ include_directories(
         src/config/sam_d21_xpro/peripheral/systick
         src/config/sam_d21_xpro/peripheral/tcc
         src/config/sam_d21_xpro/peripheral/sercom/usart
+        src/config/sam_d21_xpro/peripheral/sercom/spi_master
         src/packs/ATSAMD21J18A_DFP
         src/packs/ATSAMD21J18A_DFP/component
         src/packs/ATSAMD21J18A_DFP/instance
@@ -96,6 +97,7 @@ set(SOURCES
         src/config/sam_d21_xpro/peripheral/systick/plib_systick.c
         src/config/sam_d21_xpro/peripheral/tcc/plib_tcc0.c
         src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom3_usart.c
+        src/config/sam_d21_xpro/peripheral/sercom/spi_master/plib_sercom1_spi_master.c
 
         # Standard I/O (optional)
         src/config/sam_d21_xpro/stdio/xc32_monitor.c
