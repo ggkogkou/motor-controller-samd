@@ -66,9 +66,16 @@ volatile bool transferStatus = false;
 
 /* This function will be called by SPI PLIB when transfer is completed */
 void APP_SPI_Callback(uintptr_t context ) {
-    if (as5047p.nowRead == true)
+    if (as5047p.nowWrite)
+    {
+        as5047p.nowRead = true;
+        as5047p.nowWrite = false;
+        return;
+    }
+    if (as5047p.nowRead)
     {
         transferStatus = true;
+        as5047p.nowRead = false;
     }
 }
 
@@ -91,7 +98,7 @@ int main ( void )
     /* Register callback function for period event */
     TCC0_PWMCallbackRegister(TCC_PeriodEventHandler, (uintptr_t)NULL);
 
-    // SERCOM1_SPI_CallbackRegister(&APP_SPI_Callback, (uintptr_t)NULL);
+    SERCOM1_SPI_CallbackRegister(&APP_SPI_Callback, (uintptr_t)NULL);
 
     /* Read the period */
     period = TCC0_PWM24bitPeriodGet();

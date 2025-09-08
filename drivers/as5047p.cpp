@@ -35,10 +35,11 @@ uint16_t AS5047P::readFromRegister() {
     // SERCOM1_SPI_Write(&txBuffer[0], txSize);
 
     nowWrite = true;
+    nowRead = false;
+
     if(SERCOM1_SPI_Write(&txBuffer, txSize))
     {
         Logger_Info("SPI sent data\r\n");
-        nowWrite = false;
     }
     else
     {
@@ -48,7 +49,11 @@ uint16_t AS5047P::readFromRegister() {
     // SERCOM1_SPI_Read(&rxBuffer[0], rxSize);
     // SERCOM1_SPI_WriteRead(&txBuffer, txSize, &rxBuffer, rxSize);
 
-    nowRead = true;
+    /// I need this because the CPU continues to execture commands
+    /// Either split implementation of write and read into two functions
+    /// or use state machine approach
+    SYSTICK_DelayMs(500);
+
     if(SERCOM1_SPI_Read(&rxBuffer, rxSize))
     {
         Logger_Info("SPI returned data\r\n");
