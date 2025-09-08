@@ -38,7 +38,15 @@ public:
 
     uint8_t *angles();
 
+    uint8_t commandFrame1 = 0b1111'1111;
+    uint8_t commandFrame2 = 0b1111'1100;
+    uint8_t txBuffer[2] = {commandFrame1, commandFrame2};
+    size_t txSize = 2;
+    uint8_t rxBuffer[2] = {0, 0};
+    size_t rxSize = 2;
 
+    bool nowWrite = false;
+    bool nowRead = false;
 
     using RegisterAddress_t = std::uint16_t;
 

@@ -66,7 +66,10 @@ volatile bool transferStatus = false;
 
 /* This function will be called by SPI PLIB when transfer is completed */
 void APP_SPI_Callback(uintptr_t context ) {
-    transferStatus = true;
+    if (as5047p.nowRead == true)
+    {
+        transferStatus = true;
+    }
 }
 
 int main ( void )
@@ -128,16 +131,15 @@ int main ( void )
         // }
 
         /* Check if transfer has completed */
-        // if(transferStatus == true) {
-        //     Logger_Info("Hello, there is an SPI transaction here!\r\n");
-        //     transferStatus = false;
-        //     SYSTICK_DelayMs(1000);
-        //     AS5047P::read_angle();
-        //     // auto x = as5047p.rxBuffer[0];
-        //     // auto y = as5047p.rxBuffer[1];
-        //
-        //     int xx = 0;
-        // }
+        if(transferStatus == true) {
+            Logger_Info("Hello, there is an SPI transaction here!\r\n");
+            transferStatus = false;
+            SYSTICK_DelayMs(500);
+            auto x = as5047p.rxBuffer[0];
+            auto y = as5047p.rxBuffer[1];
+
+            int xx = 0;
+        }
 
         SYSTICK_DelayMs(1000);
 
