@@ -4,7 +4,7 @@
 
 
 project: tcc_synchronous_pwm_channels
-creation_date: 2025-09-05T15:49:42.095+02:00[Europe/Paris]    # ISO 8601 format: https://www.w3.org/TR/NOTE-datetime
+creation_date: 2025-09-08T15:00:42.516+02:00[Europe/Paris]    # ISO 8601 format: https://www.w3.org/TR/NOTE-datetime
 operating_system: Linux
 mcc_mode: IDE            # [IDE|Standalone|Headless]
 mcc_version: v5.5.2

@@ -65,6 +65,27 @@
 // *****************************************************************************
 // *****************************************************************************
 
+/*** Macros for MISO pin ***/
+#define MISO_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 16U)) & 0x01U)
+#define MISO_PIN                  PORT_PIN_PA16
+
+/*** Macros for AS5047P_CS pin ***/
+#define AS5047P_CS_Set()               (PORT_REGS->GROUP[0].PORT_OUTSET = ((uint32_t)1U << 17U))
+#define AS5047P_CS_Clear()             (PORT_REGS->GROUP[0].PORT_OUTCLR = ((uint32_t)1U << 17U))
+#define AS5047P_CS_Toggle()            (PORT_REGS->GROUP[0].PORT_OUTTGL = ((uint32_t)1U << 17U))
+#define AS5047P_CS_OutputEnable()      (PORT_REGS->GROUP[0].PORT_DIRSET = ((uint32_t)1U << 17U))
+#define AS5047P_CS_InputEnable()       (PORT_REGS->GROUP[0].PORT_DIRCLR = ((uint32_t)1U << 17U))
+#define AS5047P_CS_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 17U)) & 0x01U)
+#define AS5047P_CS_PIN                  PORT_PIN_PA17
+
+/*** Macros for MOSI pin ***/
+#define MOSI_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 18U)) & 0x01U)
+#define MOSI_PIN                  PORT_PIN_PA18
+
+/*** Macros for SCK pin ***/
+#define SCK_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 19U)) & 0x01U)
+#define SCK_PIN                  PORT_PIN_PA19
+
 /*** Macros for LED pin ***/
 #define LED_Set()               (PORT_REGS->GROUP[1].PORT_OUTSET = ((uint32_t)1U << 30U))
 #define LED_Clear()             (PORT_REGS->GROUP[1].PORT_OUTCLR = ((uint32_t)1U << 30U))

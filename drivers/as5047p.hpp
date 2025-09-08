@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <logger.h>
+#include "plib_sercom1_spi_master.h"
 
 /**
  * @class AS5047P
@@ -31,23 +32,27 @@ public:
         PWM,
     };
 
-    std::uint16_t read_angle();
+    static std::uint16_t read_angle();
 
     void selectOutputMode(OutputMode output_mode) const;
 
-private:
+    uint8_t *angles();
+
+
 
     using RegisterAddress_t = std::uint16_t;
 
     /**
-     * @enum VolatileRegisters
+     * @enum VolatileRegisterAddress
      * @brief Enumerates the volatile register addresses of the AS5047P magnetic rotary sensor.
      *
      * Volatile registers are used for frequently updated or real-time data, such as
      * angle measurements or diagnostics. These registers are accessed to retrieve
      * or process sensor data dynamically.
+     *
+     * Each register has a 14-bit address & holds 14-bit data
      */
-    enum class VolatileRegisters : RegisterAddress_t {
+    enum class VolatileRegisterAddress : RegisterAddress_t {
         NOP        = 0x0000,  // No operation
         ERRFL      = 0x0001,  // Error register
         PROG       = 0x0003,  // Programming register
@@ -58,19 +63,20 @@ private:
     };
 
     /**
-     * @enum NonVolatileRegisters
+     * @enum NonVolatileRegisterAddress
      * @brief Enumerates the non-volatile register addresses of the AS5047P magnetic rotary sensor.
      *
      * Non-volatile registers store user-configured settings or calibration values that
      * remain persistent across power cycles. These registers can be used to configure
      * the sensor's operational parameters or store calibration data for precise angle measurements.
      */
-    enum class NonVolatileRegisters : RegisterAddress_t {
+    enum class NonVolatileRegisterAddress : RegisterAddress_t {
         ZPOSM     = 0x0016,  // Zero position MSB
         ZPOSL     = 0x0017,  // Zero position LSB/MAG diagnostic
         SETTINGS1 = 0x0018,  // Custom setting register 1
         SETTINGS2 = 0x0019   // Custom setting register 2
     };
 
+    uint16_t readFromRegister();
 
 };
