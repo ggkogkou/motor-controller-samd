@@ -30,7 +30,17 @@ public:
         SPI,
         ABI,
         PWM,
+        UVW,
     };
+
+    /**
+     *
+     * TODO: Read diagnostics function from DIAAGC
+     * TODO: Read error flags from ERRFL
+     * TODO: Struct for settings (?)
+     * TODO: Constantly read angles (chained SPI frames)
+     *
+     */
 
     static std::uint16_t read_angle();
 
@@ -86,5 +96,19 @@ public:
     };
 
     uint16_t readFromRegister();
+
+    enum class ErrorFlags {
+        PARITY_ERROR,
+        INVALID_COMMAND,
+        FRAMING_ERROR,
+    };
+
+    uint16_t measureAngleUncompensated();
+    uint16_t measureAngleCompensated();
+    uint16_t measureFieldMagnitude();
+
+    void setZeroPosition(uint16_t zero_position);
+    void configureSettings(uint16_t settings);
+
 
 };
