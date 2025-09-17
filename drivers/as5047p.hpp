@@ -84,12 +84,20 @@ public:
     };
 
     /**
-     * Function that performs the SPI transaction between MCU and AS5047P magnetic encoder
+     * Function that performs the SPI Read operation between MCU and AS5047P magnetic encoder
      *
      * @param address The address of the device register
      * @return The device register's data
      */
-    RegisterData_t readDeviceRegister(RegisterAddress address);
+    [[nodiscard]] RegisterData_t readDeviceRegister(RegisterAddress address);
+
+    /**
+     * Function that performs the SPI Write operation between MCU and AS5047P magnetic encoder
+     *
+     * @param address The address of the device register
+     * @param data The data that will be written into the specified device register
+     */
+    void writeDeviceRegister(RegisterAddress address, RegisterData_t data);
 
     enum class ERRFL_RegisterMask : uint8_t {
         PARITY_ERROR = 0b0000'0100,
