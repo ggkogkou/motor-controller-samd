@@ -29,8 +29,6 @@ static bool errorStatus = false;
 static bool writeStatus = true;
 static bool readStatus = false;
 
-AS5047P as5047p;
-
 void APP_WriteCallback(uintptr_t context)
 {
     writeStatus = false;
@@ -61,30 +59,13 @@ void TCC_PeriodEventHandler(uint32_t status, uintptr_t context)
         duty2 = 0U;
 }
 
-
-volatile bool transferStatus = false;
-
-/* This function will be called by SPI PLIB when transfer is completed */
-void APP_SPI_Callback(uintptr_t context ) {
-    if (as5047p.nowWrite)
-    {
-        as5047p.nowRead = true;
-        as5047p.nowWrite = false;
-        return;
-    }
-    if (as5047p.nowRead)
-    {
-        transferStatus = true;
-        as5047p.nowRead = false;
-    }
-}
-
-int main ( void )
-{
+int main ( ) {
     /* Initialize all modules */
     SYS_Initialize ( NULL );
 
     SYSTICK_TimerStart();
+
+    AS5047P as5047p;
 
     AS5047P_CS_Set();
 
@@ -98,7 +79,7 @@ int main ( void )
     /* Register callback function for period event */
     TCC0_PWMCallbackRegister(TCC_PeriodEventHandler, (uintptr_t)NULL);
 
-    SERCOM1_SPI_CallbackRegister(&APP_SPI_Callback, (uintptr_t)NULL);
+    // SERCOM1_SPI_CallbackRegister(&APP_SPI_Callback, (uintptr_t)NULL);
 
     /* Read the period */
     period = TCC0_PWM24bitPeriodGet();
@@ -116,46 +97,10 @@ int main ( void )
         /* Maintain state machines of all polled MPLAB Harmony modules. */
         // SYS_Tasks ( );
 
-        // if(errorStatus == true)
-        // {
-        //     /* Send error message to console */
-        //     errorStatus = false;
-        //     SERCOM3_USART_Write(&messageError[0], sizeof(messageError));
-        //     Logger_Error("Error occurred\r\n");
-        // }
-
-        // else if(writeStatus == true)
-        // {
-        //     /* Submit buffer to read user data */
-        //     SERCOM3_USART_Write(&myData[0], sizeof(myData));
-        // }
-
-        /* Simple periodic message */
-        // if (++loopCounter >= 10000000) {
-        //     // Logger_Info("Heartbeat\r\n");
-        // as5047p.read_angle();
-        //     loopCounter = 0;
-        // }
-
-        /* Check if transfer has completed */
-        if(transferStatus == true) {
-            Logger_Info("Hello, there is an SPI transaction here!\r\n");
-            transferStatus = false;
-            SYSTICK_DelayMs(500);
-            auto x = as5047p.rxBuffer[0];
-            auto y = as5047p.rxBuffer[1];
-
-            int xx = 0;
-        }
-
-        SYSTICK_DelayMs(1000);
-
-        as5047p.readFromRegister();
+        SYSTICK_DelayMs(200);
+        auto x = as5047p.readDeviceRegister(AS5047P::RegisterAddress::ERRFL);
         Logger_Info("Running...\r\n");
     }
 
-    /* Execution should not come here during normal operation */
-    Logger_Send("Main loop exited!\r\n");
-
-    return ( EXIT_FAILURE );
+    return EXIT_FAILURE;
 }

@@ -764,7 +764,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;core&gt;
   &lt;core dnOrder=&quot;0&quot; id=&quot;NVIC_10_0_ENABLE&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;core&quot; value=&quot;true&quot;/&gt;
+      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;core&quot; value=&quot;false&quot;/&gt;
     &lt;/Values&gt;
   &lt;/core&gt;
 &lt;/core&gt;
@@ -775,7 +775,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;core&gt;
   &lt;core dnOrder=&quot;0&quot; id=&quot;NVIC_10_0_HANDLER&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;core&quot; value=&quot;SERCOM1_SPI_InterruptHandler&quot;/&gt;
+      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;core&quot; value=&quot;SERCOM1_Handler&quot;/&gt;
     &lt;/Values&gt;
   &lt;/core&gt;
 &lt;/core&gt;
@@ -786,7 +786,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;core&gt;
   &lt;core dnOrder=&quot;0&quot; id=&quot;NVIC_10_0_HANDLER_LOCK&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;core&quot; value=&quot;true&quot;/&gt;
+      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;core&quot; value=&quot;false&quot;/&gt;
     &lt;/Values&gt;
   &lt;/core&gt;
 &lt;/core&gt;
@@ -4845,7 +4845,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;core&gt;
   &lt;core dnOrder=&quot;0&quot; id=&quot;SERCOM1_INTERRUPT_ENABLE&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;sercom1&quot; value=&quot;true&quot;/&gt;
+      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;sercom1&quot; value=&quot;false&quot;/&gt;
     &lt;/Values&gt;
   &lt;/core&gt;
 &lt;/core&gt;
@@ -4856,7 +4856,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;core&gt;
   &lt;core dnOrder=&quot;0&quot; id=&quot;SERCOM1_INTERRUPT_ENABLE_UPDATE&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;core&quot; value=&quot;false&quot;/&gt;
+      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;core&quot; value=&quot;true&quot;/&gt;
     &lt;/Values&gt;
   &lt;/core&gt;
 &lt;/core&gt;
@@ -4867,7 +4867,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;core&gt;
   &lt;core dnOrder=&quot;0&quot; id=&quot;SERCOM1_INTERRUPT_HANDLER&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;sercom1&quot; value=&quot;SERCOM1_SPI_InterruptHandler&quot;/&gt;
+      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;sercom1&quot; value=&quot;SERCOM1_Handler&quot;/&gt;
     &lt;/Values&gt;
   &lt;/core&gt;
 &lt;/core&gt;
@@ -4878,7 +4878,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;core&gt;
   &lt;core dnOrder=&quot;0&quot; id=&quot;SERCOM1_INTERRUPT_HANDLER_LOCK&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;sercom1&quot; value=&quot;true&quot;/&gt;
+      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;sercom1&quot; value=&quot;false&quot;/&gt;
     &lt;/Values&gt;
   &lt;/core&gt;
 &lt;/core&gt;
@@ -6110,7 +6110,7 @@
       &lt;/Boolean&gt;
     &lt;/Attributes&gt;
     &lt;Values dnOrder=&quot;1&quot;&gt;
-      &lt;User dnOrder=&quot;0&quot; value=&quot;true&quot;/&gt;
+      &lt;User dnOrder=&quot;0&quot; value=&quot;false&quot;/&gt;
     &lt;/Values&gt;
   &lt;/sercom1&gt;
 &lt;/sercom1&gt;
@@ -8228,11 +8228,11 @@
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/interrupts.c</file>
-         <hash>f6cbddc4d33a5f69582e1b173d7ebfe762d82ed24db3b140f485e1e18338d5a3</hash>
+         <hash>4722c937380cf074a934f8a8576eaed32f24e373a6c4e4868cb90bac917abc18</hash>
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/interrupts.h</file>
-         <hash>861c9ca1592b4a9a4116c70eb1c19cc5414d389623a2e799da49b223ff70e69e</hash>
+         <hash>ddc0d54644277eeba2e3edbc2066ed1e5e9210ca74c637d2360e655aa2e966c0</hash>
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/libc_syscalls.c</file>
@@ -8256,7 +8256,7 @@
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/peripheral/nvic/plib_nvic.c</file>
-         <hash>646d6eac5d557e40c649c41594d30812ef5ab5b8392387c68e23e239c51aaa11</hash>
+         <hash>c5784ed01c07e32291ef09a338a99d382464d14c3bb0efc94e6a73a6a2ae3da7</hash>
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/peripheral/nvic/plib_nvic.h</file>
@@ -8280,11 +8280,11 @@
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/peripheral/sercom/spi_master/plib_sercom1_spi_master.c</file>
-         <hash>b73434f9d2bf949e28288a1ed503160e6c3b61cf706c34aebe0cad8ac6258b77</hash>
+         <hash>9ef88d0a7152dc14a8451ff53b19f18e09f26a31057df74cb8650d8c1c40a75b</hash>
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/peripheral/sercom/spi_master/plib_sercom1_spi_master.h</file>
-         <hash>27dba3e4bd95c522ba463d1d2b5030e81bd490055a73ae6d11fb41494d432f82</hash>
+         <hash>94858ce75946aab8706a2b90a08d79a392fffb1a766510e906874e644e221886</hash>
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/peripheral/sercom/spi_master/plib_sercom_spi_master_common.h</file>
