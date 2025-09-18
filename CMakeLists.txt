@@ -100,9 +100,6 @@ set(SOURCES
         src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom3_usart.c
         src/config/sam_d21_xpro/peripheral/sercom/spi_master/plib_sercom1_spi_master.c
 
-        # Standard I/O (optional)
-        src/config/sam_d21_xpro/stdio/xc32_monitor.c
-
         drivers/as5047p.cpp
 )
 
