@@ -234,21 +234,21 @@ public:
      *
      * @return The 14-bit measured angle uncompensated
      */
-    Angle_t measureAngleUncompensated() const;
+    [[nodiscard]] Angle_t measureAngleUncompensated() const;
 
     /**
      * Function that reads the compensated angle (DAEC output)
      *
      * @return The 14-bit measured angle compensated
      */
-    Angle_t measureAngleCompensated() const;
+    [[nodiscard]] Angle_t measureAngleCompensated() const;
 
     /**
      * Function that reads the CORDIC magnetic field magnitude
      *
      * @return The 14-bit measured magnetic field magnitude
      */
-    FieldMagnitude_t measureFieldMagnitude() const;
+    [[nodiscard]] FieldMagnitude_t measureFieldMagnitude() const;
 
     /**
      * @enum DIAAGC_RegisterMask
