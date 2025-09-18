@@ -78,23 +78,23 @@ void AS5047P::writeDeviceRegister(RegisterAddress registerAddress, RegisterData_
 
 }
 
-AS5047P::Angle_t AS5047P::measureAngleUncompensated() {
+AS5047P::Angle_t AS5047P::measureAngleUncompensated() const {
     const auto AngleUncData = readDeviceRegister(RegisterAddress::ANGLEUNC);
 
     return static_cast<Angle_t>(AngleUncData) / static_cast<Angle_t>(AngleResolutionSPI) * FullRotationDegrees;
 }
 
-AS5047P::Angle_t AS5047P::measureAngleCompensated() {
+AS5047P::Angle_t AS5047P::measureAngleCompensated() const {
     const auto AngleComData = readDeviceRegister(RegisterAddress::ANGLECOM);
 
     return static_cast<Angle_t>(AngleComData) / static_cast<Angle_t>(AngleResolutionSPI) * FullRotationDegrees;
 }
 
-AS5047P::FieldMagnitude_t AS5047P::measureFieldMagnitude() {
+AS5047P::FieldMagnitude_t AS5047P::measureFieldMagnitude() const {
     return readDeviceRegister(RegisterAddress::MAG);
 }
 
-void AS5047P::readAGC_Diagnostics() {
+void AS5047P::readAGC_Diagnostics() const {
     const auto DIAAGC_Data = readDeviceRegister(RegisterAddress::DIAAGC);
 
     if (DIAAGC_Data & static_cast<RegisterData_t>(DIAAGC_RegisterMask::MAG_FIELD_TOO_LOW))
@@ -110,7 +110,7 @@ void AS5047P::readAGC_Diagnostics() {
         Logger_Info("AGC Diagnostics: Offset compensation\r\n");
 }
 
-void AS5047P::readAndClearErrorFlags() {
+void AS5047P::readAndClearErrorFlags() const {
     const auto ERRFL_Data = readDeviceRegister(RegisterAddress::ERRFL);
 
     if (ERRFL_Data & static_cast<RegisterData_t>(ERRFL_RegisterMask::PARITY_ERROR))

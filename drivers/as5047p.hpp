@@ -35,17 +35,69 @@ struct AS5047P_Config {
         DISABLED    = 0b0000'0000,
     };
 
-    uint16_t zeroPosition = 0;
+    /**
+     * The 14-bit zero position (default 0x0000)
+     */
+    uint16_t zeroPosition = 0x0000;
 
+    /**
+     * The rotation direction, bit DIR of SETTINGS1
+     */
     RotationDirection rotationDirection = RotationDirection::CLOCKWISE;
 
+    /**
+     * Bit UVW_ABI of SETTINGS1
+     */
     PWM_OutputPin pwmOutputPin = PWM_OutputPin::PIN_W;
 
+    /**
+     * Bit DAECDIS of SETTINGS1
+     */
     DAEC_Status dynamicAngleCompensation = DAEC_Status::ENABLED;
 
+    /**
+     * Bit Dataselect of SETTINGS1
+     */
     DataSelect dataSelect = DataSelect::DAEC_ANG;
 
+    /**
+     * Bit PWMon of SETTINGS1
+     */
     PWM_Status pwmStatus = PWM_Status::DISABLED;
+
+    enum class PolePairs : uint8_t {
+        ONE = 0b000,
+        TWO = 0b001,
+        THREE = 0b010,
+        FOUR = 0b011,
+        FIVE = 0b100,
+        SIX = 0b101,
+        SEVEN = 0b110,
+        EIGHT = 0b111,
+    };
+
+    enum class HysteresisBits : uint8_t {
+        THREE = 0b00,
+        TWO = 0b01,
+        ONE = 0b10,
+        ZERO = 0b11,
+    };
+
+    enum class ABI_Resolution : uint8_t {
+        ABIRES_000 = 0b000,
+        ABIRES_001 = 0b001,
+        ABIRES_010 = 0b010,
+        ABIRES_011 = 0b011,
+        ABIRES_100 = 0b100,
+        ABIRES_101 = 0b101,
+        ABIRES_110 = 0b110,
+        ABIRES_111 = 0b111,
+    };
+
+    enum class ABIBIN : uint8_t {
+        DECIMAL = 0,
+        BINARY = 1,
+    };
 };
 
 
@@ -182,21 +234,21 @@ public:
      *
      * @return The 14-bit measured angle uncompensated
      */
-    Angle_t measureAngleUncompensated();
+    Angle_t measureAngleUncompensated() const;
 
     /**
      * Function that reads the compensated angle (DAEC output)
      *
      * @return The 14-bit measured angle compensated
      */
-    Angle_t measureAngleCompensated();
+    Angle_t measureAngleCompensated() const;
 
     /**
      * Function that reads the CORDIC magnetic field magnitude
      *
      * @return The 14-bit measured magnetic field magnitude
      */
-    FieldMagnitude_t measureFieldMagnitude();
+    FieldMagnitude_t measureFieldMagnitude() const;
 
     /**
      * @enum DIAAGC_RegisterMask
@@ -219,7 +271,7 @@ public:
      *
      * TODO: Return the warnings properly in a data structure
      */
-    void readAGC_Diagnostics();
+    void readAGC_Diagnostics() const;
 
     /**
      * @enum ERRFL_RegisterMask
@@ -237,7 +289,7 @@ public:
     /**
      * Function that reads and clears (by IC design) the error flags from ERRFL register
      */
-    void readAndClearErrorFlags();
+    void readAndClearErrorFlags() const;
 
     /**
      * AS5047P 14-bit angular resolution: number of discrete angle steps per 360° revolution
