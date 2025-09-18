@@ -80,6 +80,7 @@ void TCC_PeriodEventHandler(uint32_t status, uintptr_t context) {
         SYSTICK_DelayMs(500);
 
         as5047p.readDeviceRegister(AS5047P::RegisterAddress::DIAAGC);
+        auto angle = as5047p.measureAngleUncompensated();
 
         Logger_Info("Running...\r\n");
     }

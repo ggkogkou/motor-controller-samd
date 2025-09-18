@@ -1,9 +1,12 @@
 #pragma once
 
+#define _USE_MATH_DEFINES
 #include <cstdint>
 #include <array>
 #include <type_traits>
 #include <logger.h>
+#include <limits>
+#include <cmath>
 #include "plib_sercom1_spi_master.h"
 
 struct AS5047P_Config {
@@ -62,6 +65,8 @@ struct AS5047P_Config {
  *
  * Read data frame => | PARD | EF | DATA |
  *                    |  15  | 14 | 13:0 |
+ *
+ * SPI clock frequency has a maximum of 10MHz
  */
 class AS5047P {
 public:
@@ -92,8 +97,8 @@ public:
     using RegisterAddress_t = std::uint16_t;
     using RegisterData_t = std::uint16_t;
     using ReadWriteCommandMask_t = std::uint16_t;
-    using Angle_t = std::uint16_t;
-    using FieldMagnitude_t = std::uint16_t;
+    using Angle_t = float;
+    using FieldMagnitude_t = float;
 
     /**
      * @enum RegisterAddress
@@ -234,6 +239,17 @@ public:
      */
     void readAndClearErrorFlags();
 
+    /**
+     * AS5047P 14-bit angular resolution: number of discrete angle steps per 360° revolution
+     * Range: 0 to 16383 (0x0000 to 0x3FFF), providing ~0.022° per step
+     */
+    static constexpr uint16_t AngleResolutionSPI = 16384;
+    static_assert(AngleResolutionSPI <= std::numeric_limits<uint16_t>::max(), "AngleResolutionSPI must fit in 'int'");
+
+    /**
+     * The full rotation angle in degrees
+     */
+    static constexpr float FullRotationDegrees = 360.0f;
 };
 
 constexpr uint16_t operator|(AS5047P::ReadWriteCommandMask commandMask, AS5047P::RegisterAddress registerAddress) {

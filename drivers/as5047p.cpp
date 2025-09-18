@@ -46,7 +46,7 @@ AS5047P::RegisterData_t AS5047P::readDeviceRegister(RegisterAddress registerAddr
     if (EF_Bit == 1)
         Logger_Error("Command Frame Error Occured, EF Bit = 1");
 
-    return (static_cast<RegisterData_t>(rxBuffer[0]) << 8) | rxBuffer[1];
+    return (static_cast<RegisterData_t>(rxBuffer[0] & 0b0011'1111) << 8) | rxBuffer[1];
 }
 
 void AS5047P::writeDeviceRegister(RegisterAddress registerAddress, RegisterData_t data) const {
@@ -79,11 +79,15 @@ void AS5047P::writeDeviceRegister(RegisterAddress registerAddress, RegisterData_
 }
 
 AS5047P::Angle_t AS5047P::measureAngleUncompensated() {
-    return readDeviceRegister(RegisterAddress::ANGLEUNC);
+    const auto AngleUncData = readDeviceRegister(RegisterAddress::ANGLEUNC);
+
+    return static_cast<Angle_t>(AngleUncData) / static_cast<Angle_t>(AngleResolutionSPI) * FullRotationDegrees;
 }
 
 AS5047P::Angle_t AS5047P::measureAngleCompensated() {
-    return readDeviceRegister(RegisterAddress::ANGLECOM);
+    const auto AngleComData = readDeviceRegister(RegisterAddress::ANGLECOM);
+
+    return static_cast<Angle_t>(AngleComData) / static_cast<Angle_t>(AngleResolutionSPI) * FullRotationDegrees;
 }
 
 AS5047P::FieldMagnitude_t AS5047P::measureFieldMagnitude() {
