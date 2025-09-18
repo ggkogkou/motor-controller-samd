@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <array>
+#include <type_traits>
 #include <logger.h>
 #include "plib_sercom1_spi_master.h"
 
@@ -43,6 +44,7 @@ struct AS5047P_Config {
 
     PWM_Status pwmStatus = PWM_Status::DISABLED;
 };
+
 
 /**
  * @class AS5047P
@@ -129,25 +131,46 @@ public:
      * The mask is applied to the command frame to encode the type of transaction
      */
     enum class ReadWriteCommandMask : uint16_t {
-        READ    = 0x0000,
-        WRITE   = 0x4000,
+        WRITE   = 0x0000,
+        READ    = 0x4000,
     };
+
+    /**
+     * @enum ParityBit
+     * @brief Represents the parity bit options for the SPI communication with the AS5047P sensor.
+     *
+     * The AS5047P uses a single parity bit in its SPI protocol for error detection in communication.
+     */
+    enum class ParityBit : uint16_t {
+        PARITY_BIT_0 = 0b0000'0000'0000'0000,
+        PARITY_BIT_1 = 0b1000'0000'0000'0000,
+    };
+
+    /**
+     * The SPI command frame size in bytes
+     */
+    static constexpr size_t CommandFrameSize = 2;
+
+    /**
+     * The SPI data frame size in bytes
+     */
+    static constexpr size_t DataFrameSize = 2;
 
     /**
      * Function that performs the SPI Read operation between MCU and AS5047P magnetic encoder
      *
-     * @param address The address of the device register
+     * @param registerAddress The address of the device register
      * @return The device register's data
      */
-    [[nodiscard]] RegisterData_t readDeviceRegister(RegisterAddress address);
+    [[nodiscard]] RegisterData_t readDeviceRegister(RegisterAddress registerAddress) const;
 
     /**
      * Function that performs the SPI Write operation between MCU and AS5047P magnetic encoder
      *
-     * @param address The address of the device register
+     * @param registerAddress The address of the device register
      * @param data The data that will be written into the specified device register
      */
-    void writeDeviceRegister(RegisterAddress address, RegisterData_t data);
+    void writeDeviceRegister(RegisterAddress registerAddress, RegisterData_t data) const;
 
     /**
      * Function that reads the uncompensated angle (skip DAEC)
@@ -212,3 +235,7 @@ public:
     void readAndClearErrorFlags();
 
 };
+
+constexpr uint16_t operator|(AS5047P::ReadWriteCommandMask commandMask, AS5047P::RegisterAddress registerAddress) {
+    return static_cast<uint16_t>(commandMask) | static_cast<uint16_t>(registerAddress);
+}

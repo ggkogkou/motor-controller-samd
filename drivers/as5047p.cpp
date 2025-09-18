@@ -4,13 +4,20 @@ AS5047P::AS5047P(AS5047P_Config config) {
 
 }
 
-AS5047P::RegisterData_t AS5047P::readDeviceRegister(RegisterAddress address) {
-    const uint16_t CommandFrame = 0b1111'1111'1111'1100;
-    const auto CommandFrameMSB = static_cast<uint8_t>(CommandFrame >> 8);
-    const auto CommandFrameLSB = static_cast<uint8_t>(CommandFrame & 0b1111'1111);
+AS5047P::RegisterData_t AS5047P::readDeviceRegister(RegisterAddress registerAddress) const {
+    uint16_t commandFrame = ReadWriteCommandMask::READ | registerAddress;
 
-    std::array<uint8_t, 2> txBuffer {CommandFrameMSB, CommandFrameLSB};
-    std::array<uint8_t, 2> rxBuffer {0, 0};
+    // Calculate parity bit -- ARM GCC built-in command for popcnt
+    if (__builtin_popcount(commandFrame) % 2 == 0)
+        commandFrame = commandFrame | static_cast<uint16_t>(ParityBit::PARITY_BIT_0);
+    else
+        commandFrame = commandFrame | static_cast<uint16_t>(ParityBit::PARITY_BIT_1);
+
+    const auto CommandFrameMSB = static_cast<uint8_t>(commandFrame >> 8);
+    const auto CommandFrameLSB = static_cast<uint8_t>(commandFrame & 0b1111'1111);
+
+    std::array<uint8_t, CommandFrameSize> txBuffer {CommandFrameMSB, CommandFrameLSB};
+    std::array<uint8_t, DataFrameSize> rxBuffer {0, 0};
 
     AS5047P_CS_Clear();
 
@@ -30,10 +37,19 @@ AS5047P::RegisterData_t AS5047P::readDeviceRegister(RegisterAddress address) {
 
     AS5047P_CS_Set();
 
+    const decltype(rxBuffer)::value_type PARD_Bit = rxBuffer[0] & 0b0111'1111;
+    const decltype(rxBuffer)::value_type EF_Bit = rxBuffer[0] & 0b1011'1111;
+
+    if (( __builtin_popcount(rxBuffer[1]) + __builtin_popcount(rxBuffer[0]) ) % 2 == 1 && PARD_Bit == 0)
+        Logger_Error("Parity Bit Error, PARD set incorrectly");
+
+    if (EF_Bit == 1)
+        Logger_Error("Command Frame Error Occured, EF Bit = 1");
+
     return (static_cast<RegisterData_t>(rxBuffer[0]) << 8) | rxBuffer[1];
 }
 
-void AS5047P::writeDeviceRegister(RegisterAddress address, RegisterData_t data) {
+void AS5047P::writeDeviceRegister(RegisterAddress registerAddress, RegisterData_t data) const {
     const uint16_t CommandFrame = 0b1011'1111'1111'1101;
     const auto CommandFrameMSB = static_cast<uint8_t>(CommandFrame >> 8);
     const auto CommandFrameLSB = static_cast<uint8_t>(CommandFrame & 0b1111'1111);
@@ -41,9 +57,8 @@ void AS5047P::writeDeviceRegister(RegisterAddress address, RegisterData_t data) 
     const auto DataFrameMSB = static_cast<uint8_t>(data >> 8);
     const auto DataFrameLSB = static_cast<uint8_t>(data & 0b1111'1111);
 
-    std::array<uint8_t, 2> addressBuffer {CommandFrameMSB, CommandFrameLSB};
-    std::array<uint8_t, 2> dataBuffer {DataFrameMSB, DataFrameLSB};
-    // std::array<uint8_t, 2> rxBuffer {0, 0};
+    std::array<uint8_t, CommandFrameSize> addressBuffer {CommandFrameMSB, CommandFrameLSB};
+    std::array<uint8_t, DataFrameSize> dataBuffer {DataFrameMSB, DataFrameLSB};
 
     AS5047P_CS_Clear();
 
