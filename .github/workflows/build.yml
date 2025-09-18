@@ -47,7 +47,7 @@ jobs:
         cd build
         ls -la *.elf *.hex *.bin 2>/dev/null || echo 'Some artifact types not found'
         echo "=== Size Information ==="
-        arm-none-eabi-size *.elf
+        arm-none-eabi-size *.elf 2>/dev/null || echo 'No ELF files found for size analysis'
     
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
