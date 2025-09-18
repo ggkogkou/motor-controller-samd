@@ -1,0 +1,61 @@
+name: Build ARM Embedded Project
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        # Fetch submodules if you're using ETL as submodule
+        submodules: recursive
+    
+    - name: Install ARM GNU Toolchain
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-arm-none-eabi
+        
+        # Verify installation
+        arm-none-eabi-gcc --version
+        arm-none-eabi-g++ --version
+    
+    - name: Install CMake and Ninja
+      run: |
+        sudo apt-get install -y cmake ninja-build
+        cmake --version
+    
+    - name: Configure CMake
+      run: |
+        mkdir build
+        cd build
+        cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
+    
+    - name: Build project
+      run: |
+        cd build
+        ninja
+    
+    - name: Show build artifacts size
+      run: |
+        cd build
+        ls -la *.elf *.hex *.bin 2>/dev/null || echo 'Some artifact types not found'
+        echo "=== Size Information ==="
+        arm-none-eabi-size *.elf 2>/dev/null || echo 'No ELF files found for size analysis'
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: firmware-artifacts
+        path: |
+          build/*.elf
+          build/*.hex
+          build/*.bin
+          build/*.map
+        retention-days: 30
