@@ -45,7 +45,7 @@ jobs:
     - name: Show build artifacts size
       run: |
         cd build
-        ls -la *.elf *.hex *.bin
+        ls -la *.elf *.hex *.bin 2>/dev/null || echo 'Some artifact types not found'
         echo "=== Size Information ==="
         arm-none-eabi-size *.elf
     
