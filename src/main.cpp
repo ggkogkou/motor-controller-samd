@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdint>
 #include <cstdlib>
 #include "definitions.h"
 #include "logger.h"
@@ -30,7 +29,7 @@ static std::uint32_t period;
  * This function is called after TCC period event
  */
 void TCC_PeriodEventHandler(uint32_t status, uintptr_t context) {
-    static std::uint32_t duty0 = 0U;
+    static std::uint32_t duty0 = 800U;
     static std::uint32_t duty1 = 800U;
     static std::uint32_t duty2 = 1600U;
 
@@ -38,16 +37,25 @@ void TCC_PeriodEventHandler(uint32_t status, uintptr_t context) {
     TCC0_PWM24bitDutySet(TCC0_CHANNEL1, duty1);
     TCC0_PWM24bitDutySet(TCC0_CHANNEL2, duty2);
 
-    duty0 += DUTY_INCREMENT;
-    duty1 += DUTY_INCREMENT;
-    duty2 += DUTY_INCREMENT;
+    // duty0 += DUTY_INCREMENT;
+    // duty1 += DUTY_INCREMENT;
+    // duty2 += DUTY_INCREMENT;
+    //
+    // if (duty0 > period)
+    //     duty0 = 0U;
+    // if (duty1 > period)
+    //     duty1 = 0U;
+    // if (duty2 > period)
+    //     duty2 = 0U;
+}
 
-    if (duty0 > period)
-        duty0 = 0U;
-    if (duty1 > period)
-        duty1 = 0U;
-    if (duty2 > period)
-        duty2 = 0U;
+volatile bool tc_buffer_ready = false;
+
+void capture_handler( TC_CAPTURE_STATUS status, uintptr_t context) {
+    if ((status  & TC_CAPTURE_STATUS_CAPTURE0_READY) == TC_CAPTURE_STATUS_CAPTURE0_READY)
+    {
+        tc_buffer_ready = true;
+    }
 }
 
 [[noreturn]] int main ( ) {
@@ -55,6 +63,10 @@ void TCC_PeriodEventHandler(uint32_t status, uintptr_t context) {
     SYS_Initialize ( nullptr);
 
     SYSTICK_TimerStart();
+
+    TC4_CaptureStart();
+
+    TC4_CaptureCallbackRegister(capture_handler, (uintptr_t)NULL);
 
     Logger_Initialize();
 
@@ -77,9 +89,17 @@ void TCC_PeriodEventHandler(uint32_t status, uintptr_t context) {
         /* Maintain state machines of all polled MPLAB Harmony modules. */
         // SYS_Tasks ( );
 
-        SYSTICK_DelayMs(500);
+        const uint32_t pwm_full_period = TC4_Capture16bitChannel0Get();
+        const uint32_t pwm_on_time = TC4_Capture16bitChannel1Get();
 
-        auto angle = as5047p.measureAngleUncompensated();
+        while(tc_buffer_ready != true)
+        {}
+        // auto angle = as5047p.measureAngleUncompensated();
+
+        uint32_t duty = ((pwm_on_time) * 100U) / pwm_full_period;
+        uint32_t frequency = (TC4_CaptureFrequencyGet() / pwm_full_period);
+
+        SYSTICK_DelayMs(500);
 
         Logger_Info("Running...\r\n");
     }
