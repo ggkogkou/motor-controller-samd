@@ -147,10 +147,15 @@ void SYS_Initialize ( void* data )
 
     SERCOM1_SPI_Initialize();
 
+    EVSYS_Initialize();
+
     TCC0_PWMInitialize();
 
-
 	SYSTICK_TimerInitialize();
+    EIC_Initialize();
+
+    TC4_CaptureInitialize();
+
 
     NVIC_Initialize();
 

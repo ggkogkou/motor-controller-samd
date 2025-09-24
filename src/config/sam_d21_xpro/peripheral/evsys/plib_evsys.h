@@ -57,9 +57,17 @@
 // *****************************************************************************
 
 
+    /* EVSYS Channel 0 */
+#define    EVSYS_CHANNEL_0    (0U)
+typedef uint32_t EVSYS_CHANNEL;
+
 
 /***************************** EVSYS API *******************************/
 void EVSYS_Initialize( void );
+void EVSYS_GeneratorEnable(EVSYS_CHANNEL channel, uint8_t generator);
+void EVSYS_GeneratorDisable(EVSYS_CHANNEL channel);
+void EVSYS_UserEnable(EVSYS_CHANNEL channel, uint8_t user);
+void EVSYS_UserDisable(void);
 
 #ifdef __cplusplus // Provide C++ Compatibility
  }
