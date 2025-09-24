@@ -2,7 +2,7 @@
 
 manifest_file_version: 1.0.0
 project: motor-controller-samd21
-creation_date: 2025-09-08T15:28:16.339+02:00[Europe/Paris]
+creation_date: 2025-09-16T13:27:50.538+02:00[Europe/Paris]
 operating_system: Linux
 mcc_mode: IDE
 mcc_mode_version: v6.25
