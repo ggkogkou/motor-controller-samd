@@ -36,17 +36,6 @@ void TCC_PeriodEventHandler(uint32_t status, uintptr_t context) {
     TCC0_PWM24bitDutySet(TCC0_CHANNEL0, duty0);
     TCC0_PWM24bitDutySet(TCC0_CHANNEL1, duty1);
     TCC0_PWM24bitDutySet(TCC0_CHANNEL2, duty2);
-
-    // duty0 += DUTY_INCREMENT;
-    // duty1 += DUTY_INCREMENT;
-    // duty2 += DUTY_INCREMENT;
-    //
-    // if (duty0 > period)
-    //     duty0 = 0U;
-    // if (duty1 > period)
-    //     duty1 = 0U;
-    // if (duty2 > period)
-    //     duty2 = 0U;
 }
 
 volatile bool tc_buffer_ready = false;
