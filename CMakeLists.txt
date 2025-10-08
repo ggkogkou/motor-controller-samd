@@ -56,7 +56,7 @@ else()
 endif()
 
 include_directories(
-        src
+        src/
         src/config/sam_d21_xpro
         src/config/sam_d21_xpro/peripheral/clock
         src/config/sam_d21_xpro/peripheral/evsys
@@ -83,6 +83,7 @@ set(SOURCES
         # Main application
         src/main.cpp
         src/logger.c
+        src/svpwm.cpp
 
         # System initialization and configuration
         src/config/sam_d21_xpro/initialization.c
