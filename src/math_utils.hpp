@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdint>
 #include <span>
 #include <array>
 #include <cmath>
@@ -108,5 +107,122 @@ namespace ZeroSequenceModulation::Math {
 
         return { Ud, Uq };
     }
+
+    inline constexpr float PI = 3.14159265358979323846f;
+    inline constexpr float HALF_PI = 1.57079632679489661923f;
+    inline constexpr float TWO_PI = 6.28318530717958647692f;
+    inline constexpr int Q15_ONE = 32767;
+
+    /**
+     * Struct that binds the look-up table generation for sine/cosine
+     */
+    template<std::size_t N = 4096>
+    struct SineLookUpTable {
+        /**
+         * Default constructor
+         */
+        constexpr SineLookUpTable() = default;
+
+        /**
+         * Function that calculates sin(x) from the Maclaurin power series with 6 extra terms
+         * Now includes terms up to x^13 (n = 6 beyond the linear term).
+         *
+         * @param angle The angle in radians
+         * @return The value of sin(x)
+         */
+        static constexpr float calculateSineFromMaclaurin(float angle) {
+            const float x_squared = angle * angle;
+
+            return angle * (1.0f
+                + x_squared * (-1.0f/6.0f
+                + x_squared * ( 1.0f/120.0f
+                + x_squared * (-1.0f/5040.0f
+                + x_squared * ( 1.0f/362880.0f
+                + x_squared * (-1.0f/39916800.0f
+                + x_squared * ( 1.0f/6227020800.0f )))))));
+        }
+
+        using LookUpTable = std::array<float, N>;
+
+        /**
+         * Function that generates a Look-Up Table at compile time
+         *
+         * @return The look-up table
+         */
+        static consteval LookUpTable generateLookUpTable() {
+            LookUpTable sineLUT {0.0f};
+
+            for (size_t i = 1; i < N-1; i++)
+                sineLUT[i] = calculateSineFromMaclaurin(TWO_PI * static_cast<float>(i) / static_cast<float>(N));
+
+            return sineLUT;
+        }
+
+        /**
+         * The generated sine LUT
+         */
+        static constexpr LookUpTable sine = generateLookUpTable();
+
+        /**
+         * Operator [] overload to easily map angle to index
+         *
+         * TODO: Add some checking on whether theta is in [0, 2pi]
+         *
+         * @param theta
+         * @return
+         */
+        constexpr float operator[](float theta) const {
+            // const auto thetaNormalized = [&] {
+            //     const float t = std::fmod(theta, TWO_PI);
+            //     return t < 0.0f ? t + TWO_PI : t;
+            // }();
+
+            // const std::size_t Index = static_cast<std::size_t>(thetaNormalized * static_cast<float>(N) / TWO_PI) % N;
+            const std::size_t Index = static_cast<std::size_t>(theta * static_cast<float>(N) / TWO_PI) % N;
+
+            return sine[Index];
+        }
+
+    };
+
+    /**
+     * Sine look-up table that must reside in internal flash memory
+     */
+    inline constexpr SineLookUpTable sinLUT;
+
+    /**
+     * Simple static assertions to quickly showcase the correctness
+     */
+    static_assert(sinLUT[0.0f] == 0.0f, "The sin(pi/2) does not evaluate to 1");
+    static_assert(sinLUT[HALF_PI] >= 0.9999999f, "The sin(0) does not evaluate to 0");
+    static_assert(sinLUT[TWO_PI] == 0.0f, "The sin(2pi) does not evaluate to 0");
+
+    /**
+     * Error limit to ensure a certain level of accuracy
+     */
+    inline constexpr float ErrorLimit = 0.001f;
+
+    /**
+     * Function that calculates the absolute difference of two numbers at compile time
+     *
+     * @param a Number a
+     * @param b Number a
+     * @return The absolute |a-b|
+     */
+    constexpr float absoluteError(float a, float b) {
+        const float diff = a - b;
+        return diff < 0.0f ? -diff : diff;
+    }
+
+    inline constexpr float x = sinLUT[3.657f];
+
+    static_assert(absoluteError(sinLUT[0.356f], 0.34852783777f) <= ErrorLimit, "Error not acceptable");
+    static_assert(absoluteError(sinLUT[1.255f], 0.95054936231f) <= ErrorLimit, "Error not acceptable");
+    static_assert(absoluteError(sinLUT[1.788f], 0.97650387439f) <= ErrorLimit, "Error not acceptable");
+    static_assert(absoluteError(sinLUT[2.500f], 0.59847214410f) <= ErrorLimit, "Error not acceptable");
+    static_assert(absoluteError(sinLUT[3.657f], -0.49288931877f) <= ErrorLimit, "Error not acceptable");
+    static_assert(absoluteError(sinLUT[4.438f], -0.96259093846f) <= ErrorLimit, "Error not acceptable");
+    static_assert(absoluteError(sinLUT[5.796f], -0.46814053122f) <= ErrorLimit, "Error not acceptable");
+    static_assert(absoluteError(sinLUT[6.200f], -0.08308940281f) <= ErrorLimit, "Error not acceptable");
 
 } // namespace ZeroSequenceModulation::Math

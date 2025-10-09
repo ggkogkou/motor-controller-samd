@@ -1,10 +1,9 @@
-#pragma once
-
 #include <cstdlib>
 #include "definitions.h"
 #include "logger.h"
 #include "as5047p.hpp"
 #include "svpwm.hpp"
+#include "math_utils.hpp"
 
 /***************************************
  * Check PWM outputs on pins
@@ -108,7 +107,7 @@ void capture_handler( TC_CAPTURE_STATUS status, uintptr_t context) {
 
 
     /* Start PWM*/
-    TCC0_PWMStart();
+    // TCC0_PWMStart();
     SYSTICK_DelayMs(100);
     Logger_Info("PWM started\r\n");
 

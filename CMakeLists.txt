@@ -84,6 +84,7 @@ set(SOURCES
         src/main.cpp
         src/logger.c
         src/svpwm.cpp
+        src/math_utils.cpp
 
         # System initialization and configuration
         src/config/sam_d21_xpro/initialization.c
