@@ -108,13 +108,17 @@ namespace ZeroSequenceModulation::Math {
         return { Ud, Uq };
     }
 
+    /**
+     * Useful constants
+     */
     inline constexpr float PI = 3.14159265358979323846f;
-    inline constexpr float HALF_PI = 1.57079632679489661923f;
-    inline constexpr float TWO_PI = 6.28318530717958647692f;
-    inline constexpr int Q15_ONE = 32767;
+    inline constexpr float HALF_PI = PI / 2.0f;
+    inline constexpr float TWO_PI = 2.0f * PI;
 
     /**
      * Struct that binds the look-up table generation for sine/cosine
+     *
+     * @tparam N The number of samples for the quantization of the continuous sin(x)
      */
     template<std::size_t N = 4096>
     struct SineLookUpTable {
@@ -127,21 +131,38 @@ namespace ZeroSequenceModulation::Math {
          * Function that calculates sin(x) from the Maclaurin power series with 6 extra terms
          * Now includes terms up to x^13 (n = 6 beyond the linear term).
          *
-         * @param angle The angle in radians
+         * @param x The angle in radians
          * @return The value of sin(x)
          */
-        static constexpr float calculateSineFromMaclaurin(float angle) {
-            const float x_squared = angle * angle;
+        static constexpr float calculateSineFromMaclaurin(float x) {
+            const float xSquare = x * x;
 
-            return angle * (1.0f
-                + x_squared * (-1.0f/6.0f
-                + x_squared * ( 1.0f/120.0f
-                + x_squared * (-1.0f/5040.0f
-                + x_squared * ( 1.0f/362880.0f
-                + x_squared * (-1.0f/39916800.0f
-                + x_squared * ( 1.0f/6227020800.0f )))))));
+            constexpr float Factorial_3 = 6.0f;
+            constexpr float Factorial_5 = 120.0f;
+            constexpr float Factorial_7 = 5040.0f;
+            constexpr float Factorial_9 = 362880.0f;
+            constexpr float Factorial_11 = 39916800.0f;
+            constexpr float Factorial_13 = 6227020800.0f;
+
+            constexpr float Factorial_3_Inv = 1.0f / Factorial_3;
+            constexpr float Factorial_5_Inv = 1.0f / Factorial_5;
+            constexpr float Factorial_7_Inv = 1.0f / Factorial_7;
+            constexpr float Factorial_9_Inv = 1.0f / Factorial_9;
+            constexpr float Factorial_11_Inv = 1.0f / Factorial_11;
+            constexpr float Factorial_13_Inv = 1.0f / Factorial_13;
+
+            return x * (1.0f
+                + xSquare * (-Factorial_3_Inv
+                + xSquare * (  Factorial_5_Inv
+                + xSquare * ( -Factorial_7_Inv
+                + xSquare * (  Factorial_9_Inv
+                + xSquare * ( -Factorial_11_Inv
+                + xSquare * Factorial_13_Inv))))));
         }
 
+        /**
+         * Alias for the look-up table type
+         */
         using LookUpTable = std::array<float, N>;
 
         /**
@@ -213,8 +234,6 @@ namespace ZeroSequenceModulation::Math {
         const float diff = a - b;
         return diff < 0.0f ? -diff : diff;
     }
-
-    inline constexpr float x = sinLUT[3.657f];
 
     static_assert(absoluteError(sinLUT[0.356f], 0.34852783777f) <= ErrorLimit, "Error not acceptable");
     static_assert(absoluteError(sinLUT[1.255f], 0.95054936231f) <= ErrorLimit, "Error not acceptable");
