@@ -6,6 +6,11 @@
  * @brief Simple PID controller with output clamp.
  *
  * Output clamp implicitly limits integral windup; add explicit anti-windup if needed.
+ *
+ * TODO: Separate integral and output clamping limits
+ * TODO: Add a constructor that doesn't initialize the Kd so that it's a PI controller for FOC
+ * TODO: Add a reset function
+ * TODO: Require dT > 0, use of std::optional in the future
  */
 class PID {
 public:
@@ -22,17 +27,10 @@ public:
      * @param Kd Derivative gain
      * @param limit Absolute output clamp (±limit)
      */
-    PID(float Kp, float Ki, float Kd, float limit) : K_Proportional(Kp), K_Integral(Ki), K_Derivative(Kd), limit(limit) {}
+    PID(float Kp, float Ki, float Kd, float limit, float Ts) : K_Proportional(Kp), K_Integral(Ki), K_Derivative(Kd), limit(limit), dT(Ts) {}
 
     /**
      * @brief Compute PID output for a given error (fixed dt implied in gains).
-     *
-     * Notes:
-     * - Integral windup is limited by clamping the output; a simple conditional
-     *   integration guard is applied so the integrator doesn't grow when the
-     *   controller is saturated in the same direction as the error.
-     * - Derivative term is computed on error (not measurement) with a simple
-     *   backward difference using the last error.
      *
      * @param error Setpoint minus measurement
      * @return Clamped controller output in ±limit
@@ -53,11 +51,15 @@ private:
     float limit = 0.0f;
 
     /**
+     * The sampling time
+     */
+    float dT = 0.0f;
+
+    /**
      * Internal integrator and last error (for D)
      */
     float previousError = 0.0f;
     float previousIntegralTerm = 0.0f;
     float previousControllerOutput = 0.0f;
-    float previousTimestamp = 0.0f;
 
 };

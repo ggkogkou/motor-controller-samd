@@ -1,13 +1,6 @@
 #include "pid.hpp"
 
 float PID::compute(float error) {
-    constexpr float timeNow = 100.0f;
-
-    const auto dT = [&]() -> float {
-        const float DT = timeNow - previousTimestamp;
-        return DT <= 0.0f ? 1e-6f : DT;
-    }();
-
     const float ProportionalTerm = K_Proportional * error;
     const float DerivativeTerm = K_Derivative * (error - previousError) / dT;
     const auto IntegralTerm = [&]() -> float {
@@ -21,7 +14,6 @@ float PID::compute(float error) {
     }();
 
     previousError = error;
-    previousTimestamp = timeNow;
     previousIntegralTerm = IntegralTerm;
     previousControllerOutput = PID_Output;
 
