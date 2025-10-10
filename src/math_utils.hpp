@@ -3,6 +3,7 @@
 #include <span>
 #include <array>
 #include <cmath>
+#include <algorithm>
 
 namespace ZeroSequenceModulation::Math {
     /**
@@ -127,6 +128,8 @@ namespace ZeroSequenceModulation::Math {
          */
         constexpr SineLookUpTable() = default;
 
+        static_assert(N % 4 == 0, "LUT size must be dividable by 4 for calculation reasons");
+
         /**
          * Function that calculates sin(x) from the Maclaurin power series with 6 extra terms
          * Now includes terms up to x^13 (n = 6 beyond the linear term).
@@ -163,7 +166,9 @@ namespace ZeroSequenceModulation::Math {
         /**
          * Alias for the look-up table type
          */
-        using LookUpTable = std::array<float, N>;
+        using LookUpTable = std::array<float, N+1>;
+
+        static constexpr std::size_t LUT_Q90_SIZE = N / 4;
 
         /**
          * Function that generates a Look-Up Table at compile time
@@ -173,8 +178,31 @@ namespace ZeroSequenceModulation::Math {
         static consteval LookUpTable generateLookUpTable() {
             LookUpTable sineLUT {0.0f};
 
-            for (size_t i = 1; i < N-1; i++)
+            sineLUT[0] = 0.0f;
+
+            for (size_t i = 1; i < LUT_Q90_SIZE-1; i++) {
                 sineLUT[i] = calculateSineFromMaclaurin(TWO_PI * static_cast<float>(i) / static_cast<float>(N));
+            }
+
+            sineLUT[LUT_Q90_SIZE] = 1.0f;
+
+            for (size_t i = LUT_Q90_SIZE+1; i < 2*LUT_Q90_SIZE-1; i++) {
+                sineLUT[i] = sineLUT[2*LUT_Q90_SIZE-i];
+            }
+
+            sineLUT[2*LUT_Q90_SIZE] = 0.0f;
+
+            for (size_t i = 2*LUT_Q90_SIZE+1; i < 3*LUT_Q90_SIZE-1; i++) {
+                sineLUT[i] = - sineLUT[i-2*LUT_Q90_SIZE];
+            }
+
+            sineLUT[3*LUT_Q90_SIZE] = -1.0f;
+
+            for (size_t i = 3*LUT_Q90_SIZE+1; i < N-1; i++) {
+                sineLUT[i] = - sineLUT[4*LUT_Q90_SIZE-i];
+            }
+
+            sineLUT[N] = 0.0f;
 
             return sineLUT;
         }
@@ -185,23 +213,42 @@ namespace ZeroSequenceModulation::Math {
         static constexpr LookUpTable sine = generateLookUpTable();
 
         /**
-         * Operator [] overload to easily map angle to index
+         * Function that converts an angle in the [0, 2PI] interval
          *
-         * TODO: Add some checking on whether theta is in [0, 2pi]
+         * @param x The angle (in radians)
+         * @return The equivalent angle (radians) in the [0, 2PI] interval
+         */
+        [[nodiscard]] constexpr float convertThetaTo_0_2PI_Interval(float x) const {
+            while (x < 0.0f)
+                x += TWO_PI;
+
+            while (x > TWO_PI)
+                x -= TWO_PI;
+
+            return x;
+        }
+
+        /**
+         * Operator [] with linear interpolation for best accuracy
          *
-         * @param theta
-         * @return
+         * Maps theta (radians) to a fractional index i = theta * N / (2π)
+         * then linearly interpolates between floor(i) and floor(i)+1
+         * The LUT has size N+1 with sine[N] == sine[0] to simplify wraparound
+         *
          */
         constexpr float operator[](float theta) const {
-            // const auto thetaNormalized = [&] {
-            //     const float t = std::fmod(theta, TWO_PI);
-            //     return t < 0.0f ? t + TWO_PI : t;
-            // }();
+            theta = convertThetaTo_0_2PI_Interval(theta);
 
-            // const std::size_t Index = static_cast<std::size_t>(thetaNormalized * static_cast<float>(N) / TWO_PI) % N;
-            const std::size_t Index = static_cast<std::size_t>(theta * static_cast<float>(N) / TWO_PI) % N;
+            const float fidx = theta * static_cast<float>(N) / TWO_PI;
 
-            return sine[Index];
+            const auto Index0 = static_cast<std::size_t>(fidx);
+            const auto Index1 = static_cast<std::size_t>(Index0 + 1);
+            const float frac = fidx - static_cast<float>(Index0);
+
+            const float y0 = sine[Index0];
+            const float y1 = sine[Index1];
+
+            return y0 + (y1 - y0) * frac;
         }
 
     };
