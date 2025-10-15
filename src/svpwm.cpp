@@ -13,7 +13,7 @@ namespace SpaceVectorModulation {
         const auto [V_Min, V_Max] = std::minmax({Va, Vb, Vc});
         float zeroSequenceComponent = 0.0f;
 
-        if (zeroSequenceModulation == ZeroSequenceModulation::MIDPOINT_CLAMP)
+        if (zeroSequenceModulation == ZeroSequenceModulationType::MIDPOINT_CLAMP)
             zeroSequenceComponent -= 0.5f * (V_Min + V_Max);
 
         Va = Va + zeroSequenceComponent;

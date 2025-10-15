@@ -9,7 +9,7 @@
 
 namespace SpaceVectorModulation {
 
-enum class ZeroSequenceModulation {
+enum class ZeroSequenceModulationType {
     MIDPOINT_CLAMP,
     UPPER_BOUND_CLAMP,
     LOWER_BOUND_CLAMP,
@@ -17,11 +17,10 @@ enum class ZeroSequenceModulation {
 };
 
 struct DutyCycles {
-    float dutyCycleA;
-    float dutyCycleB;
-    float dutyCycleC;
+    float dutyCycleA = 0.0f;
+    float dutyCycleB = 0.0f;
+    float dutyCycleC = 0.0f;
 };
-
 
 /**
  * Class that implements the SVPWM technique
@@ -38,7 +37,7 @@ public:
      *
      * @param vdc The DC link voltage
      */
-    explicit SVPWM(float vdc, ZeroSequenceModulation zsm) : dcLinkVoltage(vdc), zeroSequenceModulation(zsm) {
+    explicit SVPWM(float vdc, ZeroSequenceModulationType zsm) : dcLinkVoltage(vdc), zeroSequenceModulation(zsm) {
         assert(std::isfinite(vdc) && vdc > 0.0f);
     }
 
@@ -60,7 +59,7 @@ private:
     /**
      * The type of Zero-Sequence Modulation (ZSM) that is added to the carrier
      */
-    ZeroSequenceModulation zeroSequenceModulation = ZeroSequenceModulation::MIDPOINT_CLAMP;
+    ZeroSequenceModulationType zeroSequenceModulation = ZeroSequenceModulationType::MIDPOINT_CLAMP;
 
 };
 
