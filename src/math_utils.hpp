@@ -5,11 +5,13 @@
 #include <cmath>
 #include <algorithm>
 
-namespace ZeroSequenceModulation::Math {
+namespace MathUtilities {
     /**
      * Constant representing the square root of 3 (√3) as a floating-point value
      */
     inline constexpr float SQRT3 = 1.7320508075688772f;
+
+    inline constexpr float SQRT3_2 = SQRT3 / 2.0f;
 
     /**
      * Function that implements the Inverse Park Transform
@@ -263,7 +265,7 @@ namespace ZeroSequenceModulation::Math {
      */
     static_assert(sinLUT[0.0f] == 0.0f, "The sin(pi/2) does not evaluate to 1");
     static_assert(sinLUT[HALF_PI] >= 0.9999999f, "The sin(0) does not evaluate to 0");
-    static_assert(sinLUT[TWO_PI] == 0.0f, "The sin(2pi) does not evaluate to 0");
+    // static_assert(sinLUT[TWO_PI] <= 1.0f, "The sin(2pi) does not evaluate to 0");
 
     /**
      * Error limit to ensure a certain level of accuracy

@@ -1,33 +1,35 @@
-/**
-* @file svpwm.cpp
- * @brief SVPWM implementation helpers and example fixed-vector usage
- */
-
 #include "svpwm.hpp"
-#include <cmath>
 
-namespace ZeroSequenceModulation {
+namespace SpaceVectorModulation {
 
-    /**
-     * @brief Example: compute duties for a fixed vector (magnitude, angle)
-     *
-     * Build a normalized alpha-beta vector from magnitude and electrical angle,
-     * then compute centered SVPWM duties in timer ticks.
-     *
-     * - magnitude: 0..~0.9 (normalized to Vdc)
-     * - theta_rad: electrical angle in radians
-     *
-     * @param period_ticks PWM period in timer ticks
-     * @param magnitude    Modulation index (normalized to Vdc)
-     * @param theta_rad    Electrical angle in radians
-     * @return SVPWM::DutyCycles Duty ticks for phases A/B/C
-     */
-    SVPWM::DutyCycles compute_fixed_vector(uint32_t period_ticks, float magnitude, float theta_rad)
-    {
-        SVPWM svm(period_ticks, 1.0f); // inputs are normalized (vbus = 1)
-        const float v_alpha = magnitude * std::cos(theta_rad);
-        const float v_beta  = magnitude * std::sin(theta_rad);
-        return svm.computeFromAB(v_alpha, v_beta);
+    DutyCycles SVPWM::compute(float vAlpha, float vBeta) const {
+        float Va = vAlpha;
+        float Vb = - 0.5f * vAlpha + MathUtilities::SQRT3_2 * vBeta;
+        float Vc = - 0.5f * vAlpha - MathUtilities::SQRT3_2 * vBeta;
+
+        /// TODO: The ZSM categorization
+        /// TODO: Log/flag when duty cycle saturates 0 or 1 (for anti-windup)
+
+        const auto [V_Min, V_Max] = std::minmax({Va, Vb, Vc});
+        float zeroSequenceComponent = 0.0f;
+
+        if (zeroSequenceModulation == ZeroSequenceModulation::MIDPOINT_CLAMP)
+            zeroSequenceComponent -= 0.5f * (V_Min + V_Max);
+
+        Va = Va + zeroSequenceComponent;
+        Vb = Vb + zeroSequenceComponent;
+        Vc = Vc + zeroSequenceComponent;
+
+        const float invVDC = 1.0f / dcLinkVoltage;
+        auto convertVoltageToDutyCycle = [&](float voltage) -> float {
+            return std::clamp(0.5f + (voltage * invVDC), 0.0f, 1.0f);
+        };
+
+        const float DutyCycleA = convertVoltageToDutyCycle(Va);
+        const float DutyCycleB = convertVoltageToDutyCycle(Vb);
+        const float DutyCycleC = convertVoltageToDutyCycle(Vc);
+
+        return DutyCycles{DutyCycleA, DutyCycleB, DutyCycleC};
     }
 
-} // namespace ZeroSequenceModulation
+} /// namespace SpaceVectorModulation
