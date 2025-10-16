@@ -56,11 +56,11 @@ struct SineLookUpTable {
 
         return x * (1.0f
             + xSquare * (-Factorial_3_Inv
-                + xSquare * (  Factorial_5_Inv
-                    + xSquare * ( -Factorial_7_Inv
-                        + xSquare * (  Factorial_9_Inv
-                            + xSquare * ( -Factorial_11_Inv
-                                + xSquare * Factorial_13_Inv))))));
+            + xSquare * ( Factorial_5_Inv
+            + xSquare * (-Factorial_7_Inv
+            + xSquare * ( Factorial_9_Inv
+            + xSquare * (-Factorial_11_Inv
+            + xSquare *   Factorial_13_Inv))))));
     }
 
     /**
