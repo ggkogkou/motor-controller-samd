@@ -138,8 +138,7 @@ void SYS_Initialize ( void* data )
 
     CLOCK_Initialize();
 
-
-
+    SYSTICK_TimerInitialize();
 
     SERCOM3_USART_Initialize();
 
@@ -151,7 +150,6 @@ void SYS_Initialize ( void* data )
 
     TCC0_PWMInitialize();
 
-	SYSTICK_TimerInitialize();
     EIC_Initialize();
 
     TC4_CaptureInitialize();

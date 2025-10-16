@@ -1,9 +1,9 @@
-#pragma once
-
 #include <cstdlib>
 #include "definitions.h"
 #include "logger.h"
 #include "as5047p.hpp"
+#include "svpwm.hpp"
+#include "math_utils.hpp"
 
 /***************************************
  * Check PWM outputs on pins
@@ -26,28 +26,29 @@ inline constexpr std::uint32_t DUTY_INCREMENT = 10;
 static std::uint32_t period;
 
 /**
- * This function is called after TCC period event
+ * PWM period ISR: sweep angle at fixed magnitude
+ * Keep ISR minimal: compute duties and write CC
  */
 void TCC_PeriodEventHandler(uint32_t status, uintptr_t context) {
-    static std::uint32_t duty0 = 800U;
-    static std::uint32_t duty1 = 800U;
-    static std::uint32_t duty2 = 1600U;
 
-    TCC0_PWM24bitDutySet(TCC0_CHANNEL0, duty0);
-    TCC0_PWM24bitDutySet(TCC0_CHANNEL1, duty1);
-    TCC0_PWM24bitDutySet(TCC0_CHANNEL2, duty2);
+    // TCC0_PWM24bitDutySet(TCC0_CHANNEL0, duties.dutyA);
+    // TCC0_PWM24bitDutySet(TCC0_CHANNEL1, duties.dutyB);
+    // TCC0_PWM24bitDutySet(TCC0_CHANNEL2, duties.dutyC);
 
-    // duty0 += DUTY_INCREMENT;
-    // duty1 += DUTY_INCREMENT;
-    // duty2 += DUTY_INCREMENT;
-    //
-    // if (duty0 > period)
-    //     duty0 = 0U;
-    // if (duty1 > period)
-    //     duty1 = 0U;
-    // if (duty2 > period)
-    //     duty2 = 0U;
 }
+
+/**
+ * This function is called after TCC period event
+ */
+// void TCC_PeriodEventHandler(uint32_t status, uintptr_t context) {
+//     static std::uint32_t duty0 = 800U;
+//     static std::uint32_t duty1 = 800U;
+//     static std::uint32_t duty2 = 1600U;
+//
+//     TCC0_PWM24bitDutySet(TCC0_CHANNEL0, duty0);
+//     TCC0_PWM24bitDutySet(TCC0_CHANNEL1, duty1);
+//     TCC0_PWM24bitDutySet(TCC0_CHANNEL2, duty2);
+// }
 
 volatile bool tc_buffer_ready = false;
 
@@ -62,45 +63,31 @@ void capture_handler( TC_CAPTURE_STATUS status, uintptr_t context) {
     /* Initialize all modules */
     SYS_Initialize ( nullptr);
 
+
     SYSTICK_TimerStart();
+    Logger_Initialize();
 
     TC4_CaptureStart();
-
     TC4_CaptureCallbackRegister(capture_handler, (uintptr_t)NULL);
-
-    Logger_Initialize();
 
     /* Register callback function for period event */
     TCC0_PWMCallbackRegister(TCC_PeriodEventHandler, (uintptr_t)NULL);
 
     /* Read the period */
     period = TCC0_PWM24bitPeriodGet();
+    SYSTICK_DelayMs(100);
     Logger_Info("PWM period configured\r\n");
 
     /* Start PWM*/
-    TCC0_PWMStart();
+    // TCC0_PWMStart();
+    SYSTICK_DelayMs(100);
     Logger_Info("PWM started\r\n");
 
     AS5047P as5047p;
 
-    SYSTICK_DelayMs(500);
-
     while ( true )     {
-        /* Maintain state machines of all polled MPLAB Harmony modules. */
-        // SYS_Tasks ( );
-
-        const uint32_t pwm_full_period = TC4_Capture16bitChannel0Get();
-        const uint32_t pwm_on_time = TC4_Capture16bitChannel1Get();
-
-        while(tc_buffer_ready != true)
-        {}
-        // auto angle = as5047p.measureAngleUncompensated();
-
-        uint32_t duty = ((pwm_on_time) * 100U) / pwm_full_period;
-        uint32_t frequency = (TC4_CaptureFrequencyGet() / pwm_full_period);
-
+        // Keep application alive; ISR updates PWM each period
         SYSTICK_DelayMs(500);
-
         Logger_Info("Running...\r\n");
     }
 
