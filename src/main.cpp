@@ -25,35 +25,16 @@ inline constexpr std::uint32_t DUTY_INCREMENT = 10;
  */
 static std::uint32_t period;
 
-// SVPWM instance and test vector params (volatile if updated in main)
-static ZeroSequenceModulation::SVPWM g_svm;
-static volatile float g_magnitude = 0.30f;   // 0..~0.9 (normalized)
-static volatile float g_theta     = 0.0f;    // angle [rad]
-static volatile float g_dtheta    = 0.002f;  // per-period increment
-
 /**
  * PWM period ISR: sweep angle at fixed magnitude
  * Keep ISR minimal: compute duties and write CC
  */
 void TCC_PeriodEventHandler(uint32_t status, uintptr_t context) {
-    // Compute alpha-beta from current angle and magnitude
-    const float c = cosf(g_theta);
-    const float s = sinf(g_theta);
-    const float v_alpha = g_magnitude * c;
-    const float v_beta  = g_magnitude * s;
 
-    // Compute duties
-    const auto duties = g_svm.computeFromAB(v_alpha, v_beta);
+    // TCC0_PWM24bitDutySet(TCC0_CHANNEL0, duties.dutyA);
+    // TCC0_PWM24bitDutySet(TCC0_CHANNEL1, duties.dutyB);
+    // TCC0_PWM24bitDutySet(TCC0_CHANNEL2, duties.dutyC);
 
-    // Apply to PWM channels
-    TCC0_PWM24bitDutySet(TCC0_CHANNEL0, duties.dutyA);
-    TCC0_PWM24bitDutySet(TCC0_CHANNEL1, duties.dutyB);
-    TCC0_PWM24bitDutySet(TCC0_CHANNEL2, duties.dutyC);
-
-    // Advance angle
-    g_theta += g_dtheta;
-    if (g_theta >= 6.28318531f) g_theta -= 6.28318531f;
-    if (g_theta < 0.0f)         g_theta += 6.28318531f;
 }
 
 /**
@@ -96,15 +77,6 @@ void capture_handler( TC_CAPTURE_STATUS status, uintptr_t context) {
     period = TCC0_PWM24bitPeriodGet();
     SYSTICK_DelayMs(100);
     Logger_Info("PWM period configured\r\n");
-
-    // Initialize SVPWM with timer period ticks and normalized bus (vbus=1.0f)
-    g_svm.setPeriod(period);
-    g_svm.setVbus(1.0f);
-    g_svm.setOnTimeClamp(0U, period);
-    g_magnitude = 0.30f;  // visible modulation
-    g_theta = 0.0f;
-    g_dtheta = 0.002f;    // slow rotation; increase for faster sweep
-
 
     /* Start PWM*/
     // TCC0_PWMStart();

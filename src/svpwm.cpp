@@ -22,7 +22,9 @@ namespace SpaceVectorModulation {
 
         const float invVDC = 1.0f / dcLinkVoltage;
         auto convertVoltageToDutyCycle = [&](float voltage) -> float {
-            return std::clamp(0.5f + (voltage * invVDC), 0.0f, 1.0f);
+            constexpr float MinimumDutyCycle = 0.0f;
+            constexpr float MaximumDutyCycle = 1.0f;
+            return std::clamp(0.5f + (voltage * invVDC), MinimumDutyCycle, MaximumDutyCycle);
         };
 
         const float DutyCycleA = convertVoltageToDutyCycle(Va);
