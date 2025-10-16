@@ -161,7 +161,7 @@ using AlphaBetaFrame = std::array<float, 2>;
  * @param theta The angle θ
  * @return The dq-frame coordinates which are Vd and Vq
  */
-inline DQFrame performParkTransform(float Ua, float Ub, float theta) {
+[[nodiscard]] [[maybe_unused]] inline DQFrame performParkTransform(float Ua, float Ub, float theta) {
     const float CosineTheta = cosine[theta];
     const float SineTheta = sine[theta];
 
@@ -180,7 +180,7 @@ inline DQFrame performParkTransform(float Ua, float Ub, float theta) {
  * @param theta
  * @return
  */
-inline AlphaBetaFrame performInverseParkTransform(float Ud, float Uq, float theta) {
+[[nodiscard]] [[maybe_unused]] inline AlphaBetaFrame performInverseParkTransform(float Ud, float Uq, float theta) {
     const float CosineTheta = cosine[theta];
     const float SineTheta = sine[theta];
     const float Ualpha = CosineTheta * Ud - SineTheta * Uq;
@@ -199,7 +199,7 @@ inline AlphaBetaFrame performInverseParkTransform(float Ud, float Uq, float thet
  * @param Uc
  * @return
  */
-inline AlphaBetaFrame performClarkeTransform(float Ua, float Ub, float Uc = 0) {
+[[nodiscard]] [[maybe_unused]] inline AlphaBetaFrame performClarkeTransform(float Ua, float Ub, float Uc = 0) {
     const float Ualpha = Ua;
     const float Ubeta = (Ua + Ub * 2.0f) / SQRT3;
 
@@ -218,7 +218,7 @@ inline AlphaBetaFrame performClarkeTransform(float Ua, float Ub, float Uc = 0) {
  * @param theta
  * @return
  */
-inline DQFrame performClarkeParkTransforms(float Ua, float Ub, float theta) {
+[[nodiscard]] inline DQFrame performClarkeParkTransforms(float Ua, float Ub, float theta) {
     const float Ualpha = Ua;
     const float Ubeta  = (Ua + 2.0f * Ub) / SQRT3;
 
