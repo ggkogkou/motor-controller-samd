@@ -17,7 +17,7 @@ inline constexpr float SQRT3 = 1.7320508075688772f;
 inline constexpr float SQRT3_2 = SQRT3 / 2.0f;
 
 /**
- * Struct that binds the look-up table generation for sine/cosine
+ * Struct that binds the look-up table generation for sine
  *
  * @tparam N The number of samples for the quantization of the continuous sin(x)
  */
@@ -142,10 +142,24 @@ struct SineLookUpTable {
 };
 
 /**
- * Sine look-up table that must reside in internal flash memory
+ * Struct that shifts the sine LUT to produce the cosine
+ *
+ * @tparam N The number of samples for the quantization of the continuous cos(x)
+ */
+template<std::size_t N = 4096>
+struct CosineLookUpTable : private SineLookUpTable<N> {
+    using Base = SineLookUpTable<N>;
+
+    constexpr float operator[](float theta) const {
+        return Base::operator[](theta + HALF_PI);
+    }
+};
+
+/**
+ * Sine and cosine look-up tables that must reside in internal flash memory
  */
 inline constexpr SineLookUpTable sine;
-inline constexpr SineLookUpTable cosine;
+inline constexpr CosineLookUpTable cosine;
 
 using DQFrame = std::array<float, 2>;
 using AlphaBetaFrame = std::array<float, 2>;
