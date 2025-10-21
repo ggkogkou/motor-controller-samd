@@ -57,9 +57,18 @@
 #ifndef DONT_USE_PREDEFINED_PERIPHERALS_HANDLERS
     #define DONT_USE_PREDEFINED_PERIPHERALS_HANDLERS
 #endif //DONT_USE_PREDEFINED_PERIPHERALS_HANDLERS
-#include "samd21j18a.h"
+
+#if defined(__SAMD21J18A__)
+  #include "samd21j18a.h"
+  #include "pio/samd21j18a.h"
+#elif defined(__SAMD21G18A__)
+  #include "samd21g18a.h"
+  #include "pio/samd21g18a.h"
+#else
+  #error "Define __SAMD21J18A__ or __SAMD21G18A__"
+#endif
+
 #pragma GCC diagnostic pop
-#include "device_cache.h"
 #include "toolchain_specifics.h"
 
 #endif //DEVICE_H

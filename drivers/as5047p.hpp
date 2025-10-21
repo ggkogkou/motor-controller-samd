@@ -128,7 +128,7 @@ public:
      * Meant to be used when default configurations are OK or device OTP is programmed
      */
     AS5047P() {
-        AS5047P_CS_Set();
+        AS5047_CS_Set();
     }
 
     /**

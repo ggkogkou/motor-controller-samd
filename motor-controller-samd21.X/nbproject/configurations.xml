@@ -7,6 +7,10 @@
       <logicalFolder name="f1" displayName="config" projectFiles="true">
         <logicalFolder name="f1" displayName="sam_d21_xpro" projectFiles="true">
           <logicalFolder name="f1" displayName="peripheral" projectFiles="true">
+            <logicalFolder name="adc" displayName="adc" projectFiles="true">
+              <itemPath>../src/config/sam_d21_xpro/peripheral/adc/plib_adc_common.h</itemPath>
+              <itemPath>../src/config/sam_d21_xpro/peripheral/adc/plib_adc.h</itemPath>
+            </logicalFolder>
             <logicalFolder name="f1" displayName="clock" projectFiles="true">
               <itemPath>../src/config/sam_d21_xpro/peripheral/clock/plib_clock.h</itemPath>
             </logicalFolder>
@@ -29,10 +33,12 @@
               <logicalFolder name="spi_master" displayName="spi_master" projectFiles="true">
                 <itemPath>../src/config/sam_d21_xpro/peripheral/sercom/spi_master/plib_sercom_spi_master_common.h</itemPath>
                 <itemPath>../src/config/sam_d21_xpro/peripheral/sercom/spi_master/plib_sercom1_spi_master.h</itemPath>
+                <itemPath>../src/config/sam_d21_xpro/peripheral/sercom/spi_master/plib_sercom4_spi_master.h</itemPath>
               </logicalFolder>
               <logicalFolder name="usart" displayName="usart" projectFiles="true">
                 <itemPath>../src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom3_usart.h</itemPath>
                 <itemPath>../src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom_usart_common.h</itemPath>
+                <itemPath>../src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom5_usart.h</itemPath>
               </logicalFolder>
             </logicalFolder>
             <logicalFolder name="f6" displayName="systick" projectFiles="true">
@@ -45,6 +51,7 @@
             <logicalFolder name="f7" displayName="tcc" projectFiles="true">
               <itemPath>../src/config/sam_d21_xpro/peripheral/tcc/plib_tcc0.h</itemPath>
               <itemPath>../src/config/sam_d21_xpro/peripheral/tcc/plib_tcc_common.h</itemPath>
+              <itemPath>../src/config/sam_d21_xpro/peripheral/tcc/plib_tcc1.h</itemPath>
             </logicalFolder>
           </logicalFolder>
           <itemPath>../src/config/sam_d21_xpro/device_cache.h</itemPath>
@@ -164,6 +171,9 @@
       <logicalFolder name="f1" displayName="config" projectFiles="true">
         <logicalFolder name="f1" displayName="sam_d21_xpro" projectFiles="true">
           <logicalFolder name="f1" displayName="peripheral" projectFiles="true">
+            <logicalFolder name="adc" displayName="adc" projectFiles="true">
+              <itemPath>../src/config/sam_d21_xpro/peripheral/adc/plib_adc.c</itemPath>
+            </logicalFolder>
             <logicalFolder name="f1" displayName="clock" projectFiles="true">
               <itemPath>../src/config/sam_d21_xpro/peripheral/clock/plib_clock.c</itemPath>
             </logicalFolder>
@@ -185,9 +195,11 @@
             <logicalFolder name="sercom" displayName="sercom" projectFiles="true">
               <logicalFolder name="spi_master" displayName="spi_master" projectFiles="true">
                 <itemPath>../src/config/sam_d21_xpro/peripheral/sercom/spi_master/plib_sercom1_spi_master.c</itemPath>
+                <itemPath>../src/config/sam_d21_xpro/peripheral/sercom/spi_master/plib_sercom4_spi_master.c</itemPath>
               </logicalFolder>
               <logicalFolder name="usart" displayName="usart" projectFiles="true">
                 <itemPath>../src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom3_usart.c</itemPath>
+                <itemPath>../src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom5_usart.c</itemPath>
               </logicalFolder>
             </logicalFolder>
             <logicalFolder name="f6" displayName="systick" projectFiles="true">
@@ -198,6 +210,7 @@
             </logicalFolder>
             <logicalFolder name="f7" displayName="tcc" projectFiles="true">
               <itemPath>../src/config/sam_d21_xpro/peripheral/tcc/plib_tcc0.c</itemPath>
+              <itemPath>../src/config/sam_d21_xpro/peripheral/tcc/plib_tcc1.c</itemPath>
             </logicalFolder>
           </logicalFolder>
           <logicalFolder name="f2" displayName="stdio" projectFiles="true">

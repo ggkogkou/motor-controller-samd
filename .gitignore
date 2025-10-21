@@ -62,3 +62,7 @@ motor-controller-samd21.X/nbproject/private/
 # Backup files
 *.bak
 *.orig
+
+startup_xc32.c
+
+src/sam_d21_xpro.mhc

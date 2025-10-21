@@ -52,13 +52,17 @@
 #include "peripheral/nvmctrl/plib_nvmctrl.h"
 #include "peripheral/sercom/spi_master/plib_sercom1_spi_master.h"
 #include "peripheral/evsys/plib_evsys.h"
-#include "peripheral/tcc/plib_tcc0.h"
 #include "peripheral/port/plib_port.h"
 #include "peripheral/clock/plib_clock.h"
 #include "peripheral/nvic/plib_nvic.h"
 #include "peripheral/systick/plib_systick.h"
+#include "peripheral/sercom/usart/plib_sercom5_usart.h"
+#include "peripheral/sercom/spi_master/plib_sercom4_spi_master.h"
+#include "peripheral/adc/plib_adc.h"
 #include "peripheral/eic/plib_eic.h"
 #include "peripheral/tc/plib_tc4.h"
+#include "peripheral/tcc/plib_tcc1.h"
+#include "peripheral/tcc/plib_tcc0.h"
 
 // DOM-IGNORE-BEGIN
 #ifdef __cplusplus  // Provide C++ Compatibility
