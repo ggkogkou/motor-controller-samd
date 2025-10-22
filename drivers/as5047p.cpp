@@ -19,23 +19,23 @@ AS5047P::RegisterData_t AS5047P::readDeviceRegister(RegisterAddress registerAddr
     std::array<uint8_t, CommandFrameSize> txBuffer {CommandFrameMSB, CommandFrameLSB};
     std::array<uint8_t, DataFrameSize> rxBuffer {0, 0};
 
-    AS5047P_CS_Clear();
+    AS5047_CS_Clear();
 
     if(SERCOM1_SPI_Write(&txBuffer[0], 2))
         Logger_Info("SPI sent data\r\n");
     else
         Logger_Error("SPI failed to send data\r\n");
 
-    AS5047P_CS_Set();
+    AS5047_CS_Set();
     SYSTICK_DelayMs(1);
-    AS5047P_CS_Clear();
+    AS5047_CS_Clear();
 
     if(SERCOM1_SPI_Read(&rxBuffer[0], 2))
         Logger_Info("SPI returned data\r\n");
     else
         Logger_Error("SPI failed to return data\r\n");
 
-    AS5047P_CS_Set();
+    AS5047_CS_Set();
 
     const decltype(rxBuffer)::value_type PARD_Bit = rxBuffer[0] & 0b0111'1111;
     const decltype(rxBuffer)::value_type EF_Bit = rxBuffer[0] & 0b1011'1111;
@@ -60,16 +60,16 @@ void AS5047P::writeDeviceRegister(RegisterAddress registerAddress, RegisterData_
     std::array<uint8_t, CommandFrameSize> addressBuffer {CommandFrameMSB, CommandFrameLSB};
     std::array<uint8_t, DataFrameSize> dataBuffer {DataFrameMSB, DataFrameLSB};
 
-    AS5047P_CS_Clear();
+    AS5047_CS_Clear();
 
     if(SERCOM1_SPI_Write(&addressBuffer[0], 2))
         Logger_Info("SPI sent data\r\n");
     else
         Logger_Error("SPI failed to send data\r\n");
 
-    AS5047P_CS_Set();
+    AS5047_CS_Set();
     SYSTICK_DelayMs(1);
-    AS5047P_CS_Clear();
+    AS5047_CS_Clear();
 
     if(SERCOM1_SPI_Write(&dataBuffer[0], 2))
         Logger_Info("SPI sent data\r\n");

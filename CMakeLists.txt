@@ -16,8 +16,22 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(motor-controller-samd21 LANGUAGES C CXX ASM)
 
 set(MCU_FAMILY "samd21")
-set(MCU_MODEL "ATSAMD21J18A")
 set(MCU_ARCH "cortex-m0plus")
+set(MCU "" CACHE STRING "Device variant: G18A or J18A")
+
+string(TOUPPER "${MCU}" MCU_U)
+
+if(MCU_U STREQUAL "G18A")
+    set(MCU_MODEL "ATSAMD21G18A")
+    set(DEVICE_DEFINE "__SAMD21G18A__")
+    set(LD_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/src/config/sam_d21_xpro/ATSAMD21J18A.ld")
+elseif(MCU_U STREQUAL "J18A")
+    set(MCU_MODEL "ATSAMD21J18A")
+    set(DEVICE_DEFINE "__SAMD21J18A__")
+    set(LD_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/src/config/sam_d21_xpro/ATSAMD21J18A.ld")
+else()
+    message(FATAL_ERROR "Set -DMCU=G18A or -DMCU=J18A (or use presets).")
+endif()
 
 set(COMMON_FLAGS "-mcpu=${MCU_ARCH} -mthumb -mfloat-abi=soft -ffunction-sections -fdata-sections -Wall -Wextra -g3")
 set(CMAKE_C_FLAGS "${COMMON_FLAGS} -std=gnu99" CACHE INTERNAL "C compiler flags")
@@ -30,10 +44,9 @@ set(CMAKE_EXE_LINKER_FLAGS
 )
 
 add_compile_definitions(
-        __SAMD21J18A__
+        ${DEVICE_DEFINE}
         DONT_USE_PREDEFINED_CORE_HANDLERS
         DONT_USE_PREDEFINED_PERIPHERALS_HANDLERS
-        # ETL configuration for embedded systems
         ETL_NO_STL
         ETL_TARGET_DEVICE_ARM
         ETL_COMPILER_GCC
@@ -58,24 +71,33 @@ endif()
 include_directories(
         src/
         src/config/sam_d21_xpro
+        src/config/sam_d21_xpro/peripheral/adc
         src/config/sam_d21_xpro/peripheral/clock
+        src/config/sam_d21_xpro/peripheral/eic
         src/config/sam_d21_xpro/peripheral/evsys
         src/config/sam_d21_xpro/peripheral/nvic
         src/config/sam_d21_xpro/peripheral/nvmctrl
         src/config/sam_d21_xpro/peripheral/port
-        src/config/sam_d21_xpro/peripheral/systick
-        src/config/sam_d21_xpro/peripheral/tcc
         src/config/sam_d21_xpro/peripheral/sercom/usart
         src/config/sam_d21_xpro/peripheral/sercom/spi_master
+        src/config/sam_d21_xpro/peripheral/systick
         src/config/sam_d21_xpro/peripheral/tc
-        src/config/sam_d21_xpro/peripheral/eic
-        src/packs/ATSAMD21J18A_DFP
-        src/packs/ATSAMD21J18A_DFP/component
-        src/packs/ATSAMD21J18A_DFP/instance
-        src/packs/ATSAMD21J18A_DFP/pio
+        src/config/sam_d21_xpro/peripheral/tcc
+
+#        src/packs/ATSAMD21J18A_DFP
+#        src/packs/ATSAMD21J18A_DFP/component
+#        src/packs/ATSAMD21J18A_DFP/instance
+#        src/packs/ATSAMD21J18A_DFP/pio
+
+        src/packs/ATSAMD21_DFP
+        src/packs/ATSAMD21_DFP/component
+        src/packs/ATSAMD21_DFP/instance
+        src/packs/ATSAMD21_DFP/pio
+
         src/packs/CMSIS/CMSIS/Core/Include
+
         drivers
-        # Add ETL include directory
+
         ${ETL_INCLUDE_DIR}
 )
 
@@ -94,17 +116,23 @@ set(SOURCES
         src/config/sam_d21_xpro/libc_syscalls.c
 
         # Peripheral libraries
+        src/config/sam_d21_xpro/peripheral/adc/plib_adc.c
         src/config/sam_d21_xpro/peripheral/clock/plib_clock.c
+        src/config/sam_d21_xpro/peripheral/eic/plib_eic.c
         src/config/sam_d21_xpro/peripheral/evsys/plib_evsys.c
         src/config/sam_d21_xpro/peripheral/nvic/plib_nvic.c
         src/config/sam_d21_xpro/peripheral/nvmctrl/plib_nvmctrl.c
         src/config/sam_d21_xpro/peripheral/port/plib_port.c
         src/config/sam_d21_xpro/peripheral/systick/plib_systick.c
-        src/config/sam_d21_xpro/peripheral/tcc/plib_tcc0.c
         src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom3_usart.c
+        src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom5_usart.c
         src/config/sam_d21_xpro/peripheral/sercom/spi_master/plib_sercom1_spi_master.c
+        src/config/sam_d21_xpro/peripheral/sercom/spi_master/plib_sercom4_spi_master.c
         src/config/sam_d21_xpro/peripheral/tc/plib_tc4.c
-        src/config/sam_d21_xpro/peripheral/eic/plib_eic.c
+        src/config/sam_d21_xpro/peripheral/tc/plib_tc4.c
+        src/config/sam_d21_xpro/peripheral/tcc/plib_tcc0.c
+        src/config/sam_d21_xpro/peripheral/tcc/plib_tcc1.c
+        src/config/sam_d21_xpro/peripheral/tcc/plib_tcc2.c
 
         drivers/as5047p.cpp
 )

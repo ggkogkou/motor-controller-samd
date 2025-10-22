@@ -75,7 +75,7 @@ void __attribute__((optimize("-O1"), long_call, noreturn, used))Dummy_Handler(vo
 }
 
 /* MISRAC 2012 deviation block start */
-/* MISRA C-2012 Rule 8.6 deviated 27 times.  Deviation record ID -  H3_MISRAC_2012_R_8_6_DR_1 */
+/* MISRA C-2012 Rule 8.6 deviated 25 times.  Deviation record ID -  H3_MISRAC_2012_R_8_6_DR_1 */
 /* Device vectors list dummy definition*/
 extern void SVCall_Handler             ( void ) __attribute__((weak, alias("Dummy_Handler")));
 extern void PendSV_Handler             ( void ) __attribute__((weak, alias("Dummy_Handler")));
@@ -92,14 +92,12 @@ extern void SERCOM0_Handler            ( void ) __attribute__((weak, alias("Dumm
 extern void SERCOM1_Handler            ( void ) __attribute__((weak, alias("Dummy_Handler")));
 extern void SERCOM2_Handler            ( void ) __attribute__((weak, alias("Dummy_Handler")));
 extern void SERCOM4_Handler            ( void ) __attribute__((weak, alias("Dummy_Handler")));
-extern void SERCOM5_Handler            ( void ) __attribute__((weak, alias("Dummy_Handler")));
 extern void TCC1_Handler               ( void ) __attribute__((weak, alias("Dummy_Handler")));
 extern void TCC2_Handler               ( void ) __attribute__((weak, alias("Dummy_Handler")));
 extern void TC3_Handler                ( void ) __attribute__((weak, alias("Dummy_Handler")));
 extern void TC5_Handler                ( void ) __attribute__((weak, alias("Dummy_Handler")));
 extern void TC6_Handler                ( void ) __attribute__((weak, alias("Dummy_Handler")));
 extern void TC7_Handler                ( void ) __attribute__((weak, alias("Dummy_Handler")));
-extern void ADC_Handler                ( void ) __attribute__((weak, alias("Dummy_Handler")));
 extern void AC_Handler                 ( void ) __attribute__((weak, alias("Dummy_Handler")));
 extern void DAC_Handler                ( void ) __attribute__((weak, alias("Dummy_Handler")));
 extern void PTC_Handler                ( void ) __attribute__((weak, alias("Dummy_Handler")));
@@ -138,7 +136,7 @@ const H3DeviceVectors exception_table=
     .pfnSERCOM2_Handler            = SERCOM2_Handler,
     .pfnSERCOM3_Handler            = SERCOM3_USART_InterruptHandler,
     .pfnSERCOM4_Handler            = SERCOM4_Handler,
-    .pfnSERCOM5_Handler            = SERCOM5_Handler,
+    .pfnSERCOM5_Handler            = SERCOM5_USART_InterruptHandler,
     .pfnTCC0_Handler               = TCC0_InterruptHandler,
     .pfnTCC1_Handler               = TCC1_Handler,
     .pfnTCC2_Handler               = TCC2_Handler,
@@ -147,7 +145,7 @@ const H3DeviceVectors exception_table=
     .pfnTC5_Handler                = TC5_Handler,
     .pfnTC6_Handler                = TC6_Handler,
     .pfnTC7_Handler                = TC7_Handler,
-    .pfnADC_Handler                = ADC_Handler,
+    .pfnADC_Handler                = ADC_InterruptHandler,
     .pfnAC_Handler                 = AC_Handler,
     .pfnDAC_Handler                = DAC_Handler,
     .pfnPTC_Handler                = PTC_Handler,

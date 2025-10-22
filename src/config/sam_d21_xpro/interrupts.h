@@ -61,8 +61,10 @@ void NonMaskableInt_Handler (void);
 void HardFault_Handler (void);
 void SysTick_Handler (void);
 void SERCOM3_USART_InterruptHandler (void);
+void SERCOM5_USART_InterruptHandler (void);
 void TCC0_InterruptHandler (void);
 void TC4_CaptureInterruptHandler (void);
+void ADC_InterruptHandler (void);
 
 
 

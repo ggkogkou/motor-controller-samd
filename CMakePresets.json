@@ -1,0 +1,18 @@
+{
+  "version": 5,
+  "cmakeMinimumRequired": { "major": 3, "minor": 20 },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    { "name": "j18a", "inherits": "base", "cacheVariables": { "MCU": "J18A" } },
+    { "name": "g18a", "inherits": "base", "cacheVariables": { "MCU": "G18A" } }
+  ]
+}
