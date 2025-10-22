@@ -64,6 +64,7 @@ void SERCOM3_USART_InterruptHandler (void);
 void SERCOM5_USART_InterruptHandler (void);
 void TCC0_InterruptHandler (void);
 void TC4_CaptureInterruptHandler (void);
+void ADC_InterruptHandler (void);
 
 
 

@@ -52,6 +52,7 @@
               <itemPath>../src/config/sam_d21_xpro/peripheral/tcc/plib_tcc0.h</itemPath>
               <itemPath>../src/config/sam_d21_xpro/peripheral/tcc/plib_tcc_common.h</itemPath>
               <itemPath>../src/config/sam_d21_xpro/peripheral/tcc/plib_tcc1.h</itemPath>
+              <itemPath>../src/config/sam_d21_xpro/peripheral/tcc/plib_tcc2.h</itemPath>
             </logicalFolder>
           </logicalFolder>
           <itemPath>../src/config/sam_d21_xpro/device_cache.h</itemPath>
@@ -211,6 +212,7 @@
             <logicalFolder name="f7" displayName="tcc" projectFiles="true">
               <itemPath>../src/config/sam_d21_xpro/peripheral/tcc/plib_tcc0.c</itemPath>
               <itemPath>../src/config/sam_d21_xpro/peripheral/tcc/plib_tcc1.c</itemPath>
+              <itemPath>../src/config/sam_d21_xpro/peripheral/tcc/plib_tcc2.c</itemPath>
             </logicalFolder>
           </logicalFolder>
           <logicalFolder name="f2" displayName="stdio" projectFiles="true">

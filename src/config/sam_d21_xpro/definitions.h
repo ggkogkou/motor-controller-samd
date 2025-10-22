@@ -62,6 +62,7 @@
 #include "peripheral/eic/plib_eic.h"
 #include "peripheral/tc/plib_tc4.h"
 #include "peripheral/tcc/plib_tcc1.h"
+#include "peripheral/tcc/plib_tcc2.h"
 #include "peripheral/tcc/plib_tcc0.h"
 
 // DOM-IGNORE-BEGIN

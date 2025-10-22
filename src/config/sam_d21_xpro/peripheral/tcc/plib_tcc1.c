@@ -79,7 +79,6 @@ void TCC1_PWMInitialize(void)
 
 
 
-    TCC1_REGS->TCC_EVCTRL = TCC_EVCTRL_TCEI0_Msk | TCC_EVCTRL_EVACT0_RETRIGGER;
     while (TCC1_REGS->TCC_SYNCBUSY != 0U)
     {
         /* Wait for sync */

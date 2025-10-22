@@ -132,6 +132,7 @@ set(SOURCES
         src/config/sam_d21_xpro/peripheral/tc/plib_tc4.c
         src/config/sam_d21_xpro/peripheral/tcc/plib_tcc0.c
         src/config/sam_d21_xpro/peripheral/tcc/plib_tcc1.c
+        src/config/sam_d21_xpro/peripheral/tcc/plib_tcc2.c
 
         drivers/as5047p.cpp
 )

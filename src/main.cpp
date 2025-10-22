@@ -31,62 +31,58 @@ static std::uint32_t period;
  */
 void TCC_PeriodEventHandler(uint32_t status, uintptr_t context) {
 
-    // TCC0_PWM24bitDutySet(TCC0_CHANNEL0, duties.dutyA);
-    // TCC0_PWM24bitDutySet(TCC0_CHANNEL1, duties.dutyB);
-    // TCC0_PWM24bitDutySet(TCC0_CHANNEL2, duties.dutyC);
+    auto prd = TCC0_PWM24bitPeriodGet();
+
+    if (status & TCC_INTFLAG_MC2_Msk)
+        ADC_ConversionStart();
+
+    if (status & TCC_INTFLAG_OVF_Msk) {
+        TCC0_PWM24bitDutySet(TCC0_CHANNEL1, prd/2);
+        TCC1_PWM24bitDutySet(TCC1_CHANNEL1, prd/2);
+        TCC2_PWM16bitDutySet(TCC2_CHANNEL0, prd/2);
+    }
 
 }
 
-/**
- * This function is called after TCC period event
- */
-// void TCC_PeriodEventHandler(uint32_t status, uintptr_t context) {
-//     static std::uint32_t duty0 = 800U;
-//     static std::uint32_t duty1 = 800U;
-//     static std::uint32_t duty2 = 1600U;
-//
-//     TCC0_PWM24bitDutySet(TCC0_CHANNEL0, duty0);
-//     TCC0_PWM24bitDutySet(TCC0_CHANNEL1, duty1);
-//     TCC0_PWM24bitDutySet(TCC0_CHANNEL2, duty2);
-// }
+// static volatile uint32_t adcResult = -1;
 
-volatile bool tc_buffer_ready = false;
+void ADC_Callback( ADC_STATUS status, uintptr_t context ) {
+    uint32_t adcResult = -1;
 
-void capture_handler( TC_CAPTURE_STATUS status, uintptr_t context) {
-    if ((status  & TC_CAPTURE_STATUS_CAPTURE0_READY) == TC_CAPTURE_STATUS_CAPTURE0_READY)
-    {
-        tc_buffer_ready = true;
-    }
+    if (status & ADC_INTFLAG_RESRDY_Msk)
+        adcResult = ADC_ConversionResultGet();
+
+    return;
 }
 
 [[noreturn]] int main ( ) {
     /* Initialize all modules */
     SYS_Initialize ( nullptr);
 
-
     SYSTICK_TimerStart();
     Logger_Initialize();
 
-    TC4_CaptureStart();
-    TC4_CaptureCallbackRegister(capture_handler, (uintptr_t)NULL);
-
     /* Register callback function for period event */
     TCC0_PWMCallbackRegister(TCC_PeriodEventHandler, (uintptr_t)NULL);
+    ADC_Enable();
+    ADC_CallbackRegister(ADC_Callback, NULL);
 
     /* Read the period */
+    // ADC_ConversionStart();
     period = TCC0_PWM24bitPeriodGet();
     SYSTICK_DelayMs(100);
     Logger_Info("PWM period configured\r\n");
 
-    /* Start PWM*/
-    // TCC0_PWMStart();
+    TCC0_PWMStart();
+    TCC1_PWMStart();
+    TCC2_PWMStart();
+
     SYSTICK_DelayMs(100);
     Logger_Info("PWM started\r\n");
 
     AS5047P as5047p;
 
     while ( true )     {
-        // Keep application alive; ISR updates PWM each period
         SYSTICK_DelayMs(500);
         Logger_Info("Running...\r\n");
     }

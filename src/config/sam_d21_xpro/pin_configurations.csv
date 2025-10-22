@@ -23,7 +23,7 @@ Pin Number,Pin ID,Custom Name,Function,Mode, Direction,Latch,Pull Up,Pull Down,D
 26,PB13,,Available,,,,,,NORMAL
 27,PB14,,Available,,,,,,NORMAL
 28,PB15,,Available,,,,,,NORMAL
-29,PA12,,Available,,,,,,NORMAL
+29,PA12,,TCC2_WO0,Digital,High Impedance,n/a,No,No,NORMAL
 30,PA13,,Available,,,,,,NORMAL
 31,PA14,,Available,,,,,,NORMAL
 32,PA15,TCC0_WO5,TCC0_WO5,Digital,High Impedance,n/a,No,No,NORMAL

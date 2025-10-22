@@ -61,6 +61,7 @@
 // Section: Global Data
 // *****************************************************************************
 // *****************************************************************************
+static volatile ADC_CALLBACK_OBJ ADC_CallbackObject;
 
 #define ADC_LINEARITY0_POS  (27U)
 #define ADC_LINEARITY0_Msk   ((0x1FUL << ADC_LINEARITY0_POS))
@@ -103,7 +104,7 @@ void ADC_Initialize( void )
     ADC_REGS->ADC_REFCTRL = ADC_REFCTRL_REFSEL_INTVCC1;
 
     /* positive and negative input pins */
-    ADC_REGS->ADC_INPUTCTRL = (uint32_t) ADC_POSINPUT_PIN2 | (uint32_t) ADC_NEGINPUT_GND \
+    ADC_REGS->ADC_INPUTCTRL = (uint32_t) ADC_POSINPUT_SCALEDCOREVCC | (uint32_t) ADC_NEGINPUT_GND \
         | ADC_INPUTCTRL_INPUTSCAN(0U) | ADC_INPUTCTRL_INPUTOFFSET(0U) | ADC_INPUTCTRL_GAIN_1X;
     while((ADC_REGS->ADC_STATUS & ADC_STATUS_SYNCBUSY_Msk)!= 0U)
     {
@@ -119,8 +120,8 @@ void ADC_Initialize( void )
 
     /* Clear all interrupt flags */
     ADC_REGS->ADC_INTFLAG = ADC_INTFLAG_Msk;
-    /* Events configuration  */
-    ADC_REGS->ADC_EVCTRL = ADC_EVCTRL_STARTEI_Msk;
+    /* Enable interrupts */
+    ADC_REGS->ADC_INTENSET = ADC_INTENSET_RESRDY_Msk;
 
     while((ADC_REGS->ADC_STATUS & ADC_STATUS_SYNCBUSY_Msk) != 0U)
     {
@@ -222,15 +223,25 @@ void ADC_InterruptsDisable(ADC_STATUS interruptMask)
     ADC_REGS->ADC_INTENCLR = interruptMask;
 }
 
-
-/* Check whether result is ready */
-bool ADC_ConversionStatusGet( void )
+/* Register callback function */
+void ADC_CallbackRegister( ADC_CALLBACK callback, uintptr_t context )
 {
-    bool status;
-    status =  (((ADC_REGS->ADC_INTFLAG & ADC_INTFLAG_RESRDY_Msk) >> ADC_INTFLAG_RESRDY_Pos)!= 0U);
-    if (status == true)
-    {
-        ADC_REGS->ADC_INTFLAG = ADC_INTFLAG_RESRDY_Msk;
-    }
-    return status;
+    ADC_CallbackObject.callback = callback;
+
+    ADC_CallbackObject.context = context;
 }
+
+
+void __attribute__((used)) ADC_InterruptHandler( void )
+{
+    ADC_STATUS status;
+    status = (ADC_STATUS) (ADC_REGS->ADC_INTFLAG);
+    /* Clear interrupt flag */
+    ADC_REGS->ADC_INTFLAG =  ADC_INTENSET_RESRDY_Msk;
+    if (ADC_CallbackObject.callback != NULL)
+    {
+        uintptr_t context = ADC_CallbackObject.context;
+        ADC_CallbackObject.callback(status, context);
+    }
+}
+

@@ -83,9 +83,9 @@ void TCC0_PWMInitialize(void)
     TCC0_REGS->TCC_PER = 2399U;
 
 
-    TCC0_REGS->TCC_INTENSET = TCC_INTENSET_OVF_Msk;
+    TCC0_REGS->TCC_INTENSET = TCC_INTENSET_MC1_Msk 
+ 	 	 | TCC_INTENSET_OVF_Msk;
 
-    TCC0_REGS->TCC_EVCTRL = TCC_EVCTRL_MCEO2_Msk | TCC_EVCTRL_OVFEO_Msk;
     while (TCC0_REGS->TCC_SYNCBUSY != 0U)
     {
         /* Wait for sync */
