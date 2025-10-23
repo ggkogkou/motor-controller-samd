@@ -135,6 +135,7 @@ set(SOURCES
         src/config/sam_d21_xpro/peripheral/tcc/plib_tcc2.c
 
         drivers/as5047p.cpp
+        drivers/drv8316.cpp
 )
 
 add_executable(${PROJECT_NAME}.elf ${SOURCES})
