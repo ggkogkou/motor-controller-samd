@@ -14,6 +14,19 @@ public:
     DRV8316() = default;
     ~DRV8316() = default;
 
+    enum class PWM_Mode : uint8_t {
+        MODE_6x = 0x0,
+        MODE_6x_CURRENT_LIM = 0x1,
+        MODE_3x = 0x2,
+        MODE_3x_CURRENT_LIM = 0x3,
+    };
+
+    /**
+     * Function that sets the PWM mode to the device
+     * @param pwmMode
+     */
+    void setPWMMode(PWM_Mode pwmMode);
+
     using RegisterAddress_t = uint8_t;
     enum class RegisterAddress : RegisterAddress_t {
         /// Status Registers
@@ -31,7 +44,7 @@ public:
         Control_Register_10 = 0xC0,
     };
 
-// private:
+private:
     /**
      * Function that writes SPI words to the DRV8316 device
      *
@@ -49,7 +62,7 @@ public:
      * @param registerAddress The register to be read
      * @return The 8-bit content of the register - ignore the status bits [15:8]
      */
-    uint8_t readRegister(RegisterAddress registerAddress);
+    [[nodiscard]] uint8_t readRegister(RegisterAddress registerAddress);
 
     /**
      * Type-alias to a register AND mask
