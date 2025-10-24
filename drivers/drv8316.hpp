@@ -5,9 +5,14 @@
 #include <cmath>
 #include <algorithm>
 #include "logger.h"
+#include "plib_sercom1_spi_master.h"
+#include "plib_sercom4_spi_master.h"
 
 class DRV8316 {
 public:
+
+    DRV8316() = default;
+    ~DRV8316() = default;
 
     using RegisterAddress_t = uint8_t;
     enum class RegisterAddress : RegisterAddress_t {
@@ -26,15 +31,40 @@ public:
         Control_Register_10 = 0xC0,
     };
 
-    using RegisterMask_t = uint8_t;
-    enum class RegisterMask : RegisterMask_t {
+// private:
+    /**
+     * Function that writes SPI words to the DRV8316 device
+     *
+     * @note For DRV8316, 1 word equals 16-bit of data into one packet
+     *
+     * @param address The 6-bit address of the register to write to
+     * @param value The 8-bit data word to write to the register
+     */
+    void writeRegister(RegisterAddress address, uint8_t value);
 
+    /**
+     * Function that reads from the DRV8316 via SPI protocol
+     * @param address The register to be read
+     * @return The 8-bit content of the register
+     */
+    uint8_t readRegister(RegisterAddress address);
+
+    /**
+     * Type-alias to a register AND mask
+     */
+    using RegisterMask_t = uint16_t;
+
+    using DRV8316Word_t = uint16_t;
+
+    enum class SPI_Operation : uint8_t {
+        WRITE = 0,
+        READ = 1,
     };
 
-
-
-private:
-    enum class IC_Status_RegisterMask : uint8_t {
+    /**
+     * The IC_Status_Register masks
+     */
+    enum class IC_Status_Register_Mask : RegisterMask_t {
         BK_FLT  = 0b0100'0000,
         SPI_FLT = 0b0010'0000,
         OCP     = 0b0001'0000,
@@ -44,7 +74,7 @@ private:
         FAULT   = 0b0000'0001,
     };
 
-    enum class Status_Register_1_Mask : uint8_t {
+    enum class Status_Register_1_Mask : RegisterMask_t {
         OTW    = 0b1000'0000,
         OTS    = 0b0100'0000,
         OCP_HC = 0b0010'0000,
@@ -55,7 +85,7 @@ private:
         OCP_LA = 0b0000'0001,
     };
 
-    enum class Status_Register_2_Mask : uint8_t {
+    enum class Status_Register_2_Mask : RegisterMask_t {
         OTP_ERR      = 0b0100'0000, /// One-Time-Programmability error
         BUCK_OCP     = 0b0010'0000, /// Buck regulator overcurrent
         BUCK_UV      = 0b0001'0000, /// Buck regulator undervoltage
@@ -65,11 +95,47 @@ private:
         SPI_ADDR_FLT = 0b0000'0001, /// SPI address fault
     };
 
-    enum class Control_Register_2_Mask : uint8_t {
+    enum class Control_Register_2_Mask : RegisterMask_t {
         SDO_MODE  = 0b0010'0000,
         SLEW      = 0b0001'1000,
         PWM_MODE  = 0b0000'0110,
         CLR_FLT   = 0b0000'0001,
     };
+
+    enum class Control_Register_3_Mask : RegisterMask_t {
+        PWM_100_DUTY_SEL = 0b0001'0000,
+        OVP_SEL          = 0b0000'1000,
+        OVP_EN           = 0b0000'0100,
+        OTW_REP          = 0b0000'0001,
+    };
+
+    enum class Control_Register_4_Mask : RegisterMask_t {
+        DRV_OFF   = 0b1000'0000,
+        OCP_CBC   = 0b0100'0000,
+        OCP_DEG   = 0b0011'0000,
+        OCP_RETRY = 0b0000'1000,
+        OCP_LVL   = 0b0000'0100,
+        OCP_MODE  = 0b0000'0011,
+    };
+
+    enum class Control_Register_5_Mask : RegisterMask_t {
+        ILIM_RECIR = 0b0100'0000,
+        EN_AAR     = 0b0000'1000,
+        EN_ASR     = 0b0000'0100,
+        CSA_GAIN   = 0b0000'0011,
+    };
+
+    enum class Control_Register_6_Mask : RegisterMask_t {
+        BUCK_PS_DIS = 0b0001'0000,
+        BUCK_CL     = 0b0000'1000,
+        BUCK_SEL    = 0b0000'0110,
+        BUCK_DIS    = 0b0000'0001,
+    };
+
+    enum class Control_Register_10_Mask : RegisterMask_t {
+        DLYCMP_EN  = 0b0001'0000,
+        DLY_TARGET = 0b0000'1111,
+    };
+
 
 };

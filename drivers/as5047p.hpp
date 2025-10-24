@@ -7,7 +7,6 @@
 #include <logger.h>
 #include <limits>
 #include <cmath>
-#include "plib_sercom1_spi_master.h"
 
 struct AS5047P_Config {
     enum class RotationDirection : uint16_t {

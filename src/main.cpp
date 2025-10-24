@@ -2,6 +2,7 @@
 #include "definitions.h"
 #include "logger.h"
 #include "as5047p.hpp"
+#include "drv8316.hpp"
 #include "svpwm.hpp"
 #include "math_utils.hpp"
 
@@ -55,6 +56,21 @@ void ADC_Callback( ADC_STATUS status, uintptr_t context ) {
     return;
 }
 
+static volatile bool debug_led_state = false;
+
+void debug_led_task() {
+    if (debug_led_state) {
+        DEBUG_LED_Clear();
+        debug_led_state = false;
+    }
+    else {
+        DEBUG_LED_Set();
+        debug_led_state = true;
+    }
+
+    SYSTICK_DelayMs(1000);
+}
+
 [[noreturn]] int main ( ) {
     /* Initialize all modules */
     SYS_Initialize ( nullptr);
@@ -63,9 +79,9 @@ void ADC_Callback( ADC_STATUS status, uintptr_t context ) {
     Logger_Initialize();
 
     /* Register callback function for period event */
-    TCC0_PWMCallbackRegister(TCC_PeriodEventHandler, (uintptr_t)NULL);
-    ADC_Enable();
-    ADC_CallbackRegister(ADC_Callback, NULL);
+    // TCC0_PWMCallbackRegister(TCC_PeriodEventHandler, (uintptr_t)NULL);
+    // ADC_Enable();
+    // ADC_CallbackRegister(ADC_Callback, NULL);
 
     /* Read the period */
     // ADC_ConversionStart();
@@ -73,18 +89,24 @@ void ADC_Callback( ADC_STATUS status, uintptr_t context ) {
     SYSTICK_DelayMs(100);
     Logger_Info("PWM period configured\r\n");
 
-    TCC0_PWMStart();
-    TCC1_PWMStart();
-    TCC2_PWMStart();
+    // TCC0_PWMStart();
+    // TCC1_PWMStart();
+    // TCC2_PWMStart();
 
-    SYSTICK_DelayMs(100);
+    SYSTICK_DelayMs(1000);
     Logger_Info("PWM started\r\n");
 
     AS5047P as5047p;
+    DRV8316 drv8316;
 
-    while ( true )     {
-        SYSTICK_DelayMs(500);
+    while ( true ) {
+        // SYSTICK_DelayMs(1000);
+        drv8316.readRegister(DRV8316::RegisterAddress::Control_Register_1);
+        // SYSTICK_DelayMs(100);
+        // auto y = as5047p.measureAngleUncompensated();
         Logger_Info("Running...\r\n");
+
+        // debug_led_task();
     }
 
 }

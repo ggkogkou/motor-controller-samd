@@ -1,5 +1,8 @@
 #include "as5047p.hpp"
 
+// #include "plib_sercom4_spi_master.h"
+#include "definitions.h"
+
 AS5047P::AS5047P(AS5047P_Config config) {
 
 }
@@ -21,7 +24,7 @@ AS5047P::RegisterData_t AS5047P::readDeviceRegister(RegisterAddress registerAddr
 
     AS5047_CS_Clear();
 
-    if(SERCOM1_SPI_Write(&txBuffer[0], 2))
+    if(SERCOM4_SPI_Write(&txBuffer[0], 2))
         Logger_Info("SPI sent data\r\n");
     else
         Logger_Error("SPI failed to send data\r\n");
@@ -30,7 +33,7 @@ AS5047P::RegisterData_t AS5047P::readDeviceRegister(RegisterAddress registerAddr
     SYSTICK_DelayMs(1);
     AS5047_CS_Clear();
 
-    if(SERCOM1_SPI_Read(&rxBuffer[0], 2))
+    if(SERCOM4_SPI_Read(&rxBuffer[0], 2))
         Logger_Info("SPI returned data\r\n");
     else
         Logger_Error("SPI failed to return data\r\n");
@@ -62,7 +65,7 @@ void AS5047P::writeDeviceRegister(RegisterAddress registerAddress, RegisterData_
 
     AS5047_CS_Clear();
 
-    if(SERCOM1_SPI_Write(&addressBuffer[0], 2))
+    if(SERCOM4_SPI_Write(&addressBuffer[0], 2))
         Logger_Info("SPI sent data\r\n");
     else
         Logger_Error("SPI failed to send data\r\n");
@@ -71,7 +74,7 @@ void AS5047P::writeDeviceRegister(RegisterAddress registerAddress, RegisterData_
     SYSTICK_DelayMs(1);
     AS5047_CS_Clear();
 
-    if(SERCOM1_SPI_Write(&dataBuffer[0], 2))
+    if(SERCOM4_SPI_Write(&dataBuffer[0], 2))
         Logger_Info("SPI sent data\r\n");
     else
         Logger_Error("SPI failed to send data\r\n");
