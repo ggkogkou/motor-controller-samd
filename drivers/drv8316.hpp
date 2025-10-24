@@ -37,24 +37,24 @@ public:
      *
      * @note For DRV8316, 1 word equals 16-bit of data into one packet
      *
-     * @param address The 6-bit address of the register to write to
-     * @param value The 8-bit data word to write to the register
+     * @param registerAddress The 6-bit address of the register to write to
+     * @param dataToWrite The 8-bit data word to write to the register
      */
-    void writeRegister(RegisterAddress address, uint8_t value);
+    void writeRegister(RegisterAddress registerAddress, uint8_t dataToWrite);
 
     /**
      * Function that reads from the DRV8316 via SPI protocol
-     * @param address The register to be read
-     * @return The 8-bit content of the register
+     *
+     * @note For READ operation the DATA[7:0] is ignored so for simplicity we write 0x0
+     * @param registerAddress The register to be read
+     * @return The 8-bit content of the register - ignore the status bits [15:8]
      */
-    uint8_t readRegister(RegisterAddress address);
+    uint8_t readRegister(RegisterAddress registerAddress);
 
     /**
      * Type-alias to a register AND mask
      */
     using RegisterMask_t = uint16_t;
-
-    using DRV8316Word_t = uint16_t;
 
     enum class SPI_Operation : uint8_t {
         WRITE = 0,
