@@ -49,7 +49,9 @@ uint8_t DRV8316::readRegister(RegisterAddress registerAddress) {
 
 void DRV8316::setPWMMode(PWM_Mode pwmMode) {
     constexpr auto PWM_ModeBitsMask = static_cast<RegisterMask_t>(Control_Register_2_Mask::PWM_MODE);
-    const auto RegisterData = readRegister(RegisterAddress::Control_Register_2);
+    constexpr auto PWM_ModeFieldClearMask = static_cast<uint8_t>(~PWM_ModeBitsMask);
+
+    const auto RegisterData = readRegister(RegisterAddress::Control_Register_2) & PWM_ModeFieldClearMask;
 
     const uint8_t DataToWrite = RegisterData | (static_cast<uint8_t>(pwmMode) << 1);
     writeRegister(RegisterAddress::Control_Register_2, DataToWrite);
