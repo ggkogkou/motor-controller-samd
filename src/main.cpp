@@ -2,49 +2,31 @@
 #include "definitions.h"
 #include "logger.h"
 #include "as5047p.hpp"
+#include "drv8316.hpp"
 #include "svpwm.hpp"
-#include "math_utils.hpp"
 
-/***************************************
- * Check PWM outputs on pins
- * Channel 0 PWMH - PA08
- * Channel 0 PWML - PB10
- * Channel 1 PWMH - PA09
- * Channel 1 PWML - PB11
- * Channel 2 PWMH - PA10
- * Channel 2 PWML - PB12
-***************************************/
+static volatile uint32_t DutyCycle1;
+static volatile uint32_t DutyCycle2;
+static volatile uint32_t DutyCycle3;
 
 /**
- * Duty cycle increment value
+ * The PWM end-of-period Interrupt Service Routine (ISR) Callback function
+ *
+ * @param status
+ * @param context
  */
-inline constexpr std::uint32_t DUTY_INCREMENT = 10;
-
-/**
- * Save PWM period
- */
-static std::uint32_t period;
-
-/**
- * PWM period ISR: sweep angle at fixed magnitude
- * Keep ISR minimal: compute duties and write CC
- */
-void TCC_PeriodEventHandler(uint32_t status, uintptr_t context) {
-
-    auto prd = TCC0_PWM24bitPeriodGet();
+void PWM_IRQ_Callback(uint32_t status, uintptr_t context) {
+    const auto Period = TCC0_PWM24bitPeriodGet();
 
     if (status & TCC_INTFLAG_MC2_Msk)
         ADC_ConversionStart();
 
     if (status & TCC_INTFLAG_OVF_Msk) {
-        TCC0_PWM24bitDutySet(TCC0_CHANNEL1, prd/2);
-        TCC1_PWM24bitDutySet(TCC1_CHANNEL1, prd/2);
-        TCC2_PWM16bitDutySet(TCC2_CHANNEL0, prd/2);
+        TCC0_PWM24bitDutySet(TCC0_CHANNEL1, Period/2);
+        TCC0_PWM24bitDutySet(TCC0_CHANNEL2, Period/2);
+        TCC1_PWM24bitDutySet(TCC1_CHANNEL1, Period/2);
     }
-
 }
-
-// static volatile uint32_t adcResult = -1;
 
 void ADC_Callback( ADC_STATUS status, uintptr_t context ) {
     uint32_t adcResult = -1;
@@ -55,36 +37,56 @@ void ADC_Callback( ADC_STATUS status, uintptr_t context ) {
     return;
 }
 
+static volatile bool debug_led_state = false;
+
+/**
+ * A periodic LED blinking task for visual debugging purposes
+ */
+void debug_led_task() {
+    if (debug_led_state) {
+        DEBUG_LED_Clear();
+        debug_led_state = false;
+    }
+    else {
+        DEBUG_LED_Set();
+        debug_led_state = true;
+    }
+
+    SYSTICK_DelayMs(1000);
+}
+
 [[noreturn]] int main ( ) {
-    /* Initialize all modules */
     SYS_Initialize ( nullptr);
 
     SYSTICK_TimerStart();
     Logger_Initialize();
 
-    /* Register callback function for period event */
-    TCC0_PWMCallbackRegister(TCC_PeriodEventHandler, (uintptr_t)NULL);
+    TCC0_PWMCallbackRegister(PWM_IRQ_Callback, 0);
     ADC_Enable();
-    ADC_CallbackRegister(ADC_Callback, NULL);
+    ADC_CallbackRegister(ADC_Callback, 0);
 
-    /* Read the period */
-    // ADC_ConversionStart();
-    period = TCC0_PWM24bitPeriodGet();
-    SYSTICK_DelayMs(100);
-    Logger_Info("PWM period configured\r\n");
+    SYSTICK_DelayMs(10);
+    Logger_Info("PWM configured\r\n");
 
     TCC0_PWMStart();
     TCC1_PWMStart();
-    TCC2_PWMStart();
 
-    SYSTICK_DelayMs(100);
-    Logger_Info("PWM started\r\n");
+    SYSTICK_DelayMs(10);
 
-    AS5047P as5047p;
+    const AS5047P Encoder;
 
-    while ( true )     {
-        SYSTICK_DelayMs(500);
+    SPARE_GPIO_Clear();
+    DRV8316 BrushlessDriver;
+    BrushlessDriver.unlockAllRegisters();
+    BrushlessDriver.setPWMMode(DRV8316::PWM_Mode::MODE_3x);
+    BrushlessDriver.setCurrentSenseAmplifierGain(DRV8316::CurrentSenseGain::CSA_GAIN_0_30);
+
+    while (true) {
+        auto x = BrushlessDriver.checkForFaults();
+        auto y = Encoder.measureAngleUncompensated();
+
         Logger_Info("Running...\r\n");
+        debug_led_task();
     }
 
 }

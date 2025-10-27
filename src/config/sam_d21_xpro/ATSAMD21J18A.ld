@@ -157,6 +157,7 @@ SECTIONS
     . = ALIGN(8);
     __end__ = .;
     PROVIDE(end = .);
+    PROVIDE(_end = __end__);
     . = . + __HEAP_SIZE;
     . = ALIGN(8);
     __HeapLimit = .;

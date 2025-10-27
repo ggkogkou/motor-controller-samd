@@ -10,7 +10,7 @@ Pin Number,Pin ID,Custom Name,Function,Mode, Direction,Latch,Pull Up,Pull Down,D
 11,PB08,ADC_AIN2,ADC_AIN2,Analog,High Impedance,n/a,,,NORMAL
 12,PB09,ADC_AIN3,ADC_AIN3,Analog,High Impedance,n/a,,,NORMAL
 13,PA04,ADC_AIN4,ADC_AIN4/VREFP,Analog,High Impedance,n/a,,,NORMAL
-14,PA05,,Available,,,,,,NORMAL
+14,PA05,FEATHER_CS,GPIO,Digital,Out,High,,,NORMAL
 15,PA06,,Available,,,,,,NORMAL
 16,PA07,TCC1_WO1,TCC1_WO1,Digital,High Impedance,n/a,No,No,NORMAL
 17,PA08,TCC0_WO0,TCC0_WO0,Digital,High Impedance,n/a,No,No,NORMAL
@@ -19,15 +19,15 @@ Pin Number,Pin ID,Custom Name,Function,Mode, Direction,Latch,Pull Up,Pull Down,D
 20,PA11,,Available,,,,,,NORMAL
 23,PB10,SPI_MOSI,SERCOM4_PAD2,Digital,High Impedance,n/a,No,No,NORMAL
 24,PB11,SPI_SCLK,SERCOM4_PAD3,Digital,High Impedance,n/a,No,No,NORMAL
-25,PB12,SPI_MISO,SERCOM4_PAD0,Digital,High Impedance,n/a,No,No,NORMAL
+25,PB12,,Available,,,,,,NORMAL
 26,PB13,,Available,,,,,,NORMAL
 27,PB14,,Available,,,,,,NORMAL
 28,PB15,,Available,,,,,,NORMAL
-29,PA12,,TCC2_WO0,Digital,High Impedance,n/a,No,No,NORMAL
+29,PA12,SPI_MISO,SERCOM4_PAD0,Digital,High Impedance,n/a,No,No,NORMAL
 30,PA13,,Available,,,,,,NORMAL
 31,PA14,,Available,,,,,,NORMAL
 32,PA15,TCC0_WO5,TCC0_WO5,Digital,High Impedance,n/a,No,No,NORMAL
-35,PA16,,Available,,,,,,NORMAL
+35,PA16,SPARE_GPIO,GPIO,Digital,Out,High,,,NORMAL
 36,PA17,DEBUG_LED,GPIO,Digital,Out,Low,,,NORMAL
 37,PA18,,Available,,,,,,NORMAL
 38,PA19,,Available,,,,,,NORMAL

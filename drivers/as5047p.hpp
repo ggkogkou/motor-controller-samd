@@ -1,13 +1,13 @@
 #pragma once
 
-#define _USE_MATH_DEFINES
 #include <cstdint>
 #include <array>
 #include <type_traits>
 #include <logger.h>
 #include <limits>
 #include <cmath>
-#include "plib_sercom1_spi_master.h"
+#include <bit>
+#include "definitions.h"
 
 struct AS5047P_Config {
     enum class RotationDirection : uint16_t {
