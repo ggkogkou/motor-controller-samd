@@ -40,7 +40,7 @@ void DRV8316::writeRegister(RegisterAddress registerAddress, uint8_t dataToWrite
     constexpr uint8_t WriteOperationBit = 0x0;
 
     const auto WriteOperationMSB = [&]() -> uint8_t {
-        uint8_t cmd = WriteOperationBit | static_cast<uint8_t>(registerAddress);
+        uint8_t cmd = WriteOperationBit | (static_cast<uint8_t>(registerAddress) << 1);
 
         if (std::popcount(cmd) % 2 == 1)
             cmd |= 0b0000'0001;
