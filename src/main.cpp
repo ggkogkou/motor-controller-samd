@@ -5,6 +5,10 @@
 #include "drv8316.hpp"
 #include "svpwm.hpp"
 
+static volatile uint32_t DutyCycle1;
+static volatile uint32_t DutyCycle2;
+static volatile uint32_t DutyCycle3;
+
 /**
  * The PWM end-of-period Interrupt Service Routine (ISR) Callback function
  *
@@ -18,10 +22,9 @@ void PWM_IRQ_Callback(uint32_t status, uintptr_t context) {
         ADC_ConversionStart();
 
     if (status & TCC_INTFLAG_OVF_Msk) {
-        // TCC0_PWM24bitDutySet(TCC0_CHANNEL1, Period/2);
-        // TCC0_PWM24bitDutySet(TCC0_CHANNEL2, Period/2);
-        // TCC1_PWM24bitDutySet(TCC1_CHANNEL1, Period/2);
-        // TCC2_PWM16bitDutySet(TCC2_CHANNEL0, Period/2);
+        TCC0_PWM24bitDutySet(TCC0_CHANNEL1, Period/2);
+        TCC0_PWM24bitDutySet(TCC0_CHANNEL2, Period/2);
+        TCC1_PWM24bitDutySet(TCC1_CHANNEL1, Period/2);
     }
 }
 
@@ -72,9 +75,11 @@ void debug_led_task() {
 
     const AS5047P Encoder;
 
+    SPARE_GPIO_Clear();
     DRV8316 BrushlessDriver;
-    // BrushlessDriver.setPWMMode(DRV8316::PWM_Mode::MODE_3x);
-    // BrushlessDriver.setCurrentSenseAmplifierGain(DRV8316::CurrentSenseGain::CSA_GAIN_0_15);
+    BrushlessDriver.unlockAllRegisters();
+    BrushlessDriver.setPWMMode(DRV8316::PWM_Mode::MODE_3x);
+    BrushlessDriver.setCurrentSenseAmplifierGain(DRV8316::CurrentSenseGain::CSA_GAIN_0_30);
 
     while (true) {
         auto x = BrushlessDriver.checkForFaults();

@@ -118,9 +118,14 @@
 #define TCC0_WO5_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 15U)) & 0x01U)
 #define TCC0_WO5_PIN                  PORT_PIN_PA15
 
-/*** Macros for SERCOM1_SPI_MISO pin ***/
-#define SERCOM1_SPI_MISO_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 16U)) & 0x01U)
-#define SERCOM1_SPI_MISO_PIN                  PORT_PIN_PA16
+/*** Macros for SPARE_GPIO pin ***/
+#define SPARE_GPIO_Set()               (PORT_REGS->GROUP[0].PORT_OUTSET = ((uint32_t)1U << 16U))
+#define SPARE_GPIO_Clear()             (PORT_REGS->GROUP[0].PORT_OUTCLR = ((uint32_t)1U << 16U))
+#define SPARE_GPIO_Toggle()            (PORT_REGS->GROUP[0].PORT_OUTTGL = ((uint32_t)1U << 16U))
+#define SPARE_GPIO_OutputEnable()      (PORT_REGS->GROUP[0].PORT_DIRSET = ((uint32_t)1U << 16U))
+#define SPARE_GPIO_InputEnable()       (PORT_REGS->GROUP[0].PORT_DIRCLR = ((uint32_t)1U << 16U))
+#define SPARE_GPIO_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 16U)) & 0x01U)
+#define SPARE_GPIO_PIN                  PORT_PIN_PA16
 
 /*** Macros for DEBUG_LED pin ***/
 #define DEBUG_LED_Set()               (PORT_REGS->GROUP[0].PORT_OUTSET = ((uint32_t)1U << 17U))
@@ -130,14 +135,6 @@
 #define DEBUG_LED_InputEnable()       (PORT_REGS->GROUP[0].PORT_DIRCLR = ((uint32_t)1U << 17U))
 #define DEBUG_LED_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 17U)) & 0x01U)
 #define DEBUG_LED_PIN                  PORT_PIN_PA17
-
-/*** Macros for SERCOM1_SPI_MOSI pin ***/
-#define SERCOM1_SPI_MOSI_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 18U)) & 0x01U)
-#define SERCOM1_SPI_MOSI_PIN                  PORT_PIN_PA18
-
-/*** Macros for SERCOM1_SPI_SCLK pin ***/
-#define SERCOM1_SPI_SCLK_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 19U)) & 0x01U)
-#define SERCOM1_SPI_SCLK_PIN                  PORT_PIN_PA19
 
 /*** Macros for TCC0_WO6 pin ***/
 #define TCC0_WO6_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 20U)) & 0x01U)

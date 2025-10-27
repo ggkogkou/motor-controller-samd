@@ -46,6 +46,10 @@ public:
      */
     void setCurrentSenseAmplifierGain(CurrentSenseGain gain) ;
 
+    void lockAllRegisters();
+
+    void unlockAllRegisters();
+
     [[nodiscard]] bool checkForFaults() ;
 
     using RegisterAddress_t = uint8_t;
@@ -127,6 +131,10 @@ private:
         SPI_PARITY   = 0b0000'0100, /// SPI parity error
         SPI_SCLK_FLT = 0b0000'0010, /// SPI clock framing error
         SPI_ADDR_FLT = 0b0000'0001, /// SPI address fault
+    };
+
+    enum class Control_Register_1_Mask : RegisterMask_t {
+        REG_LOCK  = 0b0000'0111,
     };
 
     enum class Control_Register_2_Mask : RegisterMask_t {
