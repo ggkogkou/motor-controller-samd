@@ -7,6 +7,7 @@
 #include "logger.h"
 #include "plib_sercom1_spi_master.h"
 #include "plib_sercom4_spi_master.h"
+#include <bit>
 
 class DRV8316 {
 public:

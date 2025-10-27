@@ -1,8 +1,5 @@
 #include "as5047p.hpp"
 
-// #include "plib_sercom4_spi_master.h"
-#include "definitions.h"
-
 AS5047P::AS5047P(AS5047P_Config config) {
 
 }
@@ -11,7 +8,7 @@ AS5047P::RegisterData_t AS5047P::readDeviceRegister(RegisterAddress registerAddr
     uint16_t commandFrame = ReadWriteCommandMask::READ | registerAddress;
 
     // Calculate parity bit -- ARM GCC built-in command for popcnt
-    if (__builtin_popcount(commandFrame) % 2 == 0)
+    if (std::popcount(commandFrame) % 2 == 0)
         commandFrame = commandFrame | static_cast<uint16_t>(ParityBit::PARITY_BIT_0);
     else
         commandFrame = commandFrame | static_cast<uint16_t>(ParityBit::PARITY_BIT_1);
@@ -43,7 +40,7 @@ AS5047P::RegisterData_t AS5047P::readDeviceRegister(RegisterAddress registerAddr
     const decltype(rxBuffer)::value_type PARD_Bit = rxBuffer[0] & 0b0111'1111;
     const decltype(rxBuffer)::value_type EF_Bit = rxBuffer[0] & 0b1011'1111;
 
-    if (( __builtin_popcount(rxBuffer[1]) + __builtin_popcount(rxBuffer[0]) ) % 2 == 1 && PARD_Bit == 0)
+    if ((std::popcount(rxBuffer[1]) + std::popcount(rxBuffer[0]) ) % 2 == 1 && PARD_Bit == 0)
         Logger_Error("Parity Bit Error, PARD set incorrectly");
 
     if (EF_Bit == 1)

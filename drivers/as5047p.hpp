@@ -7,6 +7,7 @@
 #include <logger.h>
 #include <limits>
 #include <cmath>
+#include <bit>
 
 struct AS5047P_Config {
     enum class RotationDirection : uint16_t {

@@ -6,7 +6,7 @@ void DRV8316::writeRegister(RegisterAddress registerAddress, uint8_t dataToWrite
     const auto WriteOperationMSB = [&]() -> uint8_t {
         uint8_t cmd = WriteOperationBit | static_cast<uint8_t>(registerAddress);
 
-        if (__builtin_popcount(cmd) % 2 == 1)
+        if (std::popcount(cmd) % 2 == 1)
             cmd |= 0b0000'0001;
 
         return cmd;
@@ -29,12 +29,11 @@ uint8_t DRV8316::readRegister(RegisterAddress registerAddress) {
     const auto ReadOperationMSB = [&]() -> uint8_t {
         uint8_t cmd = ReadOperationBit | static_cast<uint8_t>(registerAddress);
 
-        if (__builtin_popcount(cmd) % 2 == 1)
+        if (std::popcount(cmd) % 2 == 1)
             cmd |= 0b0000'0001;
 
         return cmd;
     }();
-
 
     auto CommandFrame = std::array{ReadOperationMSB, ReadOperationLSB};
     std::array<uint8_t, 2> rxBuffer {0};
