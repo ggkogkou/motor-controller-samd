@@ -5,8 +5,7 @@
 #include <cmath>
 #include <algorithm>
 #include "logger.h"
-#include "plib_sercom1_spi_master.h"
-#include "plib_sercom4_spi_master.h"
+#include "definitions.h"
 #include <bit>
 
 class DRV8316 {
@@ -15,6 +14,9 @@ public:
     DRV8316() = default;
     ~DRV8316() = default;
 
+    /**
+     * The PWM modes supported by the DRV8316 (Control_Register_2)
+     */
     enum class PWM_Mode : uint8_t {
         MODE_6x = 0x0,
         MODE_6x_CURRENT_LIM = 0x1,
@@ -23,10 +25,28 @@ public:
     };
 
     /**
+     * The PWM modes supported by the DRV8316 (Control_Register_5)
+     */
+    enum class CurrentSenseGain : uint8_t {
+        CSA_GAIN_0_15 = 0x0,
+        CSA_GAIN_0_30 = 0x1,
+        CSA_GAIN_0_6 = 0x2,
+        CSA_GAIN_1_2 = 0x3,
+    };
+
+    /**
      * Function that sets the PWM mode to the device
      * @param pwmMode
      */
-    void setPWMMode(PWM_Mode pwmMode);
+    void setPWMMode(PWM_Mode pwmMode) ;
+
+    /**
+     * Function that sets the gain of the internal current sense amplifier
+     * @param gain
+     */
+    void setCurrentSenseAmplifierGain(CurrentSenseGain gain) ;
+
+    [[nodiscard]] bool checkForFaults() ;
 
     using RegisterAddress_t = uint8_t;
     enum class RegisterAddress : RegisterAddress_t {
@@ -54,16 +74,16 @@ private:
      * @param registerAddress The 6-bit address of the register to write to
      * @param dataToWrite The 8-bit data word to write to the register
      */
-    void writeRegister(RegisterAddress registerAddress, uint8_t dataToWrite);
+    void writeRegister(RegisterAddress registerAddress, uint8_t dataToWrite) ;
 
     /**
      * Function that reads from the DRV8316 via SPI protocol
      *
-     * @note For READ operation the DATA[7:0] is ignored so for simplicity we write 0x0
+     * @note For READ operation the DATA[7:0] is ignored, so for simplicity we write 0x0
      * @param registerAddress The register to be read
      * @return The 8-bit content of the register - ignore the status bits [15:8]
      */
-    [[nodiscard]] uint8_t readRegister(RegisterAddress registerAddress);
+    [[nodiscard]] uint8_t readRegister(RegisterAddress registerAddress) ;
 
     /**
      * Type-alias to a register AND mask

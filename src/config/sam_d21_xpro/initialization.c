@@ -27,7 +27,7 @@ void SYS_Initialize ( void* data ) {
   SERCOM5_USART_Initialize();
   ADC_Initialize();
   TC4_CaptureInitialize();
+  TCC0_PWMInitialize();
   TCC1_PWMInitialize();
   TCC2_PWMInitialize();
-  TCC0_PWMInitialize();
 }
