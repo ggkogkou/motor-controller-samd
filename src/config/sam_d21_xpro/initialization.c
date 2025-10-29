@@ -154,6 +154,8 @@ void SYS_Initialize ( void* data )
     ADC_Initialize();
     EIC_Initialize();
 
+    TC3_TimerInitialize();
+
     TC4_CaptureInitialize();
 
     TCC1_PWMInitialize();

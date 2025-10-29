@@ -84,11 +84,6 @@ include_directories(
         src/config/sam_d21_xpro/peripheral/tc
         src/config/sam_d21_xpro/peripheral/tcc
 
-#        src/packs/ATSAMD21J18A_DFP
-#        src/packs/ATSAMD21J18A_DFP/component
-#        src/packs/ATSAMD21J18A_DFP/instance
-#        src/packs/ATSAMD21J18A_DFP/pio
-
         src/packs/ATSAMD21_DFP
         src/packs/ATSAMD21_DFP/component
         src/packs/ATSAMD21_DFP/instance
@@ -128,7 +123,7 @@ set(SOURCES
         src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom5_usart.c
 #        src/config/sam_d21_xpro/peripheral/sercom/spi_master/plib_sercom1_spi_master.c
         src/config/sam_d21_xpro/peripheral/sercom/spi_master/plib_sercom4_spi_master.c
-        src/config/sam_d21_xpro/peripheral/tc/plib_tc4.c
+        src/config/sam_d21_xpro/peripheral/tc/plib_tc3.c
         src/config/sam_d21_xpro/peripheral/tc/plib_tc4.c
         src/config/sam_d21_xpro/peripheral/tcc/plib_tcc0.c
         src/config/sam_d21_xpro/peripheral/tcc/plib_tcc1.c
