@@ -8,9 +8,8 @@
 using namespace SpaceVectorModulation;
 using namespace MathUtilities;
 
-static volatile uint32_t TCC_Period1;
-static volatile uint32_t TCC_Period2;
-static volatile uint32_t TCC_Period3;
+AS5047P Encoder;
+DRV8316 BrushlessDriver;
 
 inline constexpr float GlobalVoltageLimit = 3.0f;
 inline constexpr float DCLinkVoltage = 20.0f;
@@ -26,6 +25,35 @@ static volatile float theta_m = 0.0f;
  */
 static volatile float dT = 0;
 
+/**
+ *
+ * DRV8316 Pinout Matching
+ * -----------------------
+ * Phase U: TCC0_WO5, ADC_AIN2
+ * Phase V: TCC0_WO6, ADC_AIN3
+ * Phase W: TCC1_WO1, ADC_AIN4
+ *
+ */
+static volatile uint32_t TCC_PeriodU = 0;
+static volatile uint32_t TCC_PeriodV = 0;
+static volatile uint32_t TCC_PeriodW = 0;
+
+inline constexpr ADC_POSINPUT ADC_InputU = ADC_POSINPUT_PIN2;
+inline constexpr ADC_POSINPUT ADC_InputV = ADC_POSINPUT_PIN3;
+inline constexpr ADC_POSINPUT ADC_InputW = ADC_POSINPUT_PIN4;
+
+static volatile uint16_t adcResultU = 0;
+static volatile uint16_t adcResultV = 0;
+static volatile uint16_t adcResultW = 0;
+
+static volatile uint8_t adcCounter = 0;
+static volatile bool adcResultsReady = false;
+
+inline constexpr ADC_NEGINPUT NegativeInput = ADC_NEGINPUT_GND;
+inline constexpr uint16_t ADC_VREF = 2230; // mV
+
+static volatile uint16_t angleEncoder = 0;
+
 SVPWM svpwm{DCLinkVoltage, ZeroSequenceModulationType::MIDPOINT_CLAMP};
 
 uint32_t period = 0;
@@ -39,31 +67,67 @@ uint32_t period = 0;
 void PWM_IRQ_Callback(uint32_t status, uintptr_t context) {
     // const auto Period = TCC0_PWM24bitPeriodGet();
 
-    if (status & TCC_INTFLAG_MC2_Msk)
+    if (status & TCC_INTFLAG_MC2_Msk && adcCounter == 0) {
+        ADC_ChannelSelect(ADC_InputU, NegativeInput);
         ADC_ConversionStart();
+    }
 
     if (status & TCC_INTFLAG_OVF_Msk) {
-        TCC0_PWM24bitDutySet(TCC0_CHANNEL1, TCC_Period1);
-        TCC0_PWM24bitDutySet(TCC0_CHANNEL2, TCC_Period2);
-        TCC1_PWM24bitDutySet(TCC1_CHANNEL1, TCC_Period3);
+        TCC0_PWM24bitDutySet(TCC0_CHANNEL1, TCC_PeriodU);
+        TCC0_PWM24bitDutySet(TCC0_CHANNEL2, TCC_PeriodV);
+        TCC1_PWM24bitDutySet(TCC1_CHANNEL1, TCC_PeriodW);
+        // TCC0_PWM24bitDutySet(TCC0_CHANNEL1, period);
+        // TCC0_PWM24bitDutySet(TCC0_CHANNEL2, period);
+        // TCC1_PWM24bitDutySet(TCC1_CHANNEL1, period);
     }
 }
 
 void ADC_Callback(ADC_STATUS status, uintptr_t context) {
-    uint32_t adcResult = -1;
+    (void)context;
 
-    if (status & ADC_INTFLAG_RESRDY_Msk)
-        adcResult = ADC_ConversionResultGet();
+    if (status & ADC_INTFLAG_OVERRUN_Msk)
+        ADC_InterruptsClear(ADC_INTFLAG_OVERRUN_Msk);
 
-    return;
+    if (status & ADC_INTFLAG_RESRDY_Msk) {
+        if (adcCounter == 0) {
+            adcResultU = ADC_ConversionResultGet();
+            ADC_ChannelSelect(ADC_InputV, NegativeInput);
+            ADC_ConversionStart();
+            adcCounter = 1;
+        }
+        else if (adcCounter == 1) {
+            adcResultV = ADC_ConversionResultGet();
+            ADC_ChannelSelect(ADC_InputW, NegativeInput);
+            ADC_ConversionStart();
+            adcCounter = 2;
+        }
+        else if (adcCounter == 2) {
+            adcResultW = ADC_ConversionResultGet();
+            adcCounter = 3;
+            adcResultsReady = true;
+        }
+    }
 }
 
 void TC3_FOC_Handler(TC_TIMER_STATUS status, uintptr_t context) {
-    auto wrap = [](float x){
-        while (x < 0.0f)    x += TWO_PI;
-        while (x >= TWO_PI) x -= TWO_PI;
+    auto wrap = [](float x) {
+        while (x < 0.0f)
+            x += TWO_PI;
+        while (x >= TWO_PI)
+            x -= TWO_PI;
         return x;
     };
+
+    if (adcResultsReady) {
+        __disable_irq();
+        uint16_t currentPhaseU = ADC_VREF * adcResultU / static_cast<uint16_t>(4095);
+        uint16_t currentPhaseV = ADC_VREF * adcResultV / static_cast<uint16_t>(4095);
+        uint16_t currentPhaseW = ADC_VREF * adcResultW / static_cast<uint16_t>(4095);
+        auto the_sum = static_cast<int32_t>(currentPhaseU) + static_cast<int32_t>(currentPhaseV) + static_cast<int32_t>(currentPhaseW) - 3*1650;
+        adcCounter = 0;
+        adcResultsReady = false;
+        __enable_irq();
+    }
 
     const float theta_m_next = wrap(theta_m + dT * TargetVelocity);
     theta_m = theta_m_next;
@@ -75,9 +139,15 @@ void TC3_FOC_Handler(TC_TIMER_STATUS status, uintptr_t context) {
 
     const auto [dutyCycleA, dutyCycleB, dutyCycleC] = svpwm.compute(inv_park[0], inv_park[1]);
 
-    TCC_Period1 = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleA);
-    TCC_Period2 = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleB);
-    TCC_Period3 = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleC);
+    TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleA);
+    TCC_PeriodV = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleB);
+    TCC_PeriodW = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleC);
+}
+
+void SPI_Callback(uintptr_t context) {
+    (void)context;
+
+
 }
 
 static volatile bool debug_led_state = false;
@@ -97,52 +167,49 @@ void debug_led_task() {
     SYSTICK_DelayMs(1000);
 }
 
-[[noreturn]] int main() {
-    SYS_Initialize(nullptr);
+void devices_init() {
+    SPARE_GPIO_Clear();
+    BrushlessDriver.unlockAllRegisters();
+    BrushlessDriver.setPWMMode(DRV8316::PWM_Mode::MODE_3x);
+    BrushlessDriver.setCurrentSenseAmplifierGain(DRV8316::CurrentSenseGain::CSA_GAIN_0_30);
+}
+
+void peripherals_init() {
+    __disable_irq();
+
+    const uint32_t f_tc = TC3_TimerFrequencyGet();
+    const uint32_t top = TC3_Timer16bitPeriodGet();
+    dT = (1.0f + static_cast<float>(top)) / static_cast<float>(f_tc);
+    period = TCC0_PWM24bitPeriodGet();
 
     SYSTICK_TimerStart();
     Logger_Initialize();
+    ADC_Enable();
 
+    ADC_CallbackRegister(ADC_Callback, 0);
     TCC0_PWMCallbackRegister(PWM_IRQ_Callback, 0);
-    // ADC_Enable();
-    // ADC_CallbackRegister(ADC_Callback, 0);
-
-    SYSTICK_DelayMs(10);
-    Logger_Info("PWM configured\r\n");
-
-    period = TCC0_PWM24bitPeriodGet();
-
-    const uint32_t f_tc = TC3_TimerFrequencyGet();
-    const uint32_t top  = TC3_Timer16bitPeriodGet();
-    dT = (1.0f + static_cast<float>(top)) / static_cast<float>(f_tc);
-
-    TCC_Period1 = period / 2;
-    TCC_Period2 = period / 2;
-    TCC_Period3 = period / 2;
-
     TC3_TimerCallbackRegister(TC3_FOC_Handler, 0);
-
-    SYSTICK_DelayMs(10);
 
     TCC0_PWMStart();
     TCC1_PWMStart();
     TC3_TimerStart();
+    SERCOM4_SPI_CallbackRegister(SPI_Callback, 0);
 
-    SYSTICK_DelayMs(10);
+    __enable_irq();
+}
 
-    const AS5047P Encoder;
+[[noreturn]] int main() {
+    SYS_Initialize(nullptr);
 
-    SPARE_GPIO_Clear();
-    DRV8316 BrushlessDriver;
-    BrushlessDriver.unlockAllRegisters();
-    BrushlessDriver.setPWMMode(DRV8316::PWM_Mode::MODE_3x);
-    BrushlessDriver.setCurrentSenseAmplifierGain(DRV8316::CurrentSenseGain::CSA_GAIN_0_30);
+    devices_init();
+
+    // peripherals_init();
 
     while (true) {
-        auto x = BrushlessDriver.checkForFaults();
+        // auto x = BrushlessDriver.checkForFaults();
         auto y = Encoder.measureAngleUncompensated();
 
-        Logger_Info("Running...\r\n");
+        // Logger_Info("Running...\r\n");
         debug_led_task();
     }
 }
