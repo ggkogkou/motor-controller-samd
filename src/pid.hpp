@@ -41,8 +41,8 @@ private:
     /**
      * Proportional, integral, derivative gains
      */
-    float K_Proportional = 0.0f;
-    float K_Integral = 0.0f;
+    float K_Proportional = 0.2f;
+    float K_Integral = 20.0f;
     float K_Derivative = 0.0f;
 
     /**

@@ -3,7 +3,10 @@
 #include "definitions.h"
 #include "drv8316.hpp"
 #include "logger.h"
+#include "logger.hpp"
+#include "pid.hpp"
 #include "svpwm.hpp"
+#include "etl/string.h"
 
 using namespace SpaceVectorModulation;
 using namespace MathUtilities;
@@ -11,14 +14,39 @@ using namespace MathUtilities;
 AS5047P Encoder;
 DRV8316 BrushlessDriver;
 
-inline constexpr float GlobalVoltageLimit = 3.0f;
+inline constexpr float GlobalVoltageLimit = 8.0f;
 inline constexpr float DCLinkVoltage = 20.0f;
-inline constexpr float TargetVelocity = 3.0f;
+inline constexpr float TargetVelocity = 10.0f;
 
 enum class Direction : uint8_t {
     CLOCKWISE,
     COUNTERCLOCKWISE,
 };
+
+struct VelocityEstimator {
+    float prev_mod = 0.0f;     // previous modulo angle in rad [0, 2π)
+    float prev_unw = 0.0f;     // previous unwrapped angle in rad (−∞, ∞)
+    float omega = 0.0f;        // filtered velocity (rad/s)
+    bool  init = false;
+};
+
+static volatile VelocityEstimator vel;
+
+// wrap to (−π, π]
+static inline float wrap_pi(float x) {
+    while (x <= -TWO_PI) x += TWO_PI;
+    while (x >   TWO_PI) x -= TWO_PI;
+    if (x >  PI) x -= TWO_PI;
+    if (x <= -PI) x += TWO_PI;
+    return x;
+}
+
+// unwrap current modulo angle using shortest signed delta
+static inline float unwrap(float theta_mod, float prev_mod, float prev_unw) {
+    const float d = wrap_pi(theta_mod - prev_mod);  // shortest diff
+    return prev_unw + d;
+}
+
 
 /**
  * What must be the initial θm value?
@@ -83,6 +111,10 @@ static volatile uint16_t angleEncoder = 0;
 
 SVPWM svpwm{DCLinkVoltage, ZeroSequenceModulationType::MIDPOINT_CLAMP};
 
+PID pid_controller {0.5f, 10.0f, 0.0f, 6.0f, 0.00100000005};
+
+Logger logger;
+
 uint32_t period = 0;
 
 /**
@@ -139,6 +171,7 @@ void ADC_Callback(ADC_STATUS status, uintptr_t context) {
 static volatile bool ongoingOffsetCalibration = true;
 static volatile bool ongoingDirectionCalibration = true;
 static volatile bool ongoingDirectionCalibration2 = true;
+static volatile bool closedLoopControl = false;
 
 static uint32_t timer_counter = 0;
 static uint32_t needed_ticks = 0;
@@ -146,6 +179,15 @@ static uint32_t needed_ticks = 0;
 static float encoder_angle_init = 0;
 static float encoder_angle_mid = 0;
 static float encoder_angle_end = 0;
+
+constexpr float deg2rad(float deg) {
+    return deg * (3.14159265358979323846f / 180.0f);
+}
+
+static float filt_alpha(float dt, float tau) {
+    // equivalent to tau/(tau+dt); stable and simple
+    return (tau / (tau + dt));
+}
 
 void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
     auto wrap = [](float x) {
@@ -222,18 +264,63 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
 
         if (++timer_counter == needed_ticks) {
             __disable_irq();
-            ZeroElectricalAngle = Encoder.measureAngleUncompensated();
+            ZeroElectricalAngle = deg2rad(Encoder.measureAngleUncompensated());
             timer_counter = 0;
+            theta_m = deg2rad(Encoder.measureAngleUncompensated());
             ongoingOffsetCalibration = false;
             __enable_irq();
         }
 
+    }
+    else if (closedLoopControl) {
+        __disable_irq();
+        const float theta_m_new = deg2rad(Encoder.measureAngleUncompensated());
+        __enable_irq();
+
+        const float omega = (theta_m_new - theta_m) / dT;
+
+        const float Isp = pid_controller.compute(TargetVelocity - omega);
+
+        const float theta_e = wrap(theta_m * MotorPolePairs - ZeroElectricalAngle);
+        const auto inv_park = performInverseParkTransform(0.0f, Isp, theta_e);
+        const auto [dutyCycleA, dutyCycleB, dutyCycleC] = svpwm.compute(inv_park[0], inv_park[1]);
+
+        TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleA);
+        TCC_PeriodV = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleB);
+        TCC_PeriodW = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleC);
+
+        theta_m = theta_m_new;
+
     } else {
+        __disable_irq();
+        const float theta_mod = deg2rad(Encoder.measureAngleUncompensated());
+        __enable_irq();
+
+        if (!vel.init) {
+            vel.prev_mod = theta_mod;
+            vel.prev_unw = theta_mod;
+            vel.omega    = 0.0f;
+            vel.init     = true;
+        } else {
+            const float theta_unw = unwrap(theta_mod, vel.prev_mod, vel.prev_unw);
+            const float deriv     = (theta_unw - vel.prev_unw) / dT;  // raw dθ/dt
+
+            // 1st-order low-pass on derivative
+            const float alpha = filt_alpha(dT, 0.010f);
+            vel.omega = alpha * vel.omega + (1.0f - alpha) * deriv;
+
+            vel.prev_unw = theta_unw;
+            vel.prev_mod = theta_mod;
+        }
+
+        const float error_factor = TargetVelocity - std::fabs(vel.omega);
+        const float Isp = pid_controller.compute(error_factor);
+
         const float theta_m_next = wrap(theta_m + dT * TargetVelocity);
         theta_m = theta_m_next;
 
         const float theta_e = wrap(theta_m * MotorPolePairs - ZeroElectricalAngle);
-        const auto inv_park = performInverseParkTransform(0.0f, GlobalVoltageLimit, theta_e);
+        const auto inv_park = performInverseParkTransform(0.0f, Isp, theta_e);
         const auto [dutyCycleA, dutyCycleB, dutyCycleC] = svpwm.compute(inv_park[0], inv_park[1]);
 
         TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleA);
@@ -314,7 +401,10 @@ void peripherals_init() {
         // auto x = BrushlessDriver.checkForFaults();
         // auto y = Encoder.measureAngleUncompensated();
 
-        // Logger_Info("Running...\r\n");
+        // logger << "[INFO] Running";
+        // float angleee = 12.345675f;
+        // logger << "[INFO] Running, angle = " << angleee; // sends once, with "\r\n" appended
+
         debug_led_task();
     }
 }
