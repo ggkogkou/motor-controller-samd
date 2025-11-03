@@ -15,6 +15,11 @@ inline constexpr float GlobalVoltageLimit = 3.0f;
 inline constexpr float DCLinkVoltage = 20.0f;
 inline constexpr float TargetVelocity = 3.0f;
 
+enum class Direction : uint8_t {
+    CLOCKWISE,
+    COUNTERCLOCKWISE,
+};
+
 /**
  * What must be the initial θm value?
  */
@@ -24,6 +29,24 @@ static volatile float theta_m = 0.0f;
  * The dT periodic update of the angle for open-loop control
  */
 static volatile float dT = 0;
+
+/**
+ *
+ * Brushless DC GM4108H-120T Gimbal Motor
+ * --------------------------------------
+ * Pole pairs: 11
+ * No-load current: 0.07±0.1A
+ * No-load voltage: 20 V
+ * Load torque: 1200-1800 g*cm
+ * Motor internal resistance: 11.1±5% Ω
+ * No-load RPM: 513-567 RPM @ 20 V => calculate its Kv rating as approximately 25.65-28.35 RPM/V
+ *
+ */
+inline constexpr float MotorKV_Rating = 26.0f;
+inline constexpr float MotorPolePairs = 11.0f;
+inline constexpr float MotorInternalResistance = 11.0f;
+
+static volatile float ZeroElectricalAngle = 0.0f;
 
 /**
  *
@@ -51,6 +74,10 @@ static volatile bool adcResultsReady = false;
 
 inline constexpr ADC_NEGINPUT NegativeInput = ADC_NEGINPUT_GND;
 inline constexpr uint16_t ADC_VREF = 2230; // mV
+
+inline constexpr float Vq_Align = 6.0f;
+inline constexpr float Vd_Align = 0.0f;
+inline constexpr float TargetCalibrationVelocity = TWO_PI;
 
 static volatile uint16_t angleEncoder = 0;
 
@@ -109,7 +136,18 @@ void ADC_Callback(ADC_STATUS status, uintptr_t context) {
     }
 }
 
-void TC3_FOC_Handler(TC_TIMER_STATUS status, uintptr_t context) {
+static volatile bool ongoingOffsetCalibration = true;
+static volatile bool ongoingDirectionCalibration = true;
+static volatile bool ongoingDirectionCalibration2 = true;
+
+static uint32_t timer_counter = 0;
+static uint32_t needed_ticks = 0;
+
+static float encoder_angle_init = 0;
+static float encoder_angle_mid = 0;
+static float encoder_angle_end = 0;
+
+void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
     auto wrap = [](float x) {
         while (x < 0.0f)
             x += TWO_PI;
@@ -129,19 +167,84 @@ void TC3_FOC_Handler(TC_TIMER_STATUS status, uintptr_t context) {
         __enable_irq();
     }
 
-    const float theta_m_next = wrap(theta_m + dT * TargetVelocity);
-    theta_m = theta_m_next;
+    if (ongoingDirectionCalibration) {
+        const float theta_m_next = wrap(theta_m + dT * TargetCalibrationVelocity);
+        theta_m = theta_m_next;
 
-    constexpr float pole_pairs = 11.0f;
-    const float theta_e = wrap(theta_m * pole_pairs);
+        const float theta_e = wrap(theta_m * MotorPolePairs);
+        const auto inv_park = performInverseParkTransform(0.0f, GlobalVoltageLimit, theta_e);
+        const auto [dutyCycleA, dutyCycleB, dutyCycleC] = svpwm.compute(inv_park[0], inv_park[1]);
 
-    const auto inv_park = performInverseParkTransform(0.0f, GlobalVoltageLimit, theta_e);
+        TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleA);
+        TCC_PeriodV = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleB);
+        TCC_PeriodW = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleC);
 
-    const auto [dutyCycleA, dutyCycleB, dutyCycleC] = svpwm.compute(inv_park[0], inv_park[1]);
+        if (++timer_counter == needed_ticks) {
+            __disable_irq();
+            encoder_angle_mid = Encoder.measureAngleUncompensated();
+            timer_counter = 0;
+            ongoingDirectionCalibration = false;
+            __enable_irq();
+        }
 
-    TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleA);
-    TCC_PeriodV = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleB);
-    TCC_PeriodW = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleC);
+    } else if (ongoingDirectionCalibration2) {
+        const float theta_m_next = wrap(theta_m + dT * TargetCalibrationVelocity);
+        theta_m = theta_m_next;
+
+        const float theta_e = wrap(- theta_m * MotorPolePairs);
+        const auto inv_park = performInverseParkTransform(0.0f, GlobalVoltageLimit, theta_e);
+        const auto [dutyCycleA, dutyCycleB, dutyCycleC] = svpwm.compute(inv_park[0], inv_park[1]);
+
+        TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleA);
+        TCC_PeriodV = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleB);
+        TCC_PeriodW = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleC);
+
+        if (++timer_counter == needed_ticks) {
+            __disable_irq();
+            encoder_angle_end = Encoder.measureAngleUncompensated();
+            timer_counter = 0;
+            ongoingDirectionCalibration2 = false;
+            __enable_irq();
+        }
+
+    } else if (ongoingOffsetCalibration) {
+        constexpr float Vq = GlobalVoltageLimit;
+        constexpr float Vd = 0.0f;
+        constexpr float ThetaElectrical = 4.71238898038f;
+
+        const auto AlphaBetaFrame = performInverseParkTransform(Vd, Vq, ThetaElectrical);
+        const auto DutyCycles = svpwm.compute(AlphaBetaFrame[0], AlphaBetaFrame[1]);
+        const auto [dutyCycleA, dutyCycleB, dutyCycleC] = DutyCycles;
+
+        TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleA);
+        TCC_PeriodV = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleB);
+        TCC_PeriodW = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleC);
+
+        if (++timer_counter == needed_ticks) {
+            __disable_irq();
+            ZeroElectricalAngle = Encoder.measureAngleUncompensated();
+            timer_counter = 0;
+            ongoingOffsetCalibration = false;
+            __enable_irq();
+        }
+
+    } else {
+        const float theta_m_next = wrap(theta_m + dT * TargetVelocity);
+        theta_m = theta_m_next;
+
+        const float theta_e = wrap(theta_m * MotorPolePairs - ZeroElectricalAngle);
+        const auto inv_park = performInverseParkTransform(0.0f, GlobalVoltageLimit, theta_e);
+        const auto [dutyCycleA, dutyCycleB, dutyCycleC] = svpwm.compute(inv_park[0], inv_park[1]);
+
+        TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleA);
+        TCC_PeriodV = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleB);
+        TCC_PeriodW = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleC);
+    }
+
+}
+
+void TC3_FOC_HandlerClosedLoop(TC_TIMER_STATUS status, uintptr_t context) {
+
 }
 
 void SPI_Callback(uintptr_t context) {
@@ -180,6 +283,7 @@ void peripherals_init() {
     const uint32_t f_tc = TC3_TimerFrequencyGet();
     const uint32_t top = TC3_Timer16bitPeriodGet();
     dT = (1.0f + static_cast<float>(top)) / static_cast<float>(f_tc);
+    needed_ticks = static_cast<uint32_t>(1.0f / dT);
     period = TCC0_PWM24bitPeriodGet();
 
     SYSTICK_TimerStart();
@@ -188,12 +292,11 @@ void peripherals_init() {
 
     ADC_CallbackRegister(ADC_Callback, 0);
     TCC0_PWMCallbackRegister(PWM_IRQ_Callback, 0);
-    TC3_TimerCallbackRegister(TC3_FOC_Handler, 0);
+    TC3_TimerCallbackRegister(TC3_FOC_HandlerOpenLoop, 0);
 
     TCC0_PWMStart();
     TCC1_PWMStart();
     TC3_TimerStart();
-    SERCOM4_SPI_CallbackRegister(SPI_Callback, 0);
 
     __enable_irq();
 }
@@ -203,11 +306,13 @@ void peripherals_init() {
 
     devices_init();
 
-    // peripherals_init();
+    encoder_angle_init = Encoder.measureAngleUncompensated();
+
+    peripherals_init();
 
     while (true) {
         // auto x = BrushlessDriver.checkForFaults();
-        auto y = Encoder.measureAngleUncompensated();
+        // auto y = Encoder.measureAngleUncompensated();
 
         // Logger_Info("Running...\r\n");
         debug_led_task();
