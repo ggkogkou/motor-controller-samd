@@ -102,6 +102,8 @@ set(SOURCES
         src/logger.c
         src/svpwm.cpp
         src/math_utils.cpp
+        src/pid.cpp
+        src/logger.cpp
 
         # System initialization and configuration
         src/config/sam_d21_xpro/initialization.c
