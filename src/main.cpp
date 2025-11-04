@@ -171,7 +171,7 @@ void ADC_Callback(ADC_STATUS status, uintptr_t context) {
 static volatile bool ongoingOffsetCalibration = true;
 static volatile bool ongoingDirectionCalibration = true;
 static volatile bool ongoingDirectionCalibration2 = true;
-static volatile bool closedLoopControl = false;
+static volatile bool closedLoopControl = true;
 
 static uint32_t timer_counter = 0;
 static uint32_t needed_ticks = 0;
@@ -274,25 +274,6 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
     }
     else if (closedLoopControl) {
         __disable_irq();
-        const float theta_m_new = deg2rad(Encoder.measureAngleUncompensated());
-        __enable_irq();
-
-        const float omega = (theta_m_new - theta_m) / dT;
-
-        const float Isp = pid_controller.compute(TargetVelocity - omega);
-
-        const float theta_e = wrap(theta_m * MotorPolePairs - ZeroElectricalAngle);
-        const auto inv_park = performInverseParkTransform(0.0f, Isp, theta_e);
-        const auto [dutyCycleA, dutyCycleB, dutyCycleC] = svpwm.compute(inv_park[0], inv_park[1]);
-
-        TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleA);
-        TCC_PeriodV = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleB);
-        TCC_PeriodW = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleC);
-
-        theta_m = theta_m_new;
-
-    } else {
-        __disable_irq();
         const float theta_mod = deg2rad(Encoder.measureAngleUncompensated());
         __enable_irq();
 
@@ -321,6 +302,18 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
 
         const float theta_e = wrap(theta_m * MotorPolePairs - ZeroElectricalAngle);
         const auto inv_park = performInverseParkTransform(0.0f, Isp, theta_e);
+        const auto [dutyCycleA, dutyCycleB, dutyCycleC] = svpwm.compute(inv_park[0], inv_park[1]);
+
+        TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleA);
+        TCC_PeriodV = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleB);
+        TCC_PeriodW = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleC);
+
+    } else if (not closedLoopControl) {
+        const float theta_m_next = wrap(theta_m + dT * TargetVelocity);
+        theta_m = theta_m_next;
+
+        const float theta_e = wrap(theta_m * MotorPolePairs - ZeroElectricalAngle);
+        const auto inv_park = performInverseParkTransform(0.0f, GlobalVoltageLimit, theta_e);
         const auto [dutyCycleA, dutyCycleB, dutyCycleC] = svpwm.compute(inv_park[0], inv_park[1]);
 
         TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleA);
