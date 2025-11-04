@@ -17,7 +17,7 @@ DRV8316 BrushlessDriver;
 inline constexpr float GlobalVoltageLimit = 10.0f;
 inline constexpr float InitialCalibrationVoltageLimit = 3.0f;
 inline constexpr float DCLinkVoltage = 20.0f;
-inline constexpr float TargetVelocity = 6.0f;
+inline constexpr float TargetVelocity = 8.0f;
 
 enum class Direction : uint8_t {
     CLOCKWISE,
@@ -47,7 +47,6 @@ static inline float unwrap(float theta_mod, float prev_mod, float prev_unw) {
     const float d = wrap_pi(theta_mod - prev_mod);  // shortest diff
     return prev_unw + d;
 }
-
 
 /**
  * What must be the initial θm value?
@@ -114,6 +113,9 @@ SVPWM svpwm{DCLinkVoltage, ZeroSequenceModulationType::MIDPOINT_CLAMP};
 
 PID pid_controller {0.5f, 10.0f, 0.0f, 6.0f, 0.00100000005};
 
+PID pidId {0.5f, 10.0f, 0.0f, 6.0f, 0.00100000005};
+PID pidIq {0.5f, 10.0f, 0.0f, 6.0f, 0.00100000005};
+
 Logger logger;
 
 uint32_t period = 0;
@@ -136,10 +138,8 @@ void PWM_IRQ_Callback(uint32_t status, uintptr_t context) {
         TCC0_PWM24bitDutySet(TCC0_CHANNEL1, TCC_PeriodU);
         TCC0_PWM24bitDutySet(TCC0_CHANNEL2, TCC_PeriodV);
         TCC1_PWM24bitDutySet(TCC1_CHANNEL1, TCC_PeriodW);
-        // TCC0_PWM24bitDutySet(TCC0_CHANNEL1, period);
-        // TCC0_PWM24bitDutySet(TCC0_CHANNEL2, period);
-        // TCC1_PWM24bitDutySet(TCC1_CHANNEL1, period);
     }
+
 }
 
 void ADC_Callback(ADC_STATUS status, uintptr_t context) {
@@ -163,7 +163,7 @@ void ADC_Callback(ADC_STATUS status, uintptr_t context) {
         }
         else if (adcCounter == 2) {
             adcResultW = ADC_ConversionResultGet();
-            adcCounter = 3;
+            adcCounter = 0;
             adcResultsReady = true;
         }
     }
@@ -187,7 +187,7 @@ constexpr float deg2rad(float deg) {
 
 static float filt_alpha(float dt, float tau) {
     // equivalent to tau/(tau+dt)
-    return (tau / (tau + dt));
+    return tau / (tau + dt);
 }
 
 void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
@@ -205,7 +205,6 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
         uint16_t currentPhaseV = ADC_VREF * adcResultV / static_cast<uint16_t>(4095);
         uint16_t currentPhaseW = ADC_VREF * adcResultW / static_cast<uint16_t>(4095);
         auto the_sum = static_cast<int32_t>(currentPhaseU) + static_cast<int32_t>(currentPhaseV) + static_cast<int32_t>(currentPhaseW) - 3*1650;
-        adcCounter = 0;
         adcResultsReady = false;
         __enable_irq();
     }
@@ -265,15 +264,16 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
 
         if (++timer_counter == needed_ticks) {
             __disable_irq();
-            ZeroElectricalAngle = deg2rad(Encoder.measureAngleUncompensated());
+            const float theta_mech_at_align = deg2rad(Encoder.measureAngleUncompensated());
+            ZeroElectricalAngle = wrap(MotorPolePairs * theta_mech_at_align);
+            // ZeroElectricalAngle = deg2rad(Encoder.measureAngleUncompensated());
             timer_counter = 0;
-            theta_m = deg2rad(Encoder.measureAngleUncompensated());
+            theta_m = deg2rad(theta_mech_at_align);
             ongoingOffsetCalibration = false;
             __enable_irq();
         }
 
-    }
-    else if (closedLoopControl) {
+    } else if (closedLoopControl) {
         __disable_irq();
         const float theta_mod = deg2rad(Encoder.measureAngleUncompensated());
         __enable_irq();
