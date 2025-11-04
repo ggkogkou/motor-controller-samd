@@ -185,7 +185,7 @@ constexpr float deg2rad(float deg) {
 }
 
 static float filt_alpha(float dt, float tau) {
-    // equivalent to tau/(tau+dt); stable and simple
+    // equivalent to tau/(tau+dt)
     return (tau / (tau + dt));
 }
 
@@ -284,9 +284,8 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
             vel.init     = true;
         } else {
             const float theta_unw = unwrap(theta_mod, vel.prev_mod, vel.prev_unw);
-            const float deriv     = (theta_unw - vel.prev_unw) / dT;  // raw dθ/dt
+            const float deriv     = (theta_unw - vel.prev_unw) / dT;
 
-            // 1st-order low-pass on derivative
             const float alpha = filt_alpha(dT, 0.010f);
             vel.omega = alpha * vel.omega + (1.0f - alpha) * deriv;
 
