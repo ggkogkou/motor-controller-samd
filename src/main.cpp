@@ -14,9 +14,10 @@ using namespace MathUtilities;
 AS5047P Encoder;
 DRV8316 BrushlessDriver;
 
-inline constexpr float GlobalVoltageLimit = 8.0f;
+inline constexpr float GlobalVoltageLimit = 10.0f;
+inline constexpr float InitialCalibrationVoltageLimit = 3.0f;
 inline constexpr float DCLinkVoltage = 20.0f;
-inline constexpr float TargetVelocity = 10.0f;
+inline constexpr float TargetVelocity = 6.0f;
 
 enum class Direction : uint8_t {
     CLOCKWISE,
@@ -214,7 +215,7 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
         theta_m = theta_m_next;
 
         const float theta_e = wrap(theta_m * MotorPolePairs);
-        const auto inv_park = performInverseParkTransform(0.0f, GlobalVoltageLimit, theta_e);
+        const auto inv_park = performInverseParkTransform(0.0f, InitialCalibrationVoltageLimit, theta_e);
         const auto [dutyCycleA, dutyCycleB, dutyCycleC] = svpwm.compute(inv_park[0], inv_park[1]);
 
         TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleA);
@@ -234,7 +235,7 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
         theta_m = theta_m_next;
 
         const float theta_e = wrap(- theta_m * MotorPolePairs);
-        const auto inv_park = performInverseParkTransform(0.0f, GlobalVoltageLimit, theta_e);
+        const auto inv_park = performInverseParkTransform(0.0f, InitialCalibrationVoltageLimit, theta_e);
         const auto [dutyCycleA, dutyCycleB, dutyCycleC] = svpwm.compute(inv_park[0], inv_park[1]);
 
         TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleA);
@@ -250,9 +251,9 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
         }
 
     } else if (ongoingOffsetCalibration) {
-        constexpr float Vq = GlobalVoltageLimit;
-        constexpr float Vd = 0.0f;
-        constexpr float ThetaElectrical = 4.71238898038f;
+        constexpr float Vq = 0.0f;
+        constexpr float Vd = InitialCalibrationVoltageLimit;
+        constexpr float ThetaElectrical = 0.0f;
 
         const auto AlphaBetaFrame = performInverseParkTransform(Vd, Vq, ThetaElectrical);
         const auto DutyCycles = svpwm.compute(AlphaBetaFrame[0], AlphaBetaFrame[1]);
@@ -296,11 +297,8 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
         const float error_factor = TargetVelocity - std::fabs(vel.omega);
         const float Isp = pid_controller.compute(error_factor);
 
-        const float theta_m_next = wrap(theta_m + dT * TargetVelocity);
-        theta_m = theta_m_next;
-
-        const float theta_e = wrap(theta_m * MotorPolePairs - ZeroElectricalAngle);
-        const auto inv_park = performInverseParkTransform(0.0f, Isp, theta_e);
+        const float theta_el = wrap(-(MotorPolePairs * theta_mod - ZeroElectricalAngle));
+        const auto inv_park = performInverseParkTransform(0.0f, Isp, theta_el);
         const auto [dutyCycleA, dutyCycleB, dutyCycleC] = svpwm.compute(inv_park[0], inv_park[1]);
 
         TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleA);
@@ -311,7 +309,7 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
         const float theta_m_next = wrap(theta_m + dT * TargetVelocity);
         theta_m = theta_m_next;
 
-        const float theta_e = wrap(theta_m * MotorPolePairs - ZeroElectricalAngle);
+        const float theta_e = wrap(theta_m * MotorPolePairs);
         const auto inv_park = performInverseParkTransform(0.0f, GlobalVoltageLimit, theta_e);
         const auto [dutyCycleA, dutyCycleB, dutyCycleC] = svpwm.compute(inv_park[0], inv_park[1]);
 
