@@ -6,7 +6,7 @@
 #include "svpwm.hpp"
 #include "pid.hpp"
 #include "as5047p.hpp"
-
+#include "definitions.h"
 
 namespace FieldOrientedControl {
 
@@ -25,7 +25,15 @@ public:
      * @brief The various building blocks are combined and implement the full control loop. It will be serve the
      * purpose of the ISR that will occur at the end of the period of each PWM cycle
      */
-    void algorithmCallback();
+    void algorithmCallback(TC_TIMER_STATUS status, uintptr_t context);
+
+    /**
+     * Function that performs the initial encoder offset calibration for the encoder
+     *
+     * Currently supported: absolute encoder via SPI
+     *
+     */
+    void encoderOffsetCalibration();
 
 private:
     /**
@@ -43,6 +51,9 @@ private:
      * The encoder driver instance
      */
     AS5047P as5047p;
+
+    static constexpr float EncoderAlignmentVoltageLimit = 2.0f;
+
 
 };
 

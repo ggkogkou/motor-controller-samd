@@ -80,7 +80,7 @@ void TCC0_PWMInitialize(void)
     TCC0_REGS->TCC_CC[1] = 0U;
     TCC0_REGS->TCC_CC[2] = 0U;
     TCC0_REGS->TCC_CC[3] = 0U;
-    TCC0_REGS->TCC_PER = 2399U;
+    TCC0_REGS->TCC_PER = 1000U;
 
 
     TCC0_REGS->TCC_INTENSET = TCC_INTENSET_MC1_Msk 
@@ -226,7 +226,7 @@ void __attribute__((used)) TCC0_InterruptHandler(void)
     status = TCC0_REGS->TCC_INTFLAG;
     /* Clear interrupt flags */
     TCC0_REGS->TCC_INTFLAG = TCC_INTFLAG_Msk;
-    (void)TCC0_REGS->TCC_INTFLAG;
+    (void)TCC0_REGS->TCC_INTFLAG; /// dummy read
     if (TCC0_CallbackObj.callback_fn != NULL)
     {
         TCC0_CallbackObj.callback_fn(status, context);

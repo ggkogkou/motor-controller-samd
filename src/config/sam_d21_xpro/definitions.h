@@ -59,6 +59,7 @@
 #include "peripheral/sercom/spi_master/plib_sercom4_spi_master.h"
 #include "peripheral/adc/plib_adc.h"
 #include "peripheral/eic/plib_eic.h"
+#include "peripheral/tc/plib_tc3.h"
 #include "peripheral/tc/plib_tc4.h"
 #include "peripheral/tcc/plib_tcc1.h"
 #include "peripheral/tcc/plib_tcc2.h"
