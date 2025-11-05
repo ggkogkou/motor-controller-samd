@@ -129,10 +129,8 @@ PID pid_controller{0.5f, 10.0f, 0.0f, 6.0f, 0.00100000005};
 // PID pidId{0.5f, 10.0f, 0.0f, 6.0f, 0.00100000005};
 // PID pidIq{0.5f, 10.0f, 0.0f, 6.0f, 0.00100000005};
 
-const float Vmax = GlobalVoltageLimit;
-
-PID pidId = PID{ /*Kp*/0.25f, /*Ki*/20.0f, /*Kd*/0.0f, /*out_limit*/ Vmax, /*dt*/ 0.00100000005 };
-PID pidIq = PID{ /*Kp*/0.35f, /*Ki*/50.0f, /*Kd*/0.0f, /*out_limit*/ Vmax, /*dt*/ 0.00100000005 };
+PID pidId = PID{ /*Kp*/0.25f, /*Ki*/20.0f, /*Kd*/0.0f, /*out_limit*/ GlobalVoltageLimit, /*dt*/ 0.00100000005 };
+PID pidIq = PID{ /*Kp*/0.35f, /*Ki*/50.0f, /*Kd*/0.0f, /*out_limit*/ GlobalVoltageLimit, /*dt*/ 0.00100000005 };
 
 Logger logger;
 
@@ -198,9 +196,9 @@ static float encoder_angle_init = 0;
 static float encoder_angle_mid = 0;
 static float encoder_angle_end = 0;
 
-constexpr float deg2rad(float deg) { return deg * (3.14159265358979323846f / 180.0f); }
-
-static float filt_alpha(float dt, float tau) { return tau / (tau + dt); }
+static float filt_alpha(float dt, float tau) {
+        return tau / (tau + dt);
+}
 
 static void get_currents_BC(float& iA, float& iB, float& iC) {
         __disable_irq();
@@ -223,7 +221,7 @@ static void get_currents_BC(float& iA, float& iB, float& iC) {
         iC = iCcorr;
 }
 
-static inline void limit_circle(float& vd, float& vq, float vmax) {
+static void limit_circle(float& vd, float& vq, float vmax) {
         const float mag2 = vd*vd + vq*vq;
         const float vmax2 = vmax*vmax;
         if (mag2 > vmax2) {
@@ -305,11 +303,11 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
 
                 if (++timer_counter == needed_ticks) {
                         __disable_irq();
-                        const float theta_mech_at_align = deg2rad(Encoder.measureAngleUncompensated());
+                        const float theta_mech_at_align = degreesToRadians(Encoder.measureAngleUncompensated());
                         ZeroElectricalAngle = wrap(MotorPolePairs * theta_mech_at_align);
-                        // ZeroElectricalAngle = deg2rad(Encoder.measureAngleUncompensated());
+                        // ZeroElectricalAngle = degreesToRadians(Encoder.measureAngleUncompensated());
                         timer_counter = 0;
-                        theta_m = deg2rad(theta_mech_at_align);
+                        theta_m = degreesToRadians(theta_mech_at_align);
                         ongoingOffsetCalibration = false;
                         __enable_irq();
                 }
@@ -344,7 +342,7 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
                 }
         } else if (closedLoopControlCurrent) {
                 __disable_irq();
-                const float theta_mod = deg2rad(Encoder.measureAngleUncompensated());
+                const float theta_mod = degreesToRadians(Encoder.measureAngleUncompensated());
                 __enable_irq();
 
                 if (!vel.init) {
@@ -395,7 +393,7 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
 
         } else if (closedLoopControl) {
                 __disable_irq();
-                const float theta_mod = deg2rad(Encoder.measureAngleUncompensated());
+                const float theta_mod = degreesToRadians(Encoder.measureAngleUncompensated());
                 __enable_irq();
 
                 if (!vel.init) {
