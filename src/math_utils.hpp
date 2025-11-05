@@ -257,7 +257,7 @@ using AlphaBetaFrame = std::array<float, 2>;
  * @param angleDegrees The angle in degrees
  * @return The angle in radians
  */
-[[nodiscard]] inline float degreesToRadians(float angleDegrees) { return angleDegrees * TWO_PI / 180.0f; }
+[[nodiscard]] inline float degreesToRadians(float angleDegrees) { return angleDegrees * PI / 180.0f; }
 
 /**
  * Simple static assertions to quickly showcase the correctness
