@@ -14,10 +14,10 @@ using namespace MathUtilities;
 AS5047P Encoder;
 DRV8316 BrushlessDriver;
 
-inline constexpr float GlobalVoltageLimit = 10.0f;
+inline constexpr float GlobalVoltageLimit = 12.0f;
 inline constexpr float InitialCalibrationVoltageLimit = 3.0f;
 inline constexpr float DCLinkVoltage = 20.0f;
-inline constexpr float TargetVelocity = 8.0f;
+inline constexpr float TargetVelocity = 15.0f;
 
 enum class Direction : uint8_t {
         CLOCKWISE,
@@ -33,8 +33,7 @@ struct VelocityEstimator {
 
 static volatile VelocityEstimator vel;
 
-// wrap to (−π, π]
-static inline float wrap_pi(float x) {
+static float wrap_pi(float x) {
         while (x <= -TWO_PI)
                 x += TWO_PI;
         while (x > TWO_PI)
@@ -46,9 +45,8 @@ static inline float wrap_pi(float x) {
         return x;
 }
 
-// unwrap current modulo angle using shortest signed delta
-static inline float unwrap(float theta_mod, float prev_mod, float prev_unw) {
-        const float d = wrap_pi(theta_mod - prev_mod); // shortest diff
+static float unwrap(float theta_mod, float prev_mod, float prev_unw) {
+        const float d = wrap_pi(theta_mod - prev_mod);
         return prev_unw + d;
 }
 
@@ -123,14 +121,18 @@ static volatile float soV_off = 1.65f;
 static float iq_int = 0.0f;
 inline constexpr float Kp_q = 0.4f;
 inline constexpr float Ki_q = 200.0f;
-static volatile bool ongoingSOOffsetCal = true;
 
 SVPWM svpwm{DCLinkVoltage, ZeroSequenceModulationType::MIDPOINT_CLAMP};
 
 PID pid_controller{0.5f, 10.0f, 0.0f, 6.0f, 0.00100000005};
 
-PID pidId{0.5f, 10.0f, 0.0f, 6.0f, 0.00100000005};
-PID pidIq{0.5f, 10.0f, 0.0f, 6.0f, 0.00100000005};
+// PID pidId{0.5f, 10.0f, 0.0f, 6.0f, 0.00100000005};
+// PID pidIq{0.5f, 10.0f, 0.0f, 6.0f, 0.00100000005};
+
+const float Vmax = GlobalVoltageLimit;
+
+PID pidId = PID{ /*Kp*/0.25f, /*Ki*/20.0f, /*Kd*/0.0f, /*out_limit*/ Vmax, /*dt*/ 0.00100000005 };
+PID pidIq = PID{ /*Kp*/0.35f, /*Ki*/50.0f, /*Kd*/0.0f, /*out_limit*/ Vmax, /*dt*/ 0.00100000005 };
 
 Logger logger;
 
@@ -187,6 +189,7 @@ static volatile bool ongoingDirectionCalibration = true;
 static volatile bool ongoingDirectionCalibration2 = true;
 static volatile bool closedLoopControl = false;
 static volatile bool closedLoopControlCurrent = true;
+static volatile bool ongoingSOOffsetCal = true;
 
 static uint32_t timer_counter = 0;
 static uint32_t needed_ticks = 0;
@@ -218,6 +221,15 @@ static void get_currents_BC(float& iA, float& iB, float& iC) {
         iA = iAcorr;
         iB = iBcorr;
         iC = iCcorr;
+}
+
+static inline void limit_circle(float& vd, float& vq, float vmax) {
+        const float mag2 = vd*vd + vq*vq;
+        const float vmax2 = vmax*vmax;
+        if (mag2 > vmax2) {
+                const float s = vmax / std::sqrt(mag2);
+                vd *= s; vq *= s;
+        }
 }
 
 void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
@@ -302,7 +314,6 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
                         __enable_irq();
                 }
         } else if (ongoingSOOffsetCal) {
-                // Force zero-voltage vector so phase currents ≈ 0 A
                 const auto [dA, dB, dC] = svpwm.compute(0.0f, 0.0f);
                 TCC_PeriodU = period - (uint32_t)(period * dA);
                 TCC_PeriodV = period - (uint32_t)(period * dB);
@@ -361,20 +372,26 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
                         iq_meas = dq_i[1];
                 }
 
-                const float speed_err = TargetVelocity - vel.omega;
+                const float speed_err = TargetVelocity - std::fabs(vel.omega);
                 float iq_ref = pid_controller.compute(speed_err);
-                iq_ref = std::clamp(iq_ref, -2.0f, 2.0f);
 
+                iq_ref = std::clamp(iq_ref, -7.0f, 7.0f);
+
+                const float id_err = 0.0f - id_meas;
                 const float iq_err = iq_ref - iq_meas;
+
+                float vd = pidId.compute(id_err);
                 float vq = pidIq.compute(iq_err);
-                vq = std::clamp(vq, -GlobalVoltageLimit, GlobalVoltageLimit);
 
-                const auto ab = performInverseParkTransform(0.0f, vq, theta_el);
+                limit_circle(vd, vq, GlobalVoltageLimit);
+                // vq = std::clamp(vq, -GlobalVoltageLimit, GlobalVoltageLimit);
+
+                // const auto ab = performInverseParkTransform(0.0f, vq, theta_el);
+                const auto ab = performInverseParkTransform(vd, vq, theta_el);
                 const auto [dA, dB, dC] = svpwm.compute(ab[0], ab[1]);
-                TCC_PeriodU = period - (uint32_t)(period * dA);
-                TCC_PeriodV = period - (uint32_t)(period * dB);
-                TCC_PeriodW = period - (uint32_t)(period * dC);
-
+                TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dA);
+                TCC_PeriodV = period - static_cast<uint32_t>(static_cast<float>(period) * dB);
+                TCC_PeriodW = period - static_cast<uint32_t>(static_cast<float>(period) * dC);
 
         } else if (closedLoopControl) {
                 __disable_irq();
@@ -407,6 +424,7 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
                 TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleA);
                 TCC_PeriodV = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleB);
                 TCC_PeriodW = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleC);
+
         } else if (not closedLoopControl) {
                 const float theta_m_next = wrap(theta_m + dT * TargetVelocity);
                 theta_m = theta_m_next;
