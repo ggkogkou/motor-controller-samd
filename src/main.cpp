@@ -7,6 +7,7 @@
 #include "logger.hpp"
 #include "pid.hpp"
 #include "svpwm.hpp"
+#include "pmsm_controller.hpp"
 
 using namespace SpaceVectorModulation;
 using namespace MathUtilities;
@@ -437,7 +438,14 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
         }
 }
 
-void TC3_FOC_HandlerClosedLoop(TC_TIMER_STATUS status, uintptr_t context) {}
+using namespace PermanentMagnetSynchronousMotor;
+
+PMSM_Controller pmsm_controller;
+
+void TC3_HandlerProofOfConcept(TC_TIMER_STATUS status, uintptr_t context) {
+        float A = 0, B = 0, C = 0;
+        pmsm_controller.update(A, B, C);
+}
 
 void SPI_Callback(uintptr_t context) { (void)context; }
 
@@ -480,7 +488,8 @@ void peripherals_init() {
 
         ADC_CallbackRegister(ADC_Callback, 0);
         TCC0_PWMCallbackRegister(PWM_IRQ_Callback, 0);
-        TC3_TimerCallbackRegister(TC3_FOC_HandlerOpenLoop, 0);
+        // TC3_TimerCallbackRegister(TC3_FOC_HandlerOpenLoop, 0);
+        TC3_TimerCallbackRegister(TC3_HandlerProofOfConcept, 0);
 
         TCC0_PWMStart();
         TCC1_PWMStart();

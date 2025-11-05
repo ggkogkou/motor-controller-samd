@@ -50,7 +50,7 @@ public:
         /**
          * The main update function that implements the Field-Oriented Control
          */
-        void update(float &dutyA, float &dutyB, float &dutyC);
+        inline void update(float &dutyA, float &dutyB, float &dutyC);
 
         /**
          * Function that performs the initial encoder offset and direction calibration
@@ -71,12 +71,12 @@ private:
         /**
          * The direct (d-axis) current PI controller Id
          */
-        PID pidId = PID{0.25f, 20.0f, 0.0f, PMSM_Config::GlobalVoltageLimit, 0.00100000005 };
+        PID pidId {0.25f, 20.0f, 0.0f, PMSM_Config::GlobalVoltageLimit, 0.00100000005 };
 
         /**
          * The quadrature (q-axis) current PI controller Iq
          */
-        PID pidIq = PID{0.35f, 50.0f, 0.0f, PMSM_Config::GlobalVoltageLimit, 0.00100000005 };
+        PID pidIq {0.35f, 50.0f, 0.0f, PMSM_Config::GlobalVoltageLimit, 0.00100000005 };
 
         /**
          * Represents the possible directions of rotation
