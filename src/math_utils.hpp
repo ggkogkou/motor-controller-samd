@@ -271,6 +271,21 @@ using AlphaBetaFrame = std::array<float, 2>;
 }
 
 /**
+ * Function that checks whether the (Vd, Vq) vector is inside the limit inscribed circle / linear range of SVM
+ * @param Vd The d-axis voltage
+ * @param Vq The q-axis voltage
+ * @param VLim The maximum/limiting voltage that marks the threshold of overmodulation
+ */
+inline void limitCircle(float &Vd, float &Vq, float VLim) {
+        const float MagnitudeSquare = Vd * Vd + Vq * Vq;
+
+        if (const float VLimSquare = VLim * VLim; MagnitudeSquare > VLimSquare) {
+                Vd = Vd / 2;
+                Vq = Vq / 2;
+        }
+}
+
+/**
  * Simple static assertions to quickly showcase the correctness
  */
 static_assert(sine[0.0f] == 0.0f, "The sin(pi/2) does not evaluate to 1");

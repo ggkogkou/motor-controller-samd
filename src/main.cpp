@@ -220,16 +220,6 @@ static void get_currents_BC(float& iA, float& iB, float& iC) {
         iC = iCcorr;
 }
 
-static void limit_circle(float& vd, float& vq, float vmax) {
-        const float mag2 = vd * vd + vq * vq;
-        const float vmax2 = vmax * vmax;
-        if (mag2 > vmax2) {
-                const float s = vmax / std::sqrt(mag2);
-                vd *= s;
-                vq *= s;
-        }
-}
-
 void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
         if (ongoingDirectionCalibration) {
                 const float theta_m_next = wrapAngle(theta_m + dT * TargetCalibrationVelocity);
@@ -362,7 +352,7 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
                 float vd = pidId.compute(id_err);
                 float vq = pidIq.compute(iq_err);
 
-                limit_circle(vd, vq, GlobalVoltageLimit);
+                limitCircle(vd, vq, GlobalVoltageLimit);
                 // vq = std::clamp(vq, -GlobalVoltageLimit, GlobalVoltageLimit);
 
                 // const auto ab = performInverseParkTransform(0.0f, vq, theta_el);
@@ -404,17 +394,6 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
                 TCC_PeriodV = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleB);
                 TCC_PeriodW = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleC);
 
-        } else if (not closedLoopControl) {
-                const float theta_m_next = wrapAngle(theta_m + dT * TargetVelocity);
-                theta_m = theta_m_next;
-
-                const float theta_e = wrapAngle(theta_m * MotorPolePairs);
-                const auto inv_park = performInverseParkTransform(0.0f, GlobalVoltageLimit, theta_e);
-                const auto [dutyCycleA, dutyCycleB, dutyCycleC] = svpwm.compute(inv_park[0], inv_park[1]);
-
-                TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleA);
-                TCC_PeriodV = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleB);
-                TCC_PeriodW = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleC);
         }
 }
 
