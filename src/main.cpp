@@ -314,9 +314,9 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
                 }
         } else if (ongoingSOOffsetCal) {
                 const auto [dA, dB, dC] = svpwm.compute(0.0f, 0.0f);
-                TCC_PeriodU = period - (uint32_t)(period * dA);
-                TCC_PeriodV = period - (uint32_t)(period * dB);
-                TCC_PeriodW = period - (uint32_t)(period * dC);
+                TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dA);
+                TCC_PeriodV = period - static_cast<uint32_t>(static_cast<float>(period) * dB);
+                TCC_PeriodW = period - static_cast<uint32_t>(static_cast<float>(period) * dC);
 
                 static uint32_t n = 0;
                 static double sumV = 0.0, sumW = 0.0;

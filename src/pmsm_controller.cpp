@@ -68,8 +68,7 @@ void PMSM_Controller::directionCalibration(uint32_t& perA, uint32_t& perB, uint3
                 timerCounter = 0;
                 directionCalibrationState = DirectionCalibrationState::DONE;
                 calibrationState = CalibrationState::DONE;
-        } else
-                return;
+        }
 }
 
 void PMSM_Controller::startupCalibration(uint32_t &perA, uint32_t &perB, uint32_t &perC, float thetaEncoder) {
