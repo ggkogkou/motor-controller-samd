@@ -26,9 +26,9 @@
 
 
 /* ========== Instance Parameter definitions for EIC peripheral ========== */
-#define EIC_CONFIG_NUM                           (2)        /* Number of CONFIG registers */
-#define EIC_EXTINT_NUM                           (16)       /* Number of External Interrupts */
-#define EIC_GCLK_ID                              (5)        /* Index of Generic Clock */
-#define EIC_INSTANCE_ID                          (6)        
+#define EIC_CONFIG_NUM (2) /* Number of CONFIG registers */
+#define EIC_EXTINT_NUM (16) /* Number of External Interrupts */
+#define EIC_GCLK_ID (5) /* Index of Generic Clock */
+#define EIC_INSTANCE_ID (6)
 
 #endif /* _SAMD21_EIC_INSTANCE_ */

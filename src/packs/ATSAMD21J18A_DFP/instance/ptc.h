@@ -26,7 +26,7 @@
 
 
 /* ========== Instance Parameter definitions for PTC peripheral ========== */
-#define PTC_GCLK_ID                              (34)       /* Index of Generic Clock */
-#define PTC_INSTANCE_ID                          (83)       
+#define PTC_GCLK_ID (34) /* Index of Generic Clock */
+#define PTC_INSTANCE_ID (83)
 
 #endif /* _SAMD21_PTC_INSTANCE_ */

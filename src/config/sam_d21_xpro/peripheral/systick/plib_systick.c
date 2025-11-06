@@ -45,24 +45,24 @@
 static volatile SYSTICK_OBJECT systick;
 
 void SYSTICK_TimerInitialize(void) {
-    SysTick->CTRL = 0U;
-    SysTick->VAL = 0U;
-    SysTick->LOAD = 0xBB80U - 1U;
-    SysTick->CTRL = SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_CLKSOURCE_Msk;
+        SysTick->CTRL = 0U;
+        SysTick->VAL = 0U;
+        SysTick->LOAD = 0xBB80U - 1U;
+        SysTick->CTRL = SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_CLKSOURCE_Msk;
 
-    systick.tickCounter = 0U;
-    systick.callback = NULL;
+        systick.tickCounter = 0U;
+        systick.callback = NULL;
 }
 
 void SYSTICK_TimerRestart(void) {
-    SysTick->CTRL &= ~(SysTick_CTRL_ENABLE_Msk);
-    SysTick->VAL = 0U;
-    SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
+        SysTick->CTRL &= ~(SysTick_CTRL_ENABLE_Msk);
+        SysTick->VAL = 0U;
+        SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
 }
 
 void SYSTICK_TimerStart(void) {
-    SysTick->VAL = 0U;
-    SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
+        SysTick->VAL = 0U;
+        SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
 }
 
 void SYSTICK_TimerStop(void) { SysTick->CTRL &= ~(SysTick_CTRL_ENABLE_Msk); }
@@ -76,89 +76,89 @@ uint32_t SYSTICK_TimerCounterGet(void) { return (SysTick->VAL); }
 uint32_t SYSTICK_TimerFrequencyGet(void) { return (SYSTICK_FREQ); }
 
 void SYSTICK_DelayMs(uint32_t delay_ms) {
-    uint32_t elapsedCount = 0U, delayCount;
-    uint32_t deltaCount, oldCount, newCount, period;
+        uint32_t elapsedCount = 0U, delayCount;
+        uint32_t deltaCount, oldCount, newCount, period;
 
-    period = SysTick->LOAD + 1U;
+        period = SysTick->LOAD + 1U;
 
-    /* Calculate the count for the given delay */
-    delayCount = (SYSTICK_FREQ / 1000U) * delay_ms;
+        /* Calculate the count for the given delay */
+        delayCount = (SYSTICK_FREQ / 1000U) * delay_ms;
 
-    if ((SysTick->CTRL & SysTick_CTRL_ENABLE_Msk) == SysTick_CTRL_ENABLE_Msk) {
-        oldCount = SysTick->VAL;
+        if ((SysTick->CTRL & SysTick_CTRL_ENABLE_Msk) == SysTick_CTRL_ENABLE_Msk) {
+                oldCount = SysTick->VAL;
 
-        while (elapsedCount < delayCount) {
-            newCount = SysTick->VAL;
-            deltaCount = oldCount - newCount;
+                while (elapsedCount < delayCount) {
+                        newCount = SysTick->VAL;
+                        deltaCount = oldCount - newCount;
 
-            if (newCount > oldCount) {
-                deltaCount = period - newCount + oldCount;
-            }
+                        if (newCount > oldCount) {
+                                deltaCount = period - newCount + oldCount;
+                        }
 
-            oldCount = newCount;
-            elapsedCount = elapsedCount + deltaCount;
+                        oldCount = newCount;
+                        elapsedCount = elapsedCount + deltaCount;
+                }
         }
-    }
 }
 
 void SYSTICK_DelayUs(uint32_t delay_us) {
-    uint32_t elapsedCount = 0U, delayCount;
-    uint32_t deltaCount, oldCount, newCount, period;
+        uint32_t elapsedCount = 0U, delayCount;
+        uint32_t deltaCount, oldCount, newCount, period;
 
-    period = SysTick->LOAD + 1U;
+        period = SysTick->LOAD + 1U;
 
-    /* Calculate the count for the given delay */
-    delayCount = (SYSTICK_FREQ / 1000000U) * delay_us;
+        /* Calculate the count for the given delay */
+        delayCount = (SYSTICK_FREQ / 1000000U) * delay_us;
 
-    if ((SysTick->CTRL & SysTick_CTRL_ENABLE_Msk) == SysTick_CTRL_ENABLE_Msk) {
-        oldCount = SysTick->VAL;
+        if ((SysTick->CTRL & SysTick_CTRL_ENABLE_Msk) == SysTick_CTRL_ENABLE_Msk) {
+                oldCount = SysTick->VAL;
 
-        while (elapsedCount < delayCount) {
-            newCount = SysTick->VAL;
-            deltaCount = oldCount - newCount;
+                while (elapsedCount < delayCount) {
+                        newCount = SysTick->VAL;
+                        deltaCount = oldCount - newCount;
 
-            if (newCount > oldCount) {
-                deltaCount = period - newCount + oldCount;
-            }
+                        if (newCount > oldCount) {
+                                deltaCount = period - newCount + oldCount;
+                        }
 
-            oldCount = newCount;
-            elapsedCount = elapsedCount + deltaCount;
+                        oldCount = newCount;
+                        elapsedCount = elapsedCount + deltaCount;
+                }
         }
-    }
 }
 
 
 uint32_t SYSTICK_GetTickCounter(void) { return systick.tickCounter; }
 
 void SYSTICK_StartTimeOut(SYSTICK_TIMEOUT* timeout, uint32_t delay_ms) {
-    timeout->start = SYSTICK_GetTickCounter();
-    timeout->count = (delay_ms * 1000U) / SYSTICK_INTERRUPT_PERIOD_IN_US;
+        timeout->start = SYSTICK_GetTickCounter();
+        timeout->count = (delay_ms * 1000U) / SYSTICK_INTERRUPT_PERIOD_IN_US;
 }
 
 void SYSTICK_ResetTimeOut(SYSTICK_TIMEOUT* timeout) { timeout->start = SYSTICK_GetTickCounter(); }
 
 bool SYSTICK_IsTimeoutReached(SYSTICK_TIMEOUT* timeout) {
-    bool valTimeout = true;
-    if ((SYSTICK_GetTickCounter() - timeout->start) < timeout->count) {
-        valTimeout = false;
-    }
+        bool valTimeout = true;
+        if ((SYSTICK_GetTickCounter() - timeout->start) < timeout->count) {
+                valTimeout = false;
+        }
 
-    return valTimeout;
+        return valTimeout;
 }
 void SYSTICK_TimerCallbackSet(SYSTICK_CALLBACK callback, uintptr_t context) {
-    systick.callback = callback;
-    systick.context = context;
+        systick.callback = callback;
+        systick.context = context;
 }
 
 void __attribute__((used)) SysTick_Handler(void) {
-    /* Additional temporary variable used to prevent MISRA violations (Rule 13.x) */
-    uintptr_t context = systick.context;
+        /* Additional temporary variable used to prevent MISRA violations (Rule 13.x) */
+        uintptr_t context = systick.context;
 
-    /* Reading control register clears the count flag */
-    (void)SysTick->CTRL;
+        /* Reading control register clears the count flag */
+        (void)SysTick->CTRL;
 
-    systick.tickCounter++;
-    if (systick.callback != NULL) {
-        systick.callback(context);
-    }
+        systick.tickCounter++;
+        if (systick.callback != NULL) {
+                systick.callback(context);
+        }
 }

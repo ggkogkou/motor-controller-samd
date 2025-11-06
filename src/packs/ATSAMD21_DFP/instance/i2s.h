@@ -26,11 +26,11 @@
 
 
 /* ========== Instance Parameter definitions for I2S peripheral ========== */
-#define I2S_CLK_NUM                              (2)        /* Number of clock units */
-#define I2S_GCLK_ID_0                            (35)       /* Index of Generic Clock 0 */
-#define I2S_GCLK_ID_1                            (36)       /* Index of Generic Clock 1 */
-#define I2S_MAX_SLOTS                            (8)        /* Max number of data slots in frame */
-#define I2S_SER_NUM                              (2)        /* Number of serializers */
-#define I2S_INSTANCE_ID                          (84)       
+#define I2S_CLK_NUM (2) /* Number of clock units */
+#define I2S_GCLK_ID_0 (35) /* Index of Generic Clock 0 */
+#define I2S_GCLK_ID_1 (36) /* Index of Generic Clock 1 */
+#define I2S_MAX_SLOTS (8) /* Max number of data slots in frame */
+#define I2S_SER_NUM (2) /* Number of serializers */
+#define I2S_INSTANCE_ID (84)
 
 #endif /* _SAMD21_I2S_INSTANCE_ */

@@ -17,27 +17,27 @@
 *******************************************************************************/
 
 /*******************************************************************************
-* Copyright (C) 2018 Microchip Technology Inc. and its subsidiaries.
-*
-* Subject to your compliance with these terms, you may use Microchip software
-* and any derivatives exclusively with Microchip products. It is your
-* responsibility to comply with third party license terms applicable to your
-* use of third party software (including open source software) that may
-* accompany Microchip software.
-*
-* THIS SOFTWARE IS SUPPLIED BY MICROCHIP "AS IS". NO WARRANTIES, WHETHER
-* EXPRESS, IMPLIED OR STATUTORY, APPLY TO THIS SOFTWARE, INCLUDING ANY IMPLIED
-* WARRANTIES OF NON-INFRINGEMENT, MERCHANTABILITY, AND FITNESS FOR A
-* PARTICULAR PURPOSE.
-*
-* IN NO EVENT WILL MICROCHIP BE LIABLE FOR ANY INDIRECT, SPECIAL, PUNITIVE,
-* INCIDENTAL OR CONSEQUENTIAL LOSS, DAMAGE, COST OR EXPENSE OF ANY KIND
-* WHATSOEVER RELATED TO THE SOFTWARE, HOWEVER CAUSED, EVEN IF MICROCHIP HAS
-* BEEN ADVISED OF THE POSSIBILITY OR THE DAMAGES ARE FORESEEABLE. TO THE
-* FULLEST EXTENT ALLOWED BY LAW, MICROCHIP'S TOTAL LIABILITY ON ALL CLAIMS IN
-* ANY WAY RELATED TO THIS SOFTWARE WILL NOT EXCEED THE AMOUNT OF FEES, IF ANY,
-* THAT YOU HAVE PAID DIRECTLY TO MICROCHIP FOR THIS SOFTWARE.
-*******************************************************************************/
+ * Copyright (C) 2018 Microchip Technology Inc. and its subsidiaries.
+ *
+ * Subject to your compliance with these terms, you may use Microchip software
+ * and any derivatives exclusively with Microchip products. It is your
+ * responsibility to comply with third party license terms applicable to your
+ * use of third party software (including open source software) that may
+ * accompany Microchip software.
+ *
+ * THIS SOFTWARE IS SUPPLIED BY MICROCHIP "AS IS". NO WARRANTIES, WHETHER
+ * EXPRESS, IMPLIED OR STATUTORY, APPLY TO THIS SOFTWARE, INCLUDING ANY IMPLIED
+ * WARRANTIES OF NON-INFRINGEMENT, MERCHANTABILITY, AND FITNESS FOR A
+ * PARTICULAR PURPOSE.
+ *
+ * IN NO EVENT WILL MICROCHIP BE LIABLE FOR ANY INDIRECT, SPECIAL, PUNITIVE,
+ * INCIDENTAL OR CONSEQUENTIAL LOSS, DAMAGE, COST OR EXPENSE OF ANY KIND
+ * WHATSOEVER RELATED TO THE SOFTWARE, HOWEVER CAUSED, EVEN IF MICROCHIP HAS
+ * BEEN ADVISED OF THE POSSIBILITY OR THE DAMAGES ARE FORESEEABLE. TO THE
+ * FULLEST EXTENT ALLOWED BY LAW, MICROCHIP'S TOTAL LIABILITY ON ALL CLAIMS IN
+ * ANY WAY RELATED TO THIS SOFTWARE WILL NOT EXCEED THE AMOUNT OF FEES, IF ANY,
+ * THAT YOU HAVE PAID DIRECTLY TO MICROCHIP FOR THIS SOFTWARE.
+ *******************************************************************************/
 
 #ifndef PLIB_PORT_H
 #define PLIB_PORT_H
@@ -48,14 +48,14 @@
 // *****************************************************************************
 // *****************************************************************************
 
-#include "device.h"
-#include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
+#include "device.h"
 
 // DOM-IGNORE-BEGIN
-#ifdef __cplusplus  // Provide C++ Compatibility
-    extern "C" {
+#ifdef __cplusplus // Provide C++ Compatibility
+extern "C" {
 #endif
 // DOM-IGNORE-END
 
@@ -66,105 +66,105 @@
 // *****************************************************************************
 
 /*** Macros for ADC_AIN2 pin ***/
-#define ADC_AIN2_Get()               (((PORT_REGS->GROUP[1].PORT_IN >> 8U)) & 0x01U)
-#define ADC_AIN2_PIN                  PORT_PIN_PB08
+#define ADC_AIN2_Get() (((PORT_REGS->GROUP[1].PORT_IN >> 8U)) & 0x01U)
+#define ADC_AIN2_PIN PORT_PIN_PB08
 
 /*** Macros for ADC_AIN3 pin ***/
-#define ADC_AIN3_Get()               (((PORT_REGS->GROUP[1].PORT_IN >> 9U)) & 0x01U)
-#define ADC_AIN3_PIN                  PORT_PIN_PB09
+#define ADC_AIN3_Get() (((PORT_REGS->GROUP[1].PORT_IN >> 9U)) & 0x01U)
+#define ADC_AIN3_PIN PORT_PIN_PB09
 
 /*** Macros for ADC_AIN4 pin ***/
-#define ADC_AIN4_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 4U)) & 0x01U)
-#define ADC_AIN4_PIN                  PORT_PIN_PA04
+#define ADC_AIN4_Get() (((PORT_REGS->GROUP[0].PORT_IN >> 4U)) & 0x01U)
+#define ADC_AIN4_PIN PORT_PIN_PA04
 
 /*** Macros for FEATHER_CS pin ***/
-#define FEATHER_CS_Set()               (PORT_REGS->GROUP[0].PORT_OUTSET = ((uint32_t)1U << 5U))
-#define FEATHER_CS_Clear()             (PORT_REGS->GROUP[0].PORT_OUTCLR = ((uint32_t)1U << 5U))
-#define FEATHER_CS_Toggle()            (PORT_REGS->GROUP[0].PORT_OUTTGL = ((uint32_t)1U << 5U))
-#define FEATHER_CS_OutputEnable()      (PORT_REGS->GROUP[0].PORT_DIRSET = ((uint32_t)1U << 5U))
-#define FEATHER_CS_InputEnable()       (PORT_REGS->GROUP[0].PORT_DIRCLR = ((uint32_t)1U << 5U))
-#define FEATHER_CS_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 5U)) & 0x01U)
-#define FEATHER_CS_PIN                  PORT_PIN_PA05
+#define FEATHER_CS_Set() (PORT_REGS->GROUP[0].PORT_OUTSET = ((uint32_t)1U << 5U))
+#define FEATHER_CS_Clear() (PORT_REGS->GROUP[0].PORT_OUTCLR = ((uint32_t)1U << 5U))
+#define FEATHER_CS_Toggle() (PORT_REGS->GROUP[0].PORT_OUTTGL = ((uint32_t)1U << 5U))
+#define FEATHER_CS_OutputEnable() (PORT_REGS->GROUP[0].PORT_DIRSET = ((uint32_t)1U << 5U))
+#define FEATHER_CS_InputEnable() (PORT_REGS->GROUP[0].PORT_DIRCLR = ((uint32_t)1U << 5U))
+#define FEATHER_CS_Get() (((PORT_REGS->GROUP[0].PORT_IN >> 5U)) & 0x01U)
+#define FEATHER_CS_PIN PORT_PIN_PA05
 
 /*** Macros for TCC1_WO1 pin ***/
-#define TCC1_WO1_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 7U)) & 0x01U)
-#define TCC1_WO1_PIN                  PORT_PIN_PA07
+#define TCC1_WO1_Get() (((PORT_REGS->GROUP[0].PORT_IN >> 7U)) & 0x01U)
+#define TCC1_WO1_PIN PORT_PIN_PA07
 
 /*** Macros for TCC0_WO0 pin ***/
-#define TCC0_WO0_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 8U)) & 0x01U)
-#define TCC0_WO0_PIN                  PORT_PIN_PA08
+#define TCC0_WO0_Get() (((PORT_REGS->GROUP[0].PORT_IN >> 8U)) & 0x01U)
+#define TCC0_WO0_PIN PORT_PIN_PA08
 
 /*** Macros for TCC0_WO1 pin ***/
-#define TCC0_WO1_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 9U)) & 0x01U)
-#define TCC0_WO1_PIN                  PORT_PIN_PA09
+#define TCC0_WO1_Get() (((PORT_REGS->GROUP[0].PORT_IN >> 9U)) & 0x01U)
+#define TCC0_WO1_PIN PORT_PIN_PA09
 
 /*** Macros for TCC0_WO2 pin ***/
-#define TCC0_WO2_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 10U)) & 0x01U)
-#define TCC0_WO2_PIN                  PORT_PIN_PA10
+#define TCC0_WO2_Get() (((PORT_REGS->GROUP[0].PORT_IN >> 10U)) & 0x01U)
+#define TCC0_WO2_PIN PORT_PIN_PA10
 
 /*** Macros for SPI_MOSI pin ***/
-#define SPI_MOSI_Get()               (((PORT_REGS->GROUP[1].PORT_IN >> 10U)) & 0x01U)
-#define SPI_MOSI_PIN                  PORT_PIN_PB10
+#define SPI_MOSI_Get() (((PORT_REGS->GROUP[1].PORT_IN >> 10U)) & 0x01U)
+#define SPI_MOSI_PIN PORT_PIN_PB10
 
 /*** Macros for SPI_SCLK pin ***/
-#define SPI_SCLK_Get()               (((PORT_REGS->GROUP[1].PORT_IN >> 11U)) & 0x01U)
-#define SPI_SCLK_PIN                  PORT_PIN_PB11
+#define SPI_SCLK_Get() (((PORT_REGS->GROUP[1].PORT_IN >> 11U)) & 0x01U)
+#define SPI_SCLK_PIN PORT_PIN_PB11
 
 /*** Macros for SPI_MISO pin ***/
-#define SPI_MISO_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 12U)) & 0x01U)
-#define SPI_MISO_PIN                  PORT_PIN_PA12
+#define SPI_MISO_Get() (((PORT_REGS->GROUP[0].PORT_IN >> 12U)) & 0x01U)
+#define SPI_MISO_PIN PORT_PIN_PA12
 
 /*** Macros for TCC0_WO5 pin ***/
-#define TCC0_WO5_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 15U)) & 0x01U)
-#define TCC0_WO5_PIN                  PORT_PIN_PA15
+#define TCC0_WO5_Get() (((PORT_REGS->GROUP[0].PORT_IN >> 15U)) & 0x01U)
+#define TCC0_WO5_PIN PORT_PIN_PA15
 
 /*** Macros for SPARE_GPIO pin ***/
-#define SPARE_GPIO_Set()               (PORT_REGS->GROUP[0].PORT_OUTSET = ((uint32_t)1U << 16U))
-#define SPARE_GPIO_Clear()             (PORT_REGS->GROUP[0].PORT_OUTCLR = ((uint32_t)1U << 16U))
-#define SPARE_GPIO_Toggle()            (PORT_REGS->GROUP[0].PORT_OUTTGL = ((uint32_t)1U << 16U))
-#define SPARE_GPIO_OutputEnable()      (PORT_REGS->GROUP[0].PORT_DIRSET = ((uint32_t)1U << 16U))
-#define SPARE_GPIO_InputEnable()       (PORT_REGS->GROUP[0].PORT_DIRCLR = ((uint32_t)1U << 16U))
-#define SPARE_GPIO_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 16U)) & 0x01U)
-#define SPARE_GPIO_PIN                  PORT_PIN_PA16
+#define SPARE_GPIO_Set() (PORT_REGS->GROUP[0].PORT_OUTSET = ((uint32_t)1U << 16U))
+#define SPARE_GPIO_Clear() (PORT_REGS->GROUP[0].PORT_OUTCLR = ((uint32_t)1U << 16U))
+#define SPARE_GPIO_Toggle() (PORT_REGS->GROUP[0].PORT_OUTTGL = ((uint32_t)1U << 16U))
+#define SPARE_GPIO_OutputEnable() (PORT_REGS->GROUP[0].PORT_DIRSET = ((uint32_t)1U << 16U))
+#define SPARE_GPIO_InputEnable() (PORT_REGS->GROUP[0].PORT_DIRCLR = ((uint32_t)1U << 16U))
+#define SPARE_GPIO_Get() (((PORT_REGS->GROUP[0].PORT_IN >> 16U)) & 0x01U)
+#define SPARE_GPIO_PIN PORT_PIN_PA16
 
 /*** Macros for DEBUG_LED pin ***/
-#define DEBUG_LED_Set()               (PORT_REGS->GROUP[0].PORT_OUTSET = ((uint32_t)1U << 17U))
-#define DEBUG_LED_Clear()             (PORT_REGS->GROUP[0].PORT_OUTCLR = ((uint32_t)1U << 17U))
-#define DEBUG_LED_Toggle()            (PORT_REGS->GROUP[0].PORT_OUTTGL = ((uint32_t)1U << 17U))
-#define DEBUG_LED_OutputEnable()      (PORT_REGS->GROUP[0].PORT_DIRSET = ((uint32_t)1U << 17U))
-#define DEBUG_LED_InputEnable()       (PORT_REGS->GROUP[0].PORT_DIRCLR = ((uint32_t)1U << 17U))
-#define DEBUG_LED_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 17U)) & 0x01U)
-#define DEBUG_LED_PIN                  PORT_PIN_PA17
+#define DEBUG_LED_Set() (PORT_REGS->GROUP[0].PORT_OUTSET = ((uint32_t)1U << 17U))
+#define DEBUG_LED_Clear() (PORT_REGS->GROUP[0].PORT_OUTCLR = ((uint32_t)1U << 17U))
+#define DEBUG_LED_Toggle() (PORT_REGS->GROUP[0].PORT_OUTTGL = ((uint32_t)1U << 17U))
+#define DEBUG_LED_OutputEnable() (PORT_REGS->GROUP[0].PORT_DIRSET = ((uint32_t)1U << 17U))
+#define DEBUG_LED_InputEnable() (PORT_REGS->GROUP[0].PORT_DIRCLR = ((uint32_t)1U << 17U))
+#define DEBUG_LED_Get() (((PORT_REGS->GROUP[0].PORT_IN >> 17U)) & 0x01U)
+#define DEBUG_LED_PIN PORT_PIN_PA17
 
 /*** Macros for TCC0_WO6 pin ***/
-#define TCC0_WO6_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 20U)) & 0x01U)
-#define TCC0_WO6_PIN                  PORT_PIN_PA20
+#define TCC0_WO6_Get() (((PORT_REGS->GROUP[0].PORT_IN >> 20U)) & 0x01U)
+#define TCC0_WO6_PIN PORT_PIN_PA20
 
 /*** Macros for USART_USBD- pin ***/
-#define USART_USBD-_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 24U)) & 0x01U)
-#define USART_USBD-_PIN                  PORT_PIN_PA24
+#define USART_USBD -_Get()(((PORT_REGS->GROUP[0].PORT_IN >> 24U)) & 0x01U)
+#define USART_USBD -_PIN PORT_PIN_PA24
 
 /*** Macros for USART_USBD+ pin ***/
-#define USART_USBD+_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 25U)) & 0x01U)
-#define USART_USBD+_PIN                  PORT_PIN_PA25
+#define USART_USBD +_Get()(((PORT_REGS->GROUP[0].PORT_IN >> 25U)) & 0x01U)
+#define USART_USBD +_PIN PORT_PIN_PA25
 
 /*** Macros for AS5047_CS pin ***/
-#define AS5047_CS_Set()               (PORT_REGS->GROUP[1].PORT_OUTSET = ((uint32_t)1U << 22U))
-#define AS5047_CS_Clear()             (PORT_REGS->GROUP[1].PORT_OUTCLR = ((uint32_t)1U << 22U))
-#define AS5047_CS_Toggle()            (PORT_REGS->GROUP[1].PORT_OUTTGL = ((uint32_t)1U << 22U))
-#define AS5047_CS_OutputEnable()      (PORT_REGS->GROUP[1].PORT_DIRSET = ((uint32_t)1U << 22U))
-#define AS5047_CS_InputEnable()       (PORT_REGS->GROUP[1].PORT_DIRCLR = ((uint32_t)1U << 22U))
-#define AS5047_CS_Get()               (((PORT_REGS->GROUP[1].PORT_IN >> 22U)) & 0x01U)
-#define AS5047_CS_PIN                  PORT_PIN_PB22
+#define AS5047_CS_Set() (PORT_REGS->GROUP[1].PORT_OUTSET = ((uint32_t)1U << 22U))
+#define AS5047_CS_Clear() (PORT_REGS->GROUP[1].PORT_OUTCLR = ((uint32_t)1U << 22U))
+#define AS5047_CS_Toggle() (PORT_REGS->GROUP[1].PORT_OUTTGL = ((uint32_t)1U << 22U))
+#define AS5047_CS_OutputEnable() (PORT_REGS->GROUP[1].PORT_DIRSET = ((uint32_t)1U << 22U))
+#define AS5047_CS_InputEnable() (PORT_REGS->GROUP[1].PORT_DIRCLR = ((uint32_t)1U << 22U))
+#define AS5047_CS_Get() (((PORT_REGS->GROUP[1].PORT_IN >> 22U)) & 0x01U)
+#define AS5047_CS_PIN PORT_PIN_PB22
 
 /*** Macros for DRV8316_CS pin ***/
-#define DRV8316_CS_Set()               (PORT_REGS->GROUP[1].PORT_OUTSET = ((uint32_t)1U << 23U))
-#define DRV8316_CS_Clear()             (PORT_REGS->GROUP[1].PORT_OUTCLR = ((uint32_t)1U << 23U))
-#define DRV8316_CS_Toggle()            (PORT_REGS->GROUP[1].PORT_OUTTGL = ((uint32_t)1U << 23U))
-#define DRV8316_CS_OutputEnable()      (PORT_REGS->GROUP[1].PORT_DIRSET = ((uint32_t)1U << 23U))
-#define DRV8316_CS_InputEnable()       (PORT_REGS->GROUP[1].PORT_DIRCLR = ((uint32_t)1U << 23U))
-#define DRV8316_CS_Get()               (((PORT_REGS->GROUP[1].PORT_IN >> 23U)) & 0x01U)
-#define DRV8316_CS_PIN                  PORT_PIN_PB23
+#define DRV8316_CS_Set() (PORT_REGS->GROUP[1].PORT_OUTSET = ((uint32_t)1U << 23U))
+#define DRV8316_CS_Clear() (PORT_REGS->GROUP[1].PORT_OUTCLR = ((uint32_t)1U << 23U))
+#define DRV8316_CS_Toggle() (PORT_REGS->GROUP[1].PORT_OUTTGL = ((uint32_t)1U << 23U))
+#define DRV8316_CS_OutputEnable() (PORT_REGS->GROUP[1].PORT_DIRSET = ((uint32_t)1U << 23U))
+#define DRV8316_CS_InputEnable() (PORT_REGS->GROUP[1].PORT_DIRCLR = ((uint32_t)1U << 23U))
+#define DRV8316_CS_Get() (((PORT_REGS->GROUP[1].PORT_IN >> 23U)) & 0x01U)
+#define DRV8316_CS_PIN PORT_PIN_PB23
 
 // *****************************************************************************
 /* PORT Group
@@ -194,25 +194,24 @@
 
 
 /* Helper macros to get port information from the pin */
-#define GET_PORT_GROUP(pin)  ((PORT_GROUP)(PORT_BASE_ADDRESS + (0x80U * (((uint32_t)pin) >> 5U))))
-#define GET_PIN_MASK(pin)   (((uint32_t)(0x1U)) << (((uint32_t)pin) & 0x1FU))
+#define GET_PORT_GROUP(pin) ((PORT_GROUP)(PORT_BASE_ADDRESS + (0x80U * (((uint32_t)pin) >> 5U))))
+#define GET_PIN_MASK(pin) (((uint32_t)(0x1U)) << (((uint32_t)pin) & 0x1FU))
 
 /* Named type for port group */
 typedef uint32_t PORT_GROUP;
 
 
-typedef enum
-{
-PERIPHERAL_FUNCTION_A = 0x0,
-PERIPHERAL_FUNCTION_B = 0x1,
-PERIPHERAL_FUNCTION_C = 0x2,
-PERIPHERAL_FUNCTION_D = 0x3,
-PERIPHERAL_FUNCTION_E = 0x4,
-PERIPHERAL_FUNCTION_F = 0x5,
-PERIPHERAL_FUNCTION_G = 0x6,
-PERIPHERAL_FUNCTION_H = 0x7,
+typedef enum {
+        PERIPHERAL_FUNCTION_A = 0x0,
+        PERIPHERAL_FUNCTION_B = 0x1,
+        PERIPHERAL_FUNCTION_C = 0x2,
+        PERIPHERAL_FUNCTION_D = 0x3,
+        PERIPHERAL_FUNCTION_E = 0x4,
+        PERIPHERAL_FUNCTION_F = 0x5,
+        PERIPHERAL_FUNCTION_G = 0x6,
+        PERIPHERAL_FUNCTION_H = 0x7,
 
-}PERIPHERAL_FUNCTION;
+} PERIPHERAL_FUNCTION;
 
 // *****************************************************************************
 /* PORT Pins
@@ -233,168 +232,167 @@ PERIPHERAL_FUNCTION_H = 0x7,
     specific datasheet for more details.
 */
 
-typedef enum
-{
-    /* PA00 pin */
-    PORT_PIN_PA00 = 0U,
+typedef enum {
+        /* PA00 pin */
+        PORT_PIN_PA00 = 0U,
 
-    /* PA01 pin */
-    PORT_PIN_PA01 = 1U,
+        /* PA01 pin */
+        PORT_PIN_PA01 = 1U,
 
-    /* PA02 pin */
-    PORT_PIN_PA02 = 2U,
+        /* PA02 pin */
+        PORT_PIN_PA02 = 2U,
 
-    /* PA03 pin */
-    PORT_PIN_PA03 = 3U,
+        /* PA03 pin */
+        PORT_PIN_PA03 = 3U,
 
-    /* PA04 pin */
-    PORT_PIN_PA04 = 4U,
+        /* PA04 pin */
+        PORT_PIN_PA04 = 4U,
 
-    /* PA05 pin */
-    PORT_PIN_PA05 = 5U,
+        /* PA05 pin */
+        PORT_PIN_PA05 = 5U,
 
-    /* PA06 pin */
-    PORT_PIN_PA06 = 6U,
+        /* PA06 pin */
+        PORT_PIN_PA06 = 6U,
 
-    /* PA07 pin */
-    PORT_PIN_PA07 = 7U,
+        /* PA07 pin */
+        PORT_PIN_PA07 = 7U,
 
-    /* PA08 pin */
-    PORT_PIN_PA08 = 8U,
+        /* PA08 pin */
+        PORT_PIN_PA08 = 8U,
 
-    /* PA09 pin */
-    PORT_PIN_PA09 = 9U,
+        /* PA09 pin */
+        PORT_PIN_PA09 = 9U,
 
-    /* PA10 pin */
-    PORT_PIN_PA10 = 10U,
+        /* PA10 pin */
+        PORT_PIN_PA10 = 10U,
 
-    /* PA11 pin */
-    PORT_PIN_PA11 = 11U,
+        /* PA11 pin */
+        PORT_PIN_PA11 = 11U,
 
-    /* PA12 pin */
-    PORT_PIN_PA12 = 12U,
+        /* PA12 pin */
+        PORT_PIN_PA12 = 12U,
 
-    /* PA13 pin */
-    PORT_PIN_PA13 = 13U,
+        /* PA13 pin */
+        PORT_PIN_PA13 = 13U,
 
-    /* PA14 pin */
-    PORT_PIN_PA14 = 14U,
+        /* PA14 pin */
+        PORT_PIN_PA14 = 14U,
 
-    /* PA15 pin */
-    PORT_PIN_PA15 = 15U,
+        /* PA15 pin */
+        PORT_PIN_PA15 = 15U,
 
-    /* PA16 pin */
-    PORT_PIN_PA16 = 16U,
+        /* PA16 pin */
+        PORT_PIN_PA16 = 16U,
 
-    /* PA17 pin */
-    PORT_PIN_PA17 = 17U,
+        /* PA17 pin */
+        PORT_PIN_PA17 = 17U,
 
-    /* PA18 pin */
-    PORT_PIN_PA18 = 18U,
+        /* PA18 pin */
+        PORT_PIN_PA18 = 18U,
 
-    /* PA19 pin */
-    PORT_PIN_PA19 = 19U,
+        /* PA19 pin */
+        PORT_PIN_PA19 = 19U,
 
-    /* PA20 pin */
-    PORT_PIN_PA20 = 20U,
+        /* PA20 pin */
+        PORT_PIN_PA20 = 20U,
 
-    /* PA21 pin */
-    PORT_PIN_PA21 = 21U,
+        /* PA21 pin */
+        PORT_PIN_PA21 = 21U,
 
-    /* PA22 pin */
-    PORT_PIN_PA22 = 22U,
+        /* PA22 pin */
+        PORT_PIN_PA22 = 22U,
 
-    /* PA23 pin */
-    PORT_PIN_PA23 = 23U,
+        /* PA23 pin */
+        PORT_PIN_PA23 = 23U,
 
-    /* PA24 pin */
-    PORT_PIN_PA24 = 24U,
+        /* PA24 pin */
+        PORT_PIN_PA24 = 24U,
 
-    /* PA25 pin */
-    PORT_PIN_PA25 = 25U,
+        /* PA25 pin */
+        PORT_PIN_PA25 = 25U,
 
-    /* PA27 pin */
-    PORT_PIN_PA27 = 27U,
+        /* PA27 pin */
+        PORT_PIN_PA27 = 27U,
 
-    /* PA28 pin */
-    PORT_PIN_PA28 = 28U,
+        /* PA28 pin */
+        PORT_PIN_PA28 = 28U,
 
-    /* PA30 pin */
-    PORT_PIN_PA30 = 30U,
+        /* PA30 pin */
+        PORT_PIN_PA30 = 30U,
 
-    /* PA31 pin */
-    PORT_PIN_PA31 = 31U,
+        /* PA31 pin */
+        PORT_PIN_PA31 = 31U,
 
-    /* PB00 pin */
-    PORT_PIN_PB00 = 32U,
+        /* PB00 pin */
+        PORT_PIN_PB00 = 32U,
 
-    /* PB01 pin */
-    PORT_PIN_PB01 = 33U,
+        /* PB01 pin */
+        PORT_PIN_PB01 = 33U,
 
-    /* PB02 pin */
-    PORT_PIN_PB02 = 34U,
+        /* PB02 pin */
+        PORT_PIN_PB02 = 34U,
 
-    /* PB03 pin */
-    PORT_PIN_PB03 = 35U,
+        /* PB03 pin */
+        PORT_PIN_PB03 = 35U,
 
-    /* PB04 pin */
-    PORT_PIN_PB04 = 36U,
+        /* PB04 pin */
+        PORT_PIN_PB04 = 36U,
 
-    /* PB05 pin */
-    PORT_PIN_PB05 = 37U,
+        /* PB05 pin */
+        PORT_PIN_PB05 = 37U,
 
-    /* PB06 pin */
-    PORT_PIN_PB06 = 38U,
+        /* PB06 pin */
+        PORT_PIN_PB06 = 38U,
 
-    /* PB07 pin */
-    PORT_PIN_PB07 = 39U,
+        /* PB07 pin */
+        PORT_PIN_PB07 = 39U,
 
-    /* PB08 pin */
-    PORT_PIN_PB08 = 40U,
+        /* PB08 pin */
+        PORT_PIN_PB08 = 40U,
 
-    /* PB09 pin */
-    PORT_PIN_PB09 = 41U,
+        /* PB09 pin */
+        PORT_PIN_PB09 = 41U,
 
-    /* PB10 pin */
-    PORT_PIN_PB10 = 42U,
+        /* PB10 pin */
+        PORT_PIN_PB10 = 42U,
 
-    /* PB11 pin */
-    PORT_PIN_PB11 = 43U,
+        /* PB11 pin */
+        PORT_PIN_PB11 = 43U,
 
-    /* PB12 pin */
-    PORT_PIN_PB12 = 44U,
+        /* PB12 pin */
+        PORT_PIN_PB12 = 44U,
 
-    /* PB13 pin */
-    PORT_PIN_PB13 = 45U,
+        /* PB13 pin */
+        PORT_PIN_PB13 = 45U,
 
-    /* PB14 pin */
-    PORT_PIN_PB14 = 46U,
+        /* PB14 pin */
+        PORT_PIN_PB14 = 46U,
 
-    /* PB15 pin */
-    PORT_PIN_PB15 = 47U,
+        /* PB15 pin */
+        PORT_PIN_PB15 = 47U,
 
-    /* PB16 pin */
-    PORT_PIN_PB16 = 48U,
+        /* PB16 pin */
+        PORT_PIN_PB16 = 48U,
 
-    /* PB17 pin */
-    PORT_PIN_PB17 = 49U,
+        /* PB17 pin */
+        PORT_PIN_PB17 = 49U,
 
-    /* PB22 pin */
-    PORT_PIN_PB22 = 54U,
+        /* PB22 pin */
+        PORT_PIN_PB22 = 54U,
 
-    /* PB23 pin */
-    PORT_PIN_PB23 = 55U,
+        /* PB23 pin */
+        PORT_PIN_PB23 = 55U,
 
-    /* PB30 pin */
-    PORT_PIN_PB30 = 62U,
+        /* PB30 pin */
+        PORT_PIN_PB30 = 62U,
 
-    /* PB31 pin */
-    PORT_PIN_PB31 = 63U,
+        /* PB31 pin */
+        PORT_PIN_PB31 = 63U,
 
-    /* This element should not be used in any of the PORT APIs.
-     * It will be used by other modules or application to denote that none of
-     * the PORT Pin is used */
-    PORT_PIN_NONE = 65535U,
+        /* This element should not be used in any of the PORT APIs.
+         * It will be used by other modules or application to denote that none of
+         * the PORT Pin is used */
+        PORT_PIN_NONE = 65535U,
 
 } PORT_PIN;
 
@@ -849,11 +847,8 @@ void PORT_PinGPIOConfig(PORT_PIN pin);
     be enabled.
 */
 
-static inline void PORT_PinWrite(PORT_PIN pin, bool value)
-{
-    PORT_GroupWrite(GET_PORT_GROUP(pin),
-                    GET_PIN_MASK(pin),
-                    (value ? GET_PIN_MASK(pin) : 0U));
+static inline void PORT_PinWrite(PORT_PIN pin, bool value) {
+        PORT_GroupWrite(GET_PORT_GROUP(pin), GET_PIN_MASK(pin), (value ? GET_PIN_MASK(pin) : 0U));
 }
 
 
@@ -895,9 +890,8 @@ static inline void PORT_PinWrite(PORT_PIN pin, bool value)
     None.
 */
 
-static inline bool PORT_PinRead(PORT_PIN pin)
-{
-    return ((PORT_GroupRead(GET_PORT_GROUP(pin)) & GET_PIN_MASK(pin)) != 0U);
+static inline bool PORT_PinRead(PORT_PIN pin) {
+        return ((PORT_GroupRead(GET_PORT_GROUP(pin)) & GET_PIN_MASK(pin)) != 0U);
 }
 
 
@@ -936,9 +930,8 @@ static inline bool PORT_PinRead(PORT_PIN pin)
     To read actual pin value, PIN_Read API should be used.
 */
 
-static inline bool PORT_PinLatchRead(PORT_PIN pin)
-{
-    return ((PORT_GroupLatchRead(GET_PORT_GROUP(pin)) & GET_PIN_MASK(pin)) != 0U);
+static inline bool PORT_PinLatchRead(PORT_PIN pin) {
+        return ((PORT_GroupLatchRead(GET_PORT_GROUP(pin)) & GET_PIN_MASK(pin)) != 0U);
 }
 
 
@@ -972,10 +965,7 @@ static inline bool PORT_PinLatchRead(PORT_PIN pin)
     None.
 */
 
-static inline void PORT_PinToggle(PORT_PIN pin)
-{
-    PORT_GroupToggle(GET_PORT_GROUP(pin), GET_PIN_MASK(pin));
-}
+static inline void PORT_PinToggle(PORT_PIN pin) { PORT_GroupToggle(GET_PORT_GROUP(pin), GET_PIN_MASK(pin)); }
 
 
 // *****************************************************************************
@@ -1008,10 +998,7 @@ static inline void PORT_PinToggle(PORT_PIN pin)
     None.
 */
 
-static inline void PORT_PinSet(PORT_PIN pin)
-{
-    PORT_GroupSet(GET_PORT_GROUP(pin), GET_PIN_MASK(pin));
-}
+static inline void PORT_PinSet(PORT_PIN pin) { PORT_GroupSet(GET_PORT_GROUP(pin), GET_PIN_MASK(pin)); }
 
 
 // *****************************************************************************
@@ -1044,10 +1031,7 @@ static inline void PORT_PinSet(PORT_PIN pin)
     None.
 */
 
-static inline void PORT_PinClear(PORT_PIN pin)
-{
-    PORT_GroupClear(GET_PORT_GROUP(pin), GET_PIN_MASK(pin));
-}
+static inline void PORT_PinClear(PORT_PIN pin) { PORT_GroupClear(GET_PORT_GROUP(pin), GET_PIN_MASK(pin)); }
 
 
 // *****************************************************************************
@@ -1081,10 +1065,7 @@ static inline void PORT_PinClear(PORT_PIN pin)
     None.
 */
 
-static inline void PORT_PinInputEnable(PORT_PIN pin)
-{
-    PORT_GroupInputEnable(GET_PORT_GROUP(pin), GET_PIN_MASK(pin));
-}
+static inline void PORT_PinInputEnable(PORT_PIN pin) { PORT_GroupInputEnable(GET_PORT_GROUP(pin), GET_PIN_MASK(pin)); }
 
 
 // *****************************************************************************
@@ -1118,14 +1099,12 @@ static inline void PORT_PinInputEnable(PORT_PIN pin)
     None.
 */
 
-static inline void PORT_PinOutputEnable(PORT_PIN pin)
-{
-    PORT_GroupOutputEnable(GET_PORT_GROUP(pin), GET_PIN_MASK(pin));
+static inline void PORT_PinOutputEnable(PORT_PIN pin) {
+        PORT_GroupOutputEnable(GET_PORT_GROUP(pin), GET_PIN_MASK(pin));
 }
 
 // DOM-IGNORE-BEGIN
-#ifdef __cplusplus  // Provide C++ Compatibility
-
+#ifdef __cplusplus // Provide C++ Compatibility
 }
 
 #endif

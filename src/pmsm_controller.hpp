@@ -1,9 +1,9 @@
 #pragma once
 
+#include "definitions.h"
 #include "math_utils.hpp"
 #include "pid.hpp"
 #include "svpwm.hpp"
-#include "definitions.h"
 
 namespace PermanentMagnetSynchronousMotor {
 
@@ -19,7 +19,7 @@ struct PMSM_Config {
         /**
          * The voltage limit -- DC bus utilization
          */
-        static constexpr float GlobalVoltageLimit = 12.0f;
+        static constexpr float CloseLoopVoltageLimit = 12.0f;
 
         /**
          * Encoder electrical offset and direction calibration voltage limit
@@ -40,6 +40,8 @@ struct PMSM_Config {
          * The motor's pole pairs
          */
         static constexpr float MotorPolePairs = 11.0f;
+
+        static constexpr float OpenLoopVoltageLimit = 6.0f;
 };
 
 class PMSM_Controller {
@@ -51,12 +53,14 @@ public:
         /**
          * The main update function that implements the Field-Oriented Control
          */
-        inline void update(float &dutyA, float &dutyB, float &dutyC);
+        inline void update(uint32_t& perA, uint32_t& perB, uint32_t& perC);
+
+        inline void updateOpenLoop(uint32_t& perA, uint32_t& perB, uint32_t& perC);
 
         /**
          * Function that performs the initial encoder offset and direction calibration
          */
-        void startupCalibration(uint32_t &perA, uint32_t &perB, uint32_t &perC, float thetaEncoder);
+        void startupCalibration(uint32_t& perA, uint32_t& perB, uint32_t& perC, float thetaEncoder);
 
 private:
         /**
@@ -67,28 +71,17 @@ private:
         /**
          * The outer velocity control loop PI controller
          */
-        PID pidVelocity {0.5f, 10.0f, 0.0f, 6.0f, 0.00100000005};
+        PID pidVelocity{0.5f, 10.0f, 0.0f, 6.0f, 0.00100000005};
 
         /**
          * The direct (d-axis) current PI controller Id
          */
-        PID pidId {0.25f, 20.0f, 0.0f, PMSM_Config::GlobalVoltageLimit, 0.00100000005 };
+        PID pidId{0.25f, 20.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit, 0.00100000005};
 
         /**
          * The quadrature (q-axis) current PI controller Iq
          */
-        PID pidIq {0.35f, 50.0f, 0.0f, PMSM_Config::GlobalVoltageLimit, 0.00100000005 };
-
-        /**
-         * Wrap an angle into [0, 2π)
-         */
-        [[nodiscard]] static float wrapAngle(float x) noexcept {
-                while (x < 0.0f)
-                        x += TWO_PI;
-                while (x >= TWO_PI)
-                        x -= TWO_PI;
-                return x;
-        }
+        PID pidIq{0.35f, 50.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit, 0.00100000005};
 
         /**
          * Represents the possible directions of rotation
@@ -97,6 +90,13 @@ private:
                 CLOCKWISE = 1,
                 COUNTERCLOCKWISE = -1,
         };
+
+        enum class ControlType : int8_t {
+                OPEN_LOOP,
+                CLOSED_LOOP,
+        };
+
+        ControlType controlType = ControlType::OPEN_LOOP;
 
         /**
          * Rotor's direction; must be overrriden by the startup calbration procedures
@@ -127,7 +127,7 @@ private:
         };
 
         DirectionCalibrationState directionCalibrationState = DirectionCalibrationState::CALIBRATE_CW;
-        void directionCalibration(uint32_t &perA, uint32_t &perB, uint32_t &perC);
+        void directionCalibration(uint32_t& perA, uint32_t& perB, uint32_t& perC);
 
         void encoderOffsetCalibration(uint32_t& perA, uint32_t& perB, uint32_t& perC, float thetaEncoder);
 
@@ -137,7 +137,6 @@ private:
 
         uint32_t timerCounter = 0;
         uint32_t neededTicks = 1000;
-
 };
 
 } // namespace PermanentMagnetSynchronousMotor

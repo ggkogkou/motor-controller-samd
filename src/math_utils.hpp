@@ -260,6 +260,17 @@ using AlphaBetaFrame = std::array<float, 2>;
 [[nodiscard]] inline float degreesToRadians(float angleDegrees) { return angleDegrees * PI / 180.0f; }
 
 /**
+ * Wrap an angle into [0, 2π)
+ */
+[[nodiscard]] inline float wrapAngle(float x) noexcept {
+        while (x < 0.0f)
+                x += TWO_PI;
+        while (x >= TWO_PI)
+                x -= TWO_PI;
+        return x;
+}
+
+/**
  * Simple static assertions to quickly showcase the correctness
  */
 static_assert(sine[0.0f] == 0.0f, "The sin(pi/2) does not evaluate to 1");
