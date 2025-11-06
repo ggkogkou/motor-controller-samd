@@ -220,69 +220,23 @@ static void get_currents_BC(float& iA, float& iB, float& iC) {
         iC = iCcorr;
 }
 
+using namespace PermanentMagnetSynchronousMotor;
+
+PMSM_Controller pmsm_controller;
+
+bool switchToCloseLoop = false;
+
 void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
-        if (ongoingDirectionCalibration) {
-                const float theta_m_next = wrapAngle(theta_m + dT * TargetCalibrationVelocity);
-                theta_m = theta_m_next;
+        if (not switchToCloseLoop) {
+                __disable_irq();
+                const float theta_for_alignment = degreesToRadians(Encoder.measureAngleUncompensated());
+                __enable_irq();
+                switchToCloseLoop =
+                        pmsm_controller.startupCalibration(TCC_PeriodU, TCC_PeriodV, TCC_PeriodW, theta_for_alignment);
+                return;
+        }
 
-                const float theta_e = wrapAngle(theta_m * MotorPolePairs);
-                const auto inv_park = performInverseParkTransform(0.0f, InitialCalibrationVoltageLimit, theta_e);
-                const auto [dutyCycleA, dutyCycleB, dutyCycleC] = svpwm.compute(inv_park[0], inv_park[1]);
-
-                TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleA);
-                TCC_PeriodV = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleB);
-                TCC_PeriodW = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleC);
-
-                if (++timer_counter == needed_ticks) {
-                        __disable_irq();
-                        encoder_angle_mid = Encoder.measureAngleUncompensated();
-                        timer_counter = 0;
-                        ongoingDirectionCalibration = false;
-                        __enable_irq();
-                }
-        } else if (ongoingDirectionCalibration2) {
-                const float theta_m_next = wrapAngle(theta_m + dT * TargetCalibrationVelocity);
-                theta_m = theta_m_next;
-
-                const float theta_e = wrapAngle(-theta_m * MotorPolePairs);
-                const auto inv_park = performInverseParkTransform(0.0f, InitialCalibrationVoltageLimit, theta_e);
-                const auto [dutyCycleA, dutyCycleB, dutyCycleC] = svpwm.compute(inv_park[0], inv_park[1]);
-
-                TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleA);
-                TCC_PeriodV = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleB);
-                TCC_PeriodW = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleC);
-
-                if (++timer_counter == needed_ticks) {
-                        __disable_irq();
-                        encoder_angle_end = Encoder.measureAngleUncompensated();
-                        timer_counter = 0;
-                        ongoingDirectionCalibration2 = false;
-                        __enable_irq();
-                }
-        } else if (ongoingOffsetCalibration) {
-                constexpr float Vq = 0.0f;
-                constexpr float Vd = InitialCalibrationVoltageLimit;
-                constexpr float ThetaElectrical = 0.0f;
-
-                const auto AlphaBetaFrame = performInverseParkTransform(Vd, Vq, ThetaElectrical);
-                const auto DutyCycles = svpwm.compute(AlphaBetaFrame[0], AlphaBetaFrame[1]);
-                const auto [dutyCycleA, dutyCycleB, dutyCycleC] = DutyCycles;
-
-                TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleA);
-                TCC_PeriodV = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleB);
-                TCC_PeriodW = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleC);
-
-                if (++timer_counter == needed_ticks) {
-                        __disable_irq();
-                        const float theta_mech_at_align = degreesToRadians(Encoder.measureAngleUncompensated());
-                        ZeroElectricalAngle = wrapAngle(MotorPolePairs * theta_mech_at_align);
-                        // ZeroElectricalAngle = degreesToRadians(Encoder.measureAngleUncompensated());
-                        timer_counter = 0;
-                        theta_m = degreesToRadians(theta_mech_at_align);
-                        ongoingOffsetCalibration = false;
-                        __enable_irq();
-                }
-        } else if (ongoingSOOffsetCal) {
+        if (ongoingSOOffsetCal) {
                 const auto [dA, dB, dC] = svpwm.compute(0.0f, 0.0f);
                 TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dA);
                 TCC_PeriodV = period - static_cast<uint32_t>(static_cast<float>(period) * dB);
@@ -393,13 +347,8 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
                 TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleA);
                 TCC_PeriodV = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleB);
                 TCC_PeriodW = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleC);
-
         }
 }
-
-using namespace PermanentMagnetSynchronousMotor;
-
-PMSM_Controller pmsm_controller;
 
 void TC3_HandlerProofOfConcept(TC_TIMER_STATUS status, uintptr_t context) {
         __disable_irq();

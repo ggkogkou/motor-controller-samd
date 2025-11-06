@@ -65,15 +65,20 @@ void PMSM_Controller::encoderOffsetCalibration(uint32_t& perA, uint32_t& perB, u
         }
 }
 
-void PMSM_Controller::startupCalibration(uint32_t& perA, uint32_t& perB, uint32_t& perC, float thetaEncoder) {
+bool PMSM_Controller::startupCalibration(uint32_t& perA, uint32_t& perB, uint32_t& perC, float thetaEncoder) {
         if (calibrationState == CalibrationState::DIRECTION_CALIBRATION)
                 directionCalibration(perA, perB, perC);
         else if (calibrationState == CalibrationState::OFFSET_CALIBRATION)
                 encoderOffsetCalibration(perA, perB, perC, thetaEncoder);
-        else if (controlType == ControlType::OPEN_LOOP)
-                updateOpenLoop(perA, perB, perC);
-        else if (controlType == ControlType::CLOSED_LOOP)
-                update(perA, perB, perC);
+        else
+                return true;
+        // else if (controlType == ControlType::OPEN_LOOP)
+        //         updateOpenLoop(perA, perB, perC);
+        // else if (controlType == ControlType::CLOSED_LOOP)
+        //         update(perA, perB, perC);
+
+        return false;
+        /// Statistically the CLOSED_LOOP will run most; branching should be the opposite to reduce if-else-if checks
 }
 
 void PMSM_Controller::updateOpenLoop(uint32_t& perA, uint32_t& perB, uint32_t& perC) {
@@ -92,8 +97,6 @@ void PMSM_Controller::updateOpenLoop(uint32_t& perA, uint32_t& perB, uint32_t& p
         perC = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dutyCycleC);
 }
 
-void PMSM_Controller::update(uint32_t& perA, uint32_t& perB, uint32_t& perC) {
-
-}
+void PMSM_Controller::update(uint32_t& perA, uint32_t& perB, uint32_t& perC) {}
 
 } // namespace PermanentMagnetSynchronousMotor

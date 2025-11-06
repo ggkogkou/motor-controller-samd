@@ -60,7 +60,7 @@ public:
         /**
          * Function that performs the initial encoder offset and direction calibration
          */
-        void startupCalibration(uint32_t& perA, uint32_t& perB, uint32_t& perC, float thetaEncoder);
+        bool startupCalibration(uint32_t& perA, uint32_t& perB, uint32_t& perC, float thetaEncoder);
 
 private:
         /**
