@@ -116,10 +116,6 @@ inline constexpr float CSA_GAIN_V_PER_A = 0.30f;
 inline constexpr float ADC_FS_V = 3.30f;
 inline constexpr int ADC_FS_COUNTS = 4095;
 
-static volatile float soW_off = 1.65f;
-static volatile float soV_off = 1.65f;
-
-static float iq_int = 0.0f;
 inline constexpr float Kp_q = 0.4f;
 inline constexpr float Ki_q = 200.0f;
 
@@ -197,7 +193,12 @@ static float encoder_angle_init = 0;
 static float encoder_angle_mid = 0;
 static float encoder_angle_end = 0;
 
-static float filt_alpha(float dt, float tau) { return tau / (tau + dt); }
+static float filt_alpha(float dt, float tau) {
+        return tau / (tau + dt);
+}
+
+static volatile float soW_off = 1.65f;
+static volatile float soV_off = 1.65f;
 
 static void get_currents_BC(float& iA, float& iB, float& iC) {
         __disable_irq();
@@ -220,8 +221,38 @@ static void get_currents_BC(float& iA, float& iB, float& iC) {
         iC = iCcorr;
 }
 
-using namespace PermanentMagnetSynchronousMotor;
+static void calibrateDRV8316_SOx() {
+        const auto [dA, dB, dC] = svpwm.compute(0.0f, 0.0f);
+        TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dA);
+        TCC_PeriodV = period - static_cast<uint32_t>(static_cast<float>(period) * dB);
+        TCC_PeriodW = period - static_cast<uint32_t>(static_cast<float>(period) * dC);
 
+        static uint32_t n = 0;
+        static double sumV = 0.0, sumW = 0.0;
+
+        if (adcResultsReady) {
+                __disable_irq();
+                const uint16_t rv = adcResultV, rw = adcResultW;
+                adcResultsReady = false;
+                __enable_irq();
+
+                const float soV = rv * ADC_FS_V / 4095.0f;
+                const float soW = rw * ADC_FS_V / 4095.0f;
+
+                sumV += soV;
+                sumW += soW;
+                ++n;
+                if (n >= 512) {
+                        soV_off = static_cast<float>(sumV / n);
+                        soW_off = static_cast<float>(sumW / n);
+                        sumV = sumW = 0.0;
+                        n = 0;
+                        ongoingSOOffsetCal = false;
+                }
+        }
+}
+
+using namespace PermanentMagnetSynchronousMotor;
 PMSM_Controller pmsm_controller;
 
 bool switchToCloseLoop = false;
@@ -236,36 +267,9 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
                 return;
         }
 
-        if (ongoingSOOffsetCal) {
-                const auto [dA, dB, dC] = svpwm.compute(0.0f, 0.0f);
-                TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dA);
-                TCC_PeriodV = period - static_cast<uint32_t>(static_cast<float>(period) * dB);
-                TCC_PeriodW = period - static_cast<uint32_t>(static_cast<float>(period) * dC);
-
-                static uint32_t n = 0;
-                static double sumV = 0.0, sumW = 0.0;
-
-                if (adcResultsReady) {
-                        __disable_irq();
-                        const uint16_t rv = adcResultV, rw = adcResultW;
-                        adcResultsReady = false;
-                        __enable_irq();
-
-                        const float soV = (rv * ADC_FS_V) / 4095.0f;
-                        const float soW = (rw * ADC_FS_V) / 4095.0f;
-
-                        sumV += soV;
-                        sumW += soW;
-                        ++n;
-                        if (n >= 512) { // ~512 centered samples
-                                soV_off = (float)(sumV / n);
-                                soW_off = (float)(sumW / n);
-                                sumV = sumW = 0.0;
-                                n = 0;
-                                ongoingSOOffsetCal = false;
-                        }
-                }
-        } else if (closedLoopControlCurrent) {
+        if (ongoingSOOffsetCal)
+                calibrateDRV8316_SOx();
+        else if (closedLoopControlCurrent) {
                 __disable_irq();
                 const float theta_mod = degreesToRadians(Encoder.measureAngleUncompensated());
                 __enable_irq();
@@ -350,32 +354,6 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
         }
 }
 
-void TC3_HandlerProofOfConcept(TC_TIMER_STATUS status, uintptr_t context) {
-        __disable_irq();
-        const float theta_mod = degreesToRadians(Encoder.measureAngleUncompensated());
-        __enable_irq();
-        pmsm_controller.startupCalibration(TCC_PeriodU, TCC_PeriodV, TCC_PeriodW, theta_mod);
-}
-
-void SPI_Callback(uintptr_t context) { (void)context; }
-
-static volatile bool debug_led_state = false;
-
-/**
- * A periodic LED blinking task for visual debugging purposes
- */
-void debug_led_task() {
-        if (debug_led_state) {
-                DEBUG_LED_Clear();
-                debug_led_state = false;
-        } else {
-                DEBUG_LED_Set();
-                debug_led_state = true;
-        }
-
-        SYSTICK_DelayMs(1000);
-}
-
 void devices_init() {
         SPARE_GPIO_Clear();
         BrushlessDriver.unlockAllRegisters();
@@ -399,7 +377,6 @@ void peripherals_init() {
         ADC_CallbackRegister(ADC_Callback, 0);
         TCC0_PWMCallbackRegister(PWM_IRQ_Callback, 0);
         TC3_TimerCallbackRegister(TC3_FOC_HandlerOpenLoop, 0);
-        // TC3_TimerCallbackRegister(TC3_HandlerProofOfConcept, 0);
 
         TCC0_PWMStart();
         TCC1_PWMStart();
@@ -417,14 +394,7 @@ void peripherals_init() {
 
         peripherals_init();
 
-        while (true) {
-                // auto x = BrushlessDriver.checkForFaults();
-                // auto y = Encoder.measureAngleUncompensated();
+        while (true) { }
 
-                // logger << "[INFO] Running";
-                // float angleee = 12.345675f;
-                // logger << "[INFO] Running, angle = " << angleee; // sends once, with "\r\n" appended
-
-                // debug_led_task();
-        }
+        return EXIT_FAILURE;
 }
