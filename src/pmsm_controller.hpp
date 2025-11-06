@@ -3,6 +3,7 @@
 #include "math_utils.hpp"
 #include "pid.hpp"
 #include "svpwm.hpp"
+#include "definitions.h"
 
 namespace PermanentMagnetSynchronousMotor {
 
@@ -41,6 +42,10 @@ struct PMSM_Config {
         static constexpr float MotorPolePairs = 11.0f;
 };
 
+struct MCU_Config {
+
+};
+
 class PMSM_Controller {
 public:
         PMSM_Controller() = default;
@@ -55,7 +60,7 @@ public:
         /**
          * Function that performs the initial encoder offset and direction calibration
          */
-        void performStartupCalibration();
+        void startupCalibration(uint32_t &perA, uint32_t &perB, uint32_t &perC, float thetaEncoder);
 
 private:
         /**
@@ -95,6 +100,36 @@ private:
          * The zero-offset electrical angle; must be updated by the startup calibration procedures
          */
         float ZeroOffsetElectricalAngle = 0.0f;
+
+        Direction calibrationDirection = Direction::CLOCKWISE;
+
+        enum class CalibrationState : int8_t {
+                IDLE,
+                OFFSET_CALIBRATION,
+                DIRECTION_CALIBRATION,
+                DONE,
+        };
+
+        CalibrationState calibrationState = CalibrationState::DIRECTION_CALIBRATION;
+
+        enum class DirectionCalibrationState : int8_t {
+                NOT_DONE,
+                CALIBRATE_CW,
+                CALIBRATE_CCW,
+                DONE,
+        };
+
+        DirectionCalibrationState directionCalibrationState = DirectionCalibrationState::CALIBRATE_CW;
+        void directionCalibration(uint32_t &perA, uint32_t &perB, uint32_t &perC);
+
+        void encoderOffsetCalibration(uint32_t& perA, uint32_t& perB, uint32_t& perC, float thetaEncoder);
+
+        float thetaMechanical = 0.0f;
+
+        uint32_t pwmPeriod = 1000;
+
+        uint32_t timerCounter = 0;
+        uint32_t neededTicks = 1000;
 
 };
 

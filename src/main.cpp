@@ -88,9 +88,9 @@ static volatile float ZeroElectricalAngle = 0.0f;
  * Phase W: TCC1_WO1, ADC_AIN4
  *
  */
-static volatile uint32_t TCC_PeriodU = 0;
-static volatile uint32_t TCC_PeriodV = 0;
-static volatile uint32_t TCC_PeriodW = 0;
+uint32_t TCC_PeriodU = 0;
+uint32_t TCC_PeriodV = 0;
+uint32_t TCC_PeriodW = 0;
 
 inline constexpr ADC_POSINPUT ADC_InputU = ADC_POSINPUT_PIN2;
 inline constexpr ADC_POSINPUT ADC_InputV = ADC_POSINPUT_PIN3;
@@ -443,8 +443,10 @@ using namespace PermanentMagnetSynchronousMotor;
 PMSM_Controller pmsm_controller;
 
 void TC3_HandlerProofOfConcept(TC_TIMER_STATUS status, uintptr_t context) {
-        float A = 0, B = 0, C = 0;
-        pmsm_controller.update(A, B, C);
+        __disable_irq();
+        const float theta_mod = degreesToRadians(Encoder.measureAngleUncompensated());
+        __enable_irq();
+        pmsm_controller.startupCalibration(TCC_PeriodU, TCC_PeriodV, TCC_PeriodW, theta_mod);
 }
 
 void SPI_Callback(uintptr_t context) { (void)context; }
