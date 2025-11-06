@@ -42,10 +42,6 @@ struct PMSM_Config {
         static constexpr float MotorPolePairs = 11.0f;
 };
 
-struct MCU_Config {
-
-};
-
 class PMSM_Controller {
 public:
         PMSM_Controller() = default;
@@ -82,6 +78,17 @@ private:
          * The quadrature (q-axis) current PI controller Iq
          */
         PID pidIq {0.35f, 50.0f, 0.0f, PMSM_Config::GlobalVoltageLimit, 0.00100000005 };
+
+        /**
+         * Wrap an angle into [0, 2π)
+         */
+        [[nodiscard]] static float wrapAngle(float x) noexcept {
+                while (x < 0.0f)
+                        x += TWO_PI;
+                while (x >= TWO_PI)
+                        x -= TWO_PI;
+                return x;
+        }
 
         /**
          * Represents the possible directions of rotation

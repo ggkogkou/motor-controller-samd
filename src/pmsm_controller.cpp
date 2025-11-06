@@ -10,14 +10,6 @@ void PMSM_Controller::update(float& dutyA, float& dutyB, float& dutyC) {
 }
 
 void PMSM_Controller::encoderOffsetCalibration(uint32_t& perA, uint32_t& perB, uint32_t& perC, float thetaEncoder) {
-        auto wrap = [](float x) -> float {
-                while (x < 0.0f)
-                        x += TWO_PI;
-                while (x >= TWO_PI)
-                        x -= TWO_PI;
-                return x;
-        };
-
         constexpr float Vq = 0.0f;
         constexpr float Vd = PMSM_Config::InitialCalibrationVoltageLimit;
         constexpr float ThetaElectricalLock = 0.0f;
@@ -35,7 +27,7 @@ void PMSM_Controller::encoderOffsetCalibration(uint32_t& perA, uint32_t& perB, u
         if (timerCounter > neededTicks) {
                 __disable_irq();
                 thetaMechanical = degreesToRadians(thetaEncoder);
-                ZeroOffsetElectricalAngle = wrap(PMSM_Config::MotorPolePairs * thetaMechanical);
+                ZeroOffsetElectricalAngle = wrapAngle(PMSM_Config::MotorPolePairs * thetaMechanical);
                 __enable_irq();
                 timerCounter = 0;
                 calibrationState = CalibrationState::DONE;
@@ -43,22 +35,14 @@ void PMSM_Controller::encoderOffsetCalibration(uint32_t& perA, uint32_t& perB, u
 }
 
 void PMSM_Controller::directionCalibration(uint32_t& perA, uint32_t& perB, uint32_t& perC) {
-        auto wrap = [](float x) -> float {
-                while (x < 0.0f)
-                        x += TWO_PI;
-                while (x >= TWO_PI)
-                        x -= TWO_PI;
-                return x;
-        };
-
-        thetaMechanical = wrap(thetaMechanical + 0.001f * PMSM_Config::TargetCalibrationVelocity);
+        thetaMechanical = wrapAngle(thetaMechanical + 0.001f * PMSM_Config::TargetCalibrationVelocity);
 
         const auto thetaElectrical = [&]() -> float {
                 switch (calibrationDirection) {
                 case Direction::CLOCKWISE:
-                        return wrap(thetaMechanical * PMSM_Config::MotorPolePairs);
+                        return wrapAngle(thetaMechanical * PMSM_Config::MotorPolePairs);
                 case Direction::COUNTERCLOCKWISE:
-                        return wrap(-thetaMechanical * PMSM_Config::MotorPolePairs);
+                        return wrapAngle(-thetaMechanical * PMSM_Config::MotorPolePairs);
                 default:
                         return 0.0f;
                 }
