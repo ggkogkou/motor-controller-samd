@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>
+#include <optional>
 #include "definitions.h"
 #include "math_utils.hpp"
 #include "pid.hpp"
@@ -19,7 +21,7 @@ struct PMSM_Config {
         /**
          * The voltage limit -- DC bus utilization
          */
-        static constexpr float CloseLoopVoltageLimit = 12.0f;
+        static constexpr float CloseLoopVoltageLimit = 10.0f;
 
         /**
          * Encoder electrical offset and direction calibration voltage limit
@@ -29,7 +31,7 @@ struct PMSM_Config {
         /**
          * Target velocity for the outer velocity loop
          */
-        static constexpr float TargetVelocity = 15.0f;
+        static constexpr float TargetVelocity = 12.0f;
 
         /**
          * Target velocity for the encoder calibration loop (ω = 2π rad/s)
@@ -44,18 +46,54 @@ struct PMSM_Config {
         static constexpr float OpenLoopVoltageLimit = 6.0f;
 };
 
+struct PhaseCurrents {
+        float Ia = 0.0f;
+        float Ib = 0.0f;
+        float Ic = 0.0f;
+};
+
+struct PhaseDutyCycles {
+        uint32_t& perA;
+        uint32_t& perB;
+        uint32_t& perC;
+
+        PhaseDutyCycles(uint32_t& a, uint32_t& b, uint32_t& c) : perA(a), perB(b), perC(c) {}
+};
+
+struct AngleVelocityEstimator {
+        float lastWrappedAngle;
+        float unwrappedAngle;
+        float angularVelocity;
+        float filterTimeConstant;
+
+        explicit AngleVelocityEstimator(float initialWrappedAngle, float tau = 0.010f) noexcept :
+            lastWrappedAngle(initialWrappedAngle), unwrappedAngle(initialWrappedAngle), angularVelocity(0.0f),
+            filterTimeConstant(tau) {}
+
+        void update(float wrappedAngle, float deltaTime) noexcept {
+                const float delta = std::remainderf(wrappedAngle - lastWrappedAngle, TWO_PI);
+
+                unwrappedAngle += delta;
+
+                const float rawDerivative = delta / deltaTime;
+                const float a = filterTimeConstant / (filterTimeConstant + deltaTime);
+                angularVelocity = a * angularVelocity + (1.0f - a) * rawDerivative;
+
+                lastWrappedAngle = wrappedAngle;
+        }
+};
+
 class PMSM_Controller {
 public:
         PMSM_Controller() = default;
 
         explicit PMSM_Controller(const PMSM_Config) {}
 
-        /**
-         * The main update function that implements the Field-Oriented Control
-         */
-        inline void update(uint32_t& perA, uint32_t& perB, uint32_t& perC);
+        void update(PhaseCurrents& phaseCurrents, PhaseDutyCycles& dutyCycles, float thetaEncoder);
 
-        inline void updateOpenLoop(uint32_t& perA, uint32_t& perB, uint32_t& perC);
+        void updateVelocity(PhaseCurrents& phaseCurrents, PhaseDutyCycles& dutyCycles, float thetaEncoder);
+
+        void updateOpenLoop(uint32_t& perA, uint32_t& perB, uint32_t& perC);
 
         /**
          * Function that performs the initial encoder offset and direction calibration
@@ -137,6 +175,12 @@ private:
 
         uint32_t timerCounter = 0;
         uint32_t neededTicks = 1000;
+
+        std::optional<AngleVelocityEstimator> angleVel_;
+
+
+        float dT = 0.001f;
 };
+
 
 } // namespace PermanentMagnetSynchronousMotor

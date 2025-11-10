@@ -110,8 +110,6 @@ inline constexpr float Vq_Align = 6.0f;
 inline constexpr float Vd_Align = 0.0f;
 inline constexpr float TargetCalibrationVelocity = TWO_PI;
 
-static volatile uint16_t angleEncoder = 0;
-
 inline constexpr float CSA_GAIN_V_PER_A = 0.30f;
 inline constexpr float ADC_FS_V = 3.30f;
 inline constexpr int ADC_FS_COUNTS = 4095;
@@ -121,13 +119,9 @@ inline constexpr float Ki_q = 200.0f;
 
 SVPWM svpwm{DCLinkVoltage, ZeroSequenceModulationType::MIDPOINT_CLAMP};
 
-PID pid_controller{0.5f, 10.0f, 0.0f, 6.0f, 0.00100000005};
-
-// PID pidId{0.5f, 10.0f, 0.0f, 6.0f, 0.00100000005};
-// PID pidIq{0.5f, 10.0f, 0.0f, 6.0f, 0.00100000005};
-
-PID pidId = PID{/*Kp*/ 0.25f, /*Ki*/ 20.0f, /*Kd*/ 0.0f, /*out_limit*/ GlobalVoltageLimit, /*dt*/ 0.00100000005};
-PID pidIq = PID{/*Kp*/ 0.35f, /*Ki*/ 50.0f, /*Kd*/ 0.0f, /*out_limit*/ GlobalVoltageLimit, /*dt*/ 0.00100000005};
+PID pidId = PID{0.25f, 20.0f,0.0f, GlobalVoltageLimit, 0.00100000005};
+PID pidIq = PID{0.35f, 50.0f, 0.0f, GlobalVoltageLimit, 0.00100000005};
+PID pidV{0.5f, 10.0f, 0.0f, 6.0f, 0.00100000005};
 
 Logger logger;
 
@@ -179,23 +173,8 @@ void ADC_Callback(ADC_STATUS status, uintptr_t context) {
         }
 }
 
-static volatile bool ongoingOffsetCalibration = true;
-static volatile bool ongoingDirectionCalibration = true;
-static volatile bool ongoingDirectionCalibration2 = true;
-static volatile bool closedLoopControl = false;
 static volatile bool closedLoopControlCurrent = true;
 static volatile bool ongoingSOOffsetCal = true;
-
-static uint32_t timer_counter = 0;
-static uint32_t needed_ticks = 0;
-
-static float encoder_angle_init = 0;
-static float encoder_angle_mid = 0;
-static float encoder_angle_end = 0;
-
-static float filt_alpha(float dt, float tau) {
-        return tau / (tau + dt);
-}
 
 static volatile float soW_off = 1.65f;
 static volatile float soV_off = 1.65f;
@@ -271,86 +250,26 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
                 calibrateDRV8316_SOx();
         else if (closedLoopControlCurrent) {
                 __disable_irq();
-                const float theta_mod = degreesToRadians(Encoder.measureAngleUncompensated());
+                const float ThetaMech = degreesToRadians(Encoder.measureAngleUncompensated());
                 __enable_irq();
 
-                if (!vel.init) {
-                        vel.prev_mod = theta_mod;
-                        vel.prev_unw = theta_mod;
-                        vel.omega = 0.0f;
-                        vel.init = true;
-                } else {
-                        const float theta_unw = unwrap(theta_mod, vel.prev_mod, vel.prev_unw);
-                        const float deriv = (theta_unw - vel.prev_unw) / dT;
-                        const float alpha = filt_alpha(dT, 0.010f);
-                        vel.omega = alpha * vel.omega + (1.0f - alpha) * deriv;
-                        vel.prev_unw = theta_unw;
-                        vel.prev_mod = theta_mod;
-                }
-
-                const float theta_el = wrapAngle(-(MotorPolePairs * theta_mod - ZeroElectricalAngle));
-
-                static float iA = 0, iB = 0, iC = 0, id_meas = 0, iq_meas = 0;
+                static float iA = 0;
+                static float iB = 0;
+                static float iC = 0;
 
                 if (adcResultsReady) {
                         get_currents_BC(iA, iB, iC);
-                        const auto dq_i = performClarkeParkTransforms(iA, iB, theta_el);
-                        id_meas = dq_i[0];
-                        iq_meas = dq_i[1];
+                        static PhaseCurrents phaseCurrents{};
+                        static PhaseDutyCycles duty{ TCC_PeriodU, TCC_PeriodV, TCC_PeriodW};
+
+                        phaseCurrents.Ia = iA;
+                        phaseCurrents.Ib = iB;
+                        phaseCurrents.Ic = iC;
+
+                        // pmsm_controller.update(phaseCurrents, duty, theta_mod);
+                        pmsm_controller.updateVelocity(phaseCurrents, duty, ThetaMech);
                 }
 
-                const float speed_err = TargetVelocity - std::fabs(vel.omega);
-                float iq_ref = pid_controller.compute(speed_err);
-
-                iq_ref = std::clamp(iq_ref, -7.0f, 7.0f);
-
-                const float id_err = 0.0f - id_meas;
-                const float iq_err = iq_ref - iq_meas;
-
-                float vd = pidId.compute(id_err);
-                float vq = pidIq.compute(iq_err);
-
-                limitCircle(vd, vq, GlobalVoltageLimit);
-                // vq = std::clamp(vq, -GlobalVoltageLimit, GlobalVoltageLimit);
-
-                // const auto ab = performInverseParkTransform(0.0f, vq, theta_el);
-                const auto ab = performInverseParkTransform(vd, vq, theta_el);
-                const auto [dA, dB, dC] = svpwm.compute(ab[0], ab[1]);
-                TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dA);
-                TCC_PeriodV = period - static_cast<uint32_t>(static_cast<float>(period) * dB);
-                TCC_PeriodW = period - static_cast<uint32_t>(static_cast<float>(period) * dC);
-
-        } else if (closedLoopControl) {
-                __disable_irq();
-                const float theta_mod = degreesToRadians(Encoder.measureAngleUncompensated());
-                __enable_irq();
-
-                if (!vel.init) {
-                        vel.prev_mod = theta_mod;
-                        vel.prev_unw = theta_mod;
-                        vel.omega = 0.0f;
-                        vel.init = true;
-                } else {
-                        const float theta_unw = unwrap(theta_mod, vel.prev_mod, vel.prev_unw);
-                        const float deriv = (theta_unw - vel.prev_unw) / dT;
-
-                        const float alpha = filt_alpha(dT, 0.010f);
-                        vel.omega = alpha * vel.omega + (1.0f - alpha) * deriv;
-
-                        vel.prev_unw = theta_unw;
-                        vel.prev_mod = theta_mod;
-                }
-
-                const float error_factor = TargetVelocity - std::fabs(vel.omega);
-                const float Isp = pid_controller.compute(error_factor);
-
-                const float theta_el = wrapAngle(-(MotorPolePairs * theta_mod - ZeroElectricalAngle));
-                const auto inv_park = performInverseParkTransform(0.0f, Isp, theta_el);
-                const auto [dutyCycleA, dutyCycleB, dutyCycleC] = svpwm.compute(inv_park[0], inv_park[1]);
-
-                TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleA);
-                TCC_PeriodV = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleB);
-                TCC_PeriodW = period - static_cast<uint32_t>(static_cast<float>(period) * dutyCycleC);
         }
 }
 
@@ -367,7 +286,6 @@ void peripherals_init() {
         const uint32_t f_tc = TC3_TimerFrequencyGet();
         const uint32_t top = TC3_Timer16bitPeriodGet();
         dT = (1.0f + static_cast<float>(top)) / static_cast<float>(f_tc);
-        needed_ticks = static_cast<uint32_t>(1.0f / dT);
         period = TCC0_PWM24bitPeriodGet();
 
         SYSTICK_TimerStart();
@@ -389,8 +307,6 @@ void peripherals_init() {
         SYS_Initialize(nullptr);
 
         devices_init();
-
-        encoder_angle_init = Encoder.measureAngleUncompensated();
 
         peripherals_init();
 
