@@ -11,7 +11,9 @@
 
 using namespace SpaceVectorModulation;
 using namespace MathUtilities;
+using namespace PermanentMagnetSynchronousMotor;
 
+PMSM_Controller brushlessMotor;
 AS5047P Encoder;
 DRV8316 BrushlessDriver;
 
@@ -19,42 +21,6 @@ inline constexpr float GlobalVoltageLimit = 12.0f;
 inline constexpr float InitialCalibrationVoltageLimit = 3.0f;
 inline constexpr float DCLinkVoltage = 20.0f;
 inline constexpr float TargetVelocity = 15.0f;
-
-enum class Direction : uint8_t {
-        CLOCKWISE,
-        COUNTERCLOCKWISE,
-};
-
-struct VelocityEstimator {
-        float prev_mod = 0.0f;
-        float prev_unw = 0.0f;
-        float omega = 0.0f;
-        bool init = false;
-};
-
-static volatile VelocityEstimator vel;
-
-static float wrap_pi(float x) {
-        while (x <= -TWO_PI)
-                x += TWO_PI;
-        while (x > TWO_PI)
-                x -= TWO_PI;
-        if (x > PI)
-                x -= TWO_PI;
-        if (x <= -PI)
-                x += TWO_PI;
-        return x;
-}
-
-static float unwrap(float theta_mod, float prev_mod, float prev_unw) {
-        const float d = wrap_pi(theta_mod - prev_mod);
-        return prev_unw + d;
-}
-
-/**
- * What must be the initial θm value?
- */
-static volatile float theta_m = 0.0f;
 
 /**
  * The dT periodic update of the angle for open-loop control
@@ -76,8 +42,6 @@ static volatile float dT = 0;
 inline constexpr float MotorKV_Rating = 26.0f;
 inline constexpr float MotorPolePairs = 11.0f;
 inline constexpr float MotorInternalResistance = 11.0f;
-
-static volatile float ZeroElectricalAngle = 0.0f;
 
 /**
  *
@@ -119,7 +83,7 @@ inline constexpr float Ki_q = 200.0f;
 
 SVPWM svpwm{DCLinkVoltage, ZeroSequenceModulationType::MIDPOINT_CLAMP};
 
-PID pidId = PID{0.25f, 20.0f,0.0f, GlobalVoltageLimit, 0.00100000005};
+PID pidId = PID{0.25f, 20.0f, 0.0f, GlobalVoltageLimit, 0.00100000005};
 PID pidIq = PID{0.35f, 50.0f, 0.0f, GlobalVoltageLimit, 0.00100000005};
 PID pidV{0.5f, 10.0f, 0.0f, 6.0f, 0.00100000005};
 
@@ -127,14 +91,9 @@ Logger logger;
 
 uint32_t period = 0;
 
-/**
- * The PWM end-of-period Interrupt Service Routine (ISR) Callback function
- *
- * @param status
- * @param context
- */
 void PWM_IRQ_Callback(uint32_t status, uintptr_t context) {
         // const auto Period = TCC0_PWM24bitPeriodGet();
+        (void)context;
 
         if (status & TCC_INTFLAG_MC2_Msk && adcCounter == 0) {
                 ADC_ChannelSelect(ADC_InputU, NegativeInput);
@@ -181,12 +140,13 @@ static volatile float soV_off = 1.65f;
 
 static void get_currents_BC(float& iA, float& iB, float& iC) {
         __disable_irq();
-        const uint16_t rv = adcResultV, rw = adcResultW;
+        const uint16_t rv = adcResultV;
+        const uint16_t rw = adcResultW;
         adcResultsReady = false;
         __enable_irq();
 
-        const float soB = (rv * ADC_FS_V) / 4095.0f;
-        const float soC = (rw * ADC_FS_V) / 4095.0f;
+        const float soB = static_cast<float>(rv) * ADC_FS_V / 4095.0f;
+        const float soC = static_cast<float>(rw) * ADC_FS_V / 4095.0f;
 
         const float ib_sensed = (soB - soV_off) / CSA_GAIN_V_PER_A;
         const float ic_sensed = (soC - soW_off) / CSA_GAIN_V_PER_A;
@@ -211,12 +171,13 @@ static void calibrateDRV8316_SOx() {
 
         if (adcResultsReady) {
                 __disable_irq();
-                const uint16_t rv = adcResultV, rw = adcResultW;
+                const uint16_t rv = adcResultV;
+                const uint16_t rw = adcResultW;
                 adcResultsReady = false;
                 __enable_irq();
 
-                const float soV = rv * ADC_FS_V / 4095.0f;
-                const float soW = rw * ADC_FS_V / 4095.0f;
+                const float soV = static_cast<float>(rv) * ADC_FS_V / 4095.0f;
+                const float soW = static_cast<float>(rw) * ADC_FS_V / 4095.0f;
 
                 sumV += soV;
                 sumW += soW;
@@ -231,18 +192,16 @@ static void calibrateDRV8316_SOx() {
         }
 }
 
-using namespace PermanentMagnetSynchronousMotor;
-PMSM_Controller pmsm_controller;
-
 bool switchToCloseLoop = false;
 
 void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
+        static PhaseDutyCycles duty{TCC_PeriodU, TCC_PeriodV, TCC_PeriodW};
+
         if (not switchToCloseLoop) {
                 __disable_irq();
-                const float theta_for_alignment = degreesToRadians(Encoder.measureAngleUncompensated());
+                const float ThetaAlign = degreesToRadians(Encoder.measureAngleCompensated());
                 __enable_irq();
-                switchToCloseLoop =
-                        pmsm_controller.startupCalibration(TCC_PeriodU, TCC_PeriodV, TCC_PeriodW, theta_for_alignment);
+                switchToCloseLoop = brushlessMotor.startupCalibration(duty, ThetaAlign);
                 return;
         }
 
@@ -250,7 +209,7 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
                 calibrateDRV8316_SOx();
         else if (closedLoopControlCurrent) {
                 __disable_irq();
-                const float ThetaMech = degreesToRadians(Encoder.measureAngleUncompensated());
+                const float ThetaMech = degreesToRadians(Encoder.measureAngleCompensated());
                 __enable_irq();
 
                 static float iA = 0;
@@ -260,17 +219,17 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
                 if (adcResultsReady) {
                         get_currents_BC(iA, iB, iC);
                         static PhaseCurrents phaseCurrents{};
-                        static PhaseDutyCycles duty{ TCC_PeriodU, TCC_PeriodV, TCC_PeriodW};
+
 
                         phaseCurrents.Ia = iA;
                         phaseCurrents.Ib = iB;
                         phaseCurrents.Ic = iC;
 
-                        // pmsm_controller.update(phaseCurrents, duty, theta_mod);
-                        pmsm_controller.updateVelocity(phaseCurrents, duty, ThetaMech);
+                        // brushlessMotor.update(phaseCurrents, duty, ThetaMech);
+                        brushlessMotor.updateVelocity(phaseCurrents, duty, ThetaMech);
                 }
-
         }
+
 }
 
 void devices_init() {
@@ -307,10 +266,11 @@ void peripherals_init() {
         SYS_Initialize(nullptr);
 
         devices_init();
-
         peripherals_init();
 
-        while (true) { }
+        while (true) {
+
+        }
 
         return EXIT_FAILURE;
 }

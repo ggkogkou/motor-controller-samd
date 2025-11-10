@@ -6,45 +6,12 @@
 #include "math_utils.hpp"
 #include "pid.hpp"
 #include "svpwm.hpp"
+#include "pmsm_config.hpp"
 
 namespace PermanentMagnetSynchronousMotor {
 
 using namespace SpaceVectorModulation;
 using namespace MathUtilities;
-
-struct PMSM_Config {
-        /**
-         * The DC link voltage
-         */
-        static constexpr float DCLinkVoltage = 20.0f;
-
-        /**
-         * The voltage limit -- DC bus utilization
-         */
-        static constexpr float CloseLoopVoltageLimit = 10.0f;
-
-        /**
-         * Encoder electrical offset and direction calibration voltage limit
-         */
-        static constexpr float InitialCalibrationVoltageLimit = 3.0f;
-
-        /**
-         * Target velocity for the outer velocity loop
-         */
-        static constexpr float TargetVelocity = 12.0f;
-
-        /**
-         * Target velocity for the encoder calibration loop (ω = 2π rad/s)
-         */
-        static constexpr float TargetCalibrationVelocity = TWO_PI;
-
-        /**
-         * The motor's pole pairs
-         */
-        static constexpr float MotorPolePairs = 11.0f;
-
-        static constexpr float OpenLoopVoltageLimit = 6.0f;
-};
 
 struct PhaseCurrents {
         float Ia = 0.0f;
@@ -93,12 +60,12 @@ public:
 
         void updateVelocity(PhaseCurrents& phaseCurrents, PhaseDutyCycles& dutyCycles, float thetaEncoder);
 
-        void updateOpenLoop(uint32_t& perA, uint32_t& perB, uint32_t& perC);
+        void updateOpenLoop(PhaseDutyCycles& dutyCycles);
 
         /**
          * Function that performs the initial encoder offset and direction calibration
          */
-        bool startupCalibration(uint32_t& perA, uint32_t& perB, uint32_t& perC, float thetaEncoder);
+        bool startupCalibration(PhaseDutyCycles& dutyCycles, float thetaEncoder);
 
 private:
         /**
@@ -120,6 +87,11 @@ private:
          * The quadrature (q-axis) current PI controller Iq
          */
         PID pidIq{0.35f, 50.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit, 0.00100000005};
+
+        int   dirSign = +1;     // decided during calibration, then used everywhere
+        float encStart = 0.0f;  // start angle for current probe window
+        int   cwDeltaSign = 0;  // +1 if CW probe produced +Δθm, -1 otherwise
+
 
         /**
          * Represents the possible directions of rotation
@@ -150,12 +122,13 @@ private:
 
         enum class CalibrationState : int8_t {
                 IDLE,
+                PREPARING,
                 OFFSET_CALIBRATION,
                 DIRECTION_CALIBRATION,
                 DONE,
         };
 
-        CalibrationState calibrationState = CalibrationState::DIRECTION_CALIBRATION;
+        CalibrationState calibrationState = CalibrationState::PREPARING;
 
         enum class DirectionCalibrationState : int8_t {
                 NOT_DONE,
@@ -165,16 +138,16 @@ private:
         };
 
         DirectionCalibrationState directionCalibrationState = DirectionCalibrationState::CALIBRATE_CW;
-        void directionCalibration(uint32_t& perA, uint32_t& perB, uint32_t& perC);
+        void directionCalibration(PhaseDutyCycles& dutyCycles, float thetaEncoder);
 
-        void encoderOffsetCalibration(uint32_t& perA, uint32_t& perB, uint32_t& perC, float thetaEncoder);
+        void encoderOffsetCalibration(PhaseDutyCycles& dutyCycles, float thetaEncoder);
 
         float thetaMechanical = 0.0f;
 
         uint32_t pwmPeriod = 1000;
 
         uint32_t timerCounter = 0;
-        uint32_t neededTicks = 1000;
+        uint32_t neededTicks = 250; // a quarter
 
         std::optional<AngleVelocityEstimator> angleVel_;
 
