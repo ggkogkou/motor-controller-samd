@@ -3,11 +3,11 @@
 #include <cstdint>
 #include <array>
 #include <type_traits>
-#include <logger.h>
 #include <limits>
 #include <cmath>
 #include <bit>
 #include "definitions.h"
+#include "logger.hpp"
 
 struct AS5047P_Config {
     enum class RotationDirection : uint16_t {

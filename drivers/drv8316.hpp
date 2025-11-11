@@ -4,7 +4,6 @@
 #include <array>
 #include <cmath>
 #include <algorithm>
-#include "logger.h"
 #include "definitions.h"
 #include <bit>
 
@@ -49,6 +48,8 @@ public:
     void lockAllRegisters();
 
     void unlockAllRegisters();
+
+    void calculateCurrents(float &IA, float &IB, float &IC);
 
     [[nodiscard]] bool checkForFaults() ;
 

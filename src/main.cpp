@@ -2,10 +2,7 @@
 #include "as5047p.hpp"
 #include "definitions.h"
 #include "drv8316.hpp"
-#include "etl/string.h"
-#include "logger.h"
 #include "logger.hpp"
-#include "pid.hpp"
 #include "pmsm_controller.hpp"
 #include "svpwm.hpp"
 
@@ -64,41 +61,28 @@ static volatile uint16_t adcResultU = 0;
 static volatile uint16_t adcResultV = 0;
 static volatile uint16_t adcResultW = 0;
 
-static volatile uint8_t adcCounter = 0;
 static volatile bool adcResultsReady = false;
 
 inline constexpr ADC_NEGINPUT NegativeInput = ADC_NEGINPUT_GND;
 inline constexpr uint16_t ADC_VREF = 2230; // mV
 
-inline constexpr float Vq_Align = 6.0f;
-inline constexpr float Vd_Align = 0.0f;
-inline constexpr float TargetCalibrationVelocity = TWO_PI;
-
 inline constexpr float CSA_GAIN_V_PER_A = 0.30f;
 inline constexpr float ADC_FS_V = 3.30f;
 inline constexpr int ADC_FS_COUNTS = 4095;
 
-inline constexpr float Kp_q = 0.4f;
-inline constexpr float Ki_q = 200.0f;
-
 SVPWM svpwm{DCLinkVoltage, ZeroSequenceModulationType::MIDPOINT_CLAMP};
-
-PID pidId = PID{0.25f, 20.0f, 0.0f, GlobalVoltageLimit, 0.00100000005};
-PID pidIq = PID{0.35f, 50.0f, 0.0f, GlobalVoltageLimit, 0.00100000005};
-PID pidV{0.5f, 10.0f, 0.0f, 6.0f, 0.00100000005};
 
 Logger logger;
 
 uint32_t period = 0;
 
+static volatile uint8_t adcScanIndex = 0;
+
 void PWM_IRQ_Callback(uint32_t status, uintptr_t context) {
-        // const auto Period = TCC0_PWM24bitPeriodGet();
         (void)context;
 
-        if (status & TCC_INTFLAG_MC2_Msk && adcCounter == 0) {
-                ADC_ChannelSelect(ADC_InputU, NegativeInput);
+        if (status & TCC_INTFLAG_MC2_Msk)
                 ADC_ConversionStart();
-        }
 
         if (status & TCC_INTFLAG_OVF_Msk) {
                 TCC0_PWM24bitDutySet(TCC0_CHANNEL1, TCC_PeriodU);
@@ -110,26 +94,24 @@ void PWM_IRQ_Callback(uint32_t status, uintptr_t context) {
 void ADC_Callback(ADC_STATUS status, uintptr_t context) {
         (void)context;
 
+        if (status & ADC_INTFLAG_RESRDY_Msk) {
+                const uint16_t sample = ADC_ConversionResultGet();
+
+                if (adcScanIndex == 0)
+                        adcResultU = sample;
+                else if (adcScanIndex == 1)
+                        adcResultV = sample;
+                else
+                        adcResultW = sample;
+
+                adcScanIndex = (adcScanIndex + 1u) % 3u;
+
+                if (adcScanIndex == 0u)
+                        adcResultsReady = true;
+        }
+
         if (status & ADC_INTFLAG_OVERRUN_Msk)
                 ADC_InterruptsClear(ADC_INTFLAG_OVERRUN_Msk);
-
-        if (status & ADC_INTFLAG_RESRDY_Msk) {
-                if (adcCounter == 0) {
-                        adcResultU = ADC_ConversionResultGet();
-                        ADC_ChannelSelect(ADC_InputV, NegativeInput);
-                        ADC_ConversionStart();
-                        adcCounter = 1;
-                } else if (adcCounter == 1) {
-                        adcResultV = ADC_ConversionResultGet();
-                        ADC_ChannelSelect(ADC_InputW, NegativeInput);
-                        ADC_ConversionStart();
-                        adcCounter = 2;
-                } else if (adcCounter == 2) {
-                        adcResultW = ADC_ConversionResultGet();
-                        adcCounter = 0;
-                        adcResultsReady = true;
-                }
-        }
 }
 
 static volatile bool closedLoopControlCurrent = true;
@@ -220,7 +202,6 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
                         get_currents_BC(iA, iB, iC);
                         static PhaseCurrents phaseCurrents{};
 
-
                         phaseCurrents.Ia = iA;
                         phaseCurrents.Ib = iB;
                         phaseCurrents.Ic = iC;
@@ -229,7 +210,6 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
                         brushlessMotor.updateVelocity(phaseCurrents, duty, ThetaMech);
                 }
         }
-
 }
 
 void devices_init() {
@@ -248,7 +228,6 @@ void peripherals_init() {
         period = TCC0_PWM24bitPeriodGet();
 
         SYSTICK_TimerStart();
-        Logger_Initialize();
         ADC_Enable();
 
         ADC_CallbackRegister(ADC_Callback, 0);
@@ -268,8 +247,9 @@ void peripherals_init() {
         devices_init();
         peripherals_init();
 
-        while (true) {
+        // ADC_ConversionStart();
 
+        while (true) {
         }
 
         return EXIT_FAILURE;

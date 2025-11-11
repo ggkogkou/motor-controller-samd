@@ -104,13 +104,15 @@ void ADC_Initialize(void) {
 
         /* positive and negative input pins */
         ADC_REGS->ADC_INPUTCTRL = (uint32_t)ADC_POSINPUT_PIN2 | (uint32_t)ADC_NEGINPUT_GND |
-                ADC_INPUTCTRL_INPUTSCAN(0U) | ADC_INPUTCTRL_INPUTOFFSET(0U) | ADC_INPUTCTRL_GAIN_1X;
+                ADC_INPUTCTRL_INPUTSCAN(2U) | ADC_INPUTCTRL_INPUTOFFSET(0U) | ADC_INPUTCTRL_GAIN_1X;
+
         while ((ADC_REGS->ADC_STATUS & ADC_STATUS_SYNCBUSY_Msk) != 0U) {
                 /* Wait for Synchronization */
         }
 
         /* Prescaler, Resolution & Operation Mode */
         ADC_REGS->ADC_CTRLB = ADC_CTRLB_PRESCALER_DIV32 | ADC_CTRLB_RESSEL_12BIT;
+
         while ((ADC_REGS->ADC_STATUS & ADC_STATUS_SYNCBUSY_Msk) != 0U) {
                 /* Wait for Synchronization */
         }
@@ -184,7 +186,6 @@ void ADC_WindowModeSet(ADC_WINMODE mode) {
         }
 }
 
-
 /* Read the conversion result */
 uint16_t ADC_ConversionResultGet(void) { return (uint16_t)ADC_REGS->ADC_RESULT; }
 
@@ -200,7 +201,6 @@ void ADC_CallbackRegister(ADC_CALLBACK callback, uintptr_t context) {
 
         ADC_CallbackObject.context = context;
 }
-
 
 void __attribute__((used)) ADC_InterruptHandler(void) {
         ADC_STATUS status;
