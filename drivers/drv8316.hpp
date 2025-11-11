@@ -49,6 +49,16 @@ public:
 
     void unlockAllRegisters();
 
+    /**
+     * Function that sets the offset voltages
+     * @param offsetVoltageB
+     * @param offsetVoltageC
+     */
+    void setOffsetVoltages(float offsetVoltageB, float offsetVoltageC) {
+        offsetCorrectionVoltageB = offsetVoltageB;
+        offsetCorrectionVoltageC = offsetVoltageC;
+    }
+
     void calculateCurrents(float &IA, float &IB, float &IC);
 
     [[nodiscard]] bool checkForFaults() ;
@@ -180,5 +190,16 @@ private:
         DLY_TARGET = 0b0000'1111,
     };
 
+    /**
+     * Offset voltage for phase B -- the voltage when all the OUTx are GND (or Hi-z??)
+     */
+    float offsetCorrectionVoltageB = 0.0f;
+
+    /**
+     * Offset voltage for phase C -- the voltage when all the OUTx are GND (or Hi-z??)
+     */
+    float offsetCorrectionVoltageC = 0.0f;
+
+    float csaGain = 0.6f;
 
 };

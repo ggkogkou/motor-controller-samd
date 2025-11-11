@@ -18,6 +18,15 @@ void DRV8316::setCurrentSenseAmplifierGain(CurrentSenseGain gain) {
 
         const uint8_t DataToWrite = RegisterData | static_cast<uint8_t>(gain);
         writeRegister(RegisterAddress::Control_Register_5, DataToWrite);
+
+        if (gain == CurrentSenseGain::CSA_GAIN_0_15)
+                csaGain = 0.15f;
+        else if (gain == CurrentSenseGain::CSA_GAIN_0_30)
+                csaGain = 0.30f;
+        else if (gain == CurrentSenseGain::CSA_GAIN_0_6)
+                csaGain = 0.6f;
+        else if (gain == CurrentSenseGain::CSA_GAIN_1_2)
+                csaGain = 1.2f;
 }
 
 void DRV8316::lockAllRegisters() {
@@ -59,13 +68,12 @@ bool DRV8316::checkForFaults() {
 }
 
 void DRV8316::calculateCurrents(float& IA, float& IB, float& IC) {
-        constexpr float VREF = 3.3f;
-        constexpr float ADC_RESOLUTION = 4096.0f;
+        const float IB_Sensed = (IB - offsetCorrectionVoltageB) / csaGain;
+        const float IC_Sensed = (IC - offsetCorrectionVoltageC) / csaGain;
 
-        const float SOB = IB * VREF / ADC_RESOLUTION;
-        const float SOC = IC * VREF / ADC_RESOLUTION;
-
-
+        IB = 0.971197f * IB_Sensed - 0.068300f * IC_Sensed;
+        IC = 0.020876f * IB_Sensed + 0.994823f * IC_Sensed;
+        IA = - (IB + IC);
 }
 
 void DRV8316::writeRegister(RegisterAddress registerAddress, uint8_t dataToWrite) {

@@ -56,16 +56,18 @@ public:
 
         explicit PMSM_Controller(const PMSM_Config) {}
 
-        void update(PhaseCurrents& phaseCurrents, PhaseDutyCycles& dutyCycles, float thetaEncoder);
+        void update(const PhaseCurrents& phaseCurrents, const PhaseDutyCycles& dutyCycles, float thetaEncoder);
 
-        void updateVelocity(PhaseCurrents& phaseCurrents, PhaseDutyCycles& dutyCycles, float thetaEncoder);
+        void updateVelocity(const PhaseCurrents& phaseCurrents, const PhaseDutyCycles& dutyCycles, float thetaEncoder);
 
-        void updateOpenLoop(PhaseDutyCycles& dutyCycles);
+        void updateOpenLoop(const PhaseDutyCycles& dutyCycles);
 
         /**
          * Function that performs the initial encoder offset and direction calibration
          */
-        bool startupCalibration(PhaseDutyCycles& dutyCycles, float thetaEncoder);
+        bool startupCalibration(const PhaseDutyCycles& dutyCycles, float thetaEncoder);
+
+        void stopMotor(const PhaseDutyCycles& dutyCycles) const;
 
 private:
         /**
@@ -88,10 +90,7 @@ private:
          */
         PID pidIq{0.35f, 50.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit, 0.00100000005};
 
-        int   dirSign = +1;     // decided during calibration, then used everywhere
-        float encStart = 0.0f;  // start angle for current probe window
-        int   cwDeltaSign = 0;  // +1 if CW probe produced +Δθm, -1 otherwise
-
+        float dirSign = 1.0f;
 
         /**
          * Represents the possible directions of rotation
@@ -138,9 +137,9 @@ private:
         };
 
         DirectionCalibrationState directionCalibrationState = DirectionCalibrationState::CALIBRATE_CW;
-        void directionCalibration(PhaseDutyCycles& dutyCycles, float thetaEncoder);
+        void directionCalibration(const PhaseDutyCycles& dutyCycles, float thetaEncoder);
 
-        void encoderOffsetCalibration(PhaseDutyCycles& dutyCycles, float thetaEncoder);
+        void encoderOffsetCalibration(const PhaseDutyCycles& dutyCycles, float thetaEncoder);
 
         float thetaMechanical = 0.0f;
 

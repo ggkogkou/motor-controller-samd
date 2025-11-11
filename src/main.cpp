@@ -12,33 +12,12 @@ using namespace PermanentMagnetSynchronousMotor;
 
 PMSM_Controller brushlessMotor;
 AS5047P Encoder;
-DRV8316 BrushlessDriver;
-
-inline constexpr float GlobalVoltageLimit = 12.0f;
-inline constexpr float InitialCalibrationVoltageLimit = 3.0f;
-inline constexpr float DCLinkVoltage = 20.0f;
-inline constexpr float TargetVelocity = 15.0f;
+DRV8316 drv8316;
 
 /**
  * The dT periodic update of the angle for open-loop control
  */
 static volatile float dT = 0;
-
-/**
- *
- * Brushless DC GM4108H-120T Gimbal Motor
- * --------------------------------------
- * Pole pairs: 11
- * No-load current: 0.07±0.1A
- * No-load voltage: 20 V
- * Load torque: 1200-1800 g*cm
- * Motor internal resistance: 11.1±5% Ω
- * No-load RPM: 513-567 RPM @ 20 V => calculate its Kv rating as approximately 25.65-28.35 RPM/V
- *
- */
-inline constexpr float MotorKV_Rating = 26.0f;
-inline constexpr float MotorPolePairs = 11.0f;
-inline constexpr float MotorInternalResistance = 11.0f;
 
 /**
  *
@@ -66,11 +45,7 @@ static volatile bool adcResultsReady = false;
 inline constexpr ADC_NEGINPUT NegativeInput = ADC_NEGINPUT_GND;
 inline constexpr uint16_t ADC_VREF = 2230; // mV
 
-inline constexpr float CSA_GAIN_V_PER_A = 0.30f;
-inline constexpr float ADC_FS_V = 3.30f;
-inline constexpr int ADC_FS_COUNTS = 4095;
-
-SVPWM svpwm{DCLinkVoltage, ZeroSequenceModulationType::MIDPOINT_CLAMP};
+SVPWM svpwm{20.0f, ZeroSequenceModulationType::MIDPOINT_CLAMP};
 
 Logger logger;
 
@@ -127,29 +102,17 @@ static void get_currents_BC(float& iA, float& iB, float& iC) {
         adcResultsReady = false;
         __enable_irq();
 
-        const float soB = static_cast<float>(rv) * ADC_FS_V / 4095.0f;
-        const float soC = static_cast<float>(rw) * ADC_FS_V / 4095.0f;
+        iB = static_cast<float>(rv) * 3.3f / 4095.0f;
+        iC = static_cast<float>(rw) * 3.3f / 4095.0f;
 
-        const float ib_sensed = (soB - soV_off) / CSA_GAIN_V_PER_A;
-        const float ic_sensed = (soC - soW_off) / CSA_GAIN_V_PER_A;
-
-        const float iBcorr = 0.971197f * ib_sensed - 0.0683f * ic_sensed;
-        const float iCcorr = 0.020876f * ib_sensed + 0.994823f * ic_sensed;
-        const float iAcorr = -(iBcorr + iCcorr);
-
-        iA = iAcorr;
-        iB = iBcorr;
-        iC = iCcorr;
+        drv8316.calculateCurrents(iA, iB, iC);
 }
 
-static void calibrateDRV8316_SOx() {
-        const auto [dA, dB, dC] = svpwm.compute(0.0f, 0.0f);
-        TCC_PeriodU = period - static_cast<uint32_t>(static_cast<float>(period) * dA);
-        TCC_PeriodV = period - static_cast<uint32_t>(static_cast<float>(period) * dB);
-        TCC_PeriodW = period - static_cast<uint32_t>(static_cast<float>(period) * dC);
+static void calibrateDRV8316_SOx(PhaseDutyCycles &cycles) {
+        brushlessMotor.stopMotor(cycles);
 
         static uint32_t n = 0;
-        static double sumV = 0.0, sumW = 0.0;
+        static float sumV = 0.0, sumW = 0.0;
 
         if (adcResultsReady) {
                 __disable_irq();
@@ -158,17 +121,19 @@ static void calibrateDRV8316_SOx() {
                 adcResultsReady = false;
                 __enable_irq();
 
-                const float soV = static_cast<float>(rv) * ADC_FS_V / 4095.0f;
-                const float soW = static_cast<float>(rw) * ADC_FS_V / 4095.0f;
+                const float soV = static_cast<float>(rv) * 3.3f / 4095.0f;
+                const float soW = static_cast<float>(rw) * 3.3f / 4095.0f;
 
                 sumV += soV;
                 sumW += soW;
                 ++n;
+
                 if (n >= 512) {
-                        soV_off = static_cast<float>(sumV / n);
-                        soW_off = static_cast<float>(sumW / n);
+                        soV_off = static_cast<float>(sumV / static_cast<float>(n));
+                        soW_off = static_cast<float>(sumW / static_cast<float>(n));
                         sumV = sumW = 0.0;
                         n = 0;
+                        drv8316.setOffsetVoltages(soV, soW);
                         ongoingSOOffsetCal = false;
                 }
         }
@@ -188,7 +153,7 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
         }
 
         if (ongoingSOOffsetCal)
-                calibrateDRV8316_SOx();
+                calibrateDRV8316_SOx(duty);
         else if (closedLoopControlCurrent) {
                 __disable_irq();
                 const float ThetaMech = degreesToRadians(Encoder.measureAngleCompensated());
@@ -214,9 +179,9 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
 
 void devices_init() {
         SPARE_GPIO_Clear();
-        BrushlessDriver.unlockAllRegisters();
-        BrushlessDriver.setPWMMode(DRV8316::PWM_Mode::MODE_3x);
-        BrushlessDriver.setCurrentSenseAmplifierGain(DRV8316::CurrentSenseGain::CSA_GAIN_0_30);
+        drv8316.unlockAllRegisters();
+        drv8316.setPWMMode(DRV8316::PWM_Mode::MODE_3x);
+        drv8316.setCurrentSenseAmplifierGain(DRV8316::CurrentSenseGain::CSA_GAIN_0_30);
 }
 
 void peripherals_init() {
@@ -247,10 +212,6 @@ void peripherals_init() {
         devices_init();
         peripherals_init();
 
-        // ADC_ConversionStart();
-
         while (true) {
         }
-
-        return EXIT_FAILURE;
 }

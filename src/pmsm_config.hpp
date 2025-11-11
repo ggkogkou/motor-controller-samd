@@ -38,6 +38,21 @@ struct PMSM_Config {
         static constexpr float MotorPolePairs = 11.0f;
 
         static constexpr float OpenLoopVoltageLimit = InitialCalibrationVoltageLimit;
+
+        /**
+         *
+         * Brushless DC GM4108H-120T Gimbal Motor
+         * --------------------------------------
+         * Pole pairs: 11
+         * No-load current: 0.07±0.1A
+         * No-load voltage: 20 V
+         * Load torque: 1200-1800 g*cm
+         * Motor internal resistance: 11.1±5% Ω
+         * No-load RPM: 513-567 RPM @ 20 V => calculate its Kv rating as approximately 25.65-28.35 RPM/V
+         *
+         */
+        static constexpr float MotorKV_Rating = 26.0f;
+        static constexpr float MotorInternalResistance = 11.0f;
 };
 
-}
+} // namespace PermanentMagnetSynchronousMotor
