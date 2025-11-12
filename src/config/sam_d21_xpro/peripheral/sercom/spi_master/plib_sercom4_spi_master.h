@@ -22,27 +22,27 @@
 
 // DOM-IGNORE-BEGIN
 /*******************************************************************************
- * Copyright (C) 2018 Microchip Technology Inc. and its subsidiaries.
- *
- * Subject to your compliance with these terms, you may use Microchip software
- * and any derivatives exclusively with Microchip products. It is your
- * responsibility to comply with third party license terms applicable to your
- * use of third party software (including open source software) that may
- * accompany Microchip software.
- *
- * THIS SOFTWARE IS SUPPLIED BY MICROCHIP "AS IS". NO WARRANTIES, WHETHER
- * EXPRESS, IMPLIED OR STATUTORY, APPLY TO THIS SOFTWARE, INCLUDING ANY IMPLIED
- * WARRANTIES OF NON-INFRINGEMENT, MERCHANTABILITY, AND FITNESS FOR A
- * PARTICULAR PURPOSE.
- *
- * IN NO EVENT WILL MICROCHIP BE LIABLE FOR ANY INDIRECT, SPECIAL, PUNITIVE,
- * INCIDENTAL OR CONSEQUENTIAL LOSS, DAMAGE, COST OR EXPENSE OF ANY KIND
- * WHATSOEVER RELATED TO THE SOFTWARE, HOWEVER CAUSED, EVEN IF MICROCHIP HAS
- * BEEN ADVISED OF THE POSSIBILITY OR THE DAMAGES ARE FORESEEABLE. TO THE
- * FULLEST EXTENT ALLOWED BY LAW, MICROCHIP'S TOTAL LIABILITY ON ALL CLAIMS IN
- * ANY WAY RELATED TO THIS SOFTWARE WILL NOT EXCEED THE AMOUNT OF FEES, IF ANY,
- * THAT YOU HAVE PAID DIRECTLY TO MICROCHIP FOR THIS SOFTWARE.
- *******************************************************************************/
+* Copyright (C) 2018 Microchip Technology Inc. and its subsidiaries.
+*
+* Subject to your compliance with these terms, you may use Microchip software
+* and any derivatives exclusively with Microchip products. It is your
+* responsibility to comply with third party license terms applicable to your
+* use of third party software (including open source software) that may
+* accompany Microchip software.
+*
+* THIS SOFTWARE IS SUPPLIED BY MICROCHIP "AS IS". NO WARRANTIES, WHETHER
+* EXPRESS, IMPLIED OR STATUTORY, APPLY TO THIS SOFTWARE, INCLUDING ANY IMPLIED
+* WARRANTIES OF NON-INFRINGEMENT, MERCHANTABILITY, AND FITNESS FOR A
+* PARTICULAR PURPOSE.
+*
+* IN NO EVENT WILL MICROCHIP BE LIABLE FOR ANY INDIRECT, SPECIAL, PUNITIVE,
+* INCIDENTAL OR CONSEQUENTIAL LOSS, DAMAGE, COST OR EXPENSE OF ANY KIND
+* WHATSOEVER RELATED TO THE SOFTWARE, HOWEVER CAUSED, EVEN IF MICROCHIP HAS
+* BEEN ADVISED OF THE POSSIBILITY OR THE DAMAGES ARE FORESEEABLE. TO THE
+* FULLEST EXTENT ALLOWED BY LAW, MICROCHIP'S TOTAL LIABILITY ON ALL CLAIMS IN
+* ANY WAY RELATED TO THIS SOFTWARE WILL NOT EXCEED THE AMOUNT OF FEES, IF ANY,
+* THAT YOU HAVE PAID DIRECTLY TO MICROCHIP FOR THIS SOFTWARE.
+*******************************************************************************/
 // DOM-IGNORE-END
 
 #ifndef PLIB_SERCOM4_SPI_MASTER_H // Guards against multiple inclusion
@@ -54,7 +54,7 @@
 // *****************************************************************************
 // *****************************************************************************
 /* This section lists the other files that are included in this file.
- */
+*/
 
 #include "plib_sercom_spi_master_common.h"
 
@@ -110,7 +110,7 @@ this interface.
     This function must be called once before any other SPI function is called.
 */
 
-void SERCOM4_SPI_Initialize(void);
+void SERCOM4_SPI_Initialize (void);
 
 
 // *****************************************************************************
@@ -173,7 +173,7 @@ void SERCOM4_SPI_Initialize(void);
     parameter need to be different than the ones configured in MHC.
 */
 
-bool SERCOM4_SPI_TransferSetup(SPI_TRANSFER_SETUP* setup, uint32_t spiSourceClock);
+bool SERCOM4_SPI_TransferSetup(SPI_TRANSFER_SETUP *setup, uint32_t spiSourceClock);
 
 
 // *****************************************************************************
@@ -294,7 +294,7 @@ bool SERCOM4_SPI_TransferSetup(SPI_TRANSFER_SETUP* setup, uint32_t spiSourceCloc
     None.
 */
 
-bool SERCOM4_SPI_WriteRead(void* pTransmitData, size_t txSize, void* pReceiveData, size_t rxSize);
+bool SERCOM4_SPI_WriteRead (void* pTransmitData, size_t txSize, void* pReceiveData, size_t rxSize);
 
 // *****************************************************************************
 /* Function:
@@ -463,6 +463,125 @@ bool SERCOM4_SPI_Write(void* pTransmitData, size_t txSize);
 */
 
 bool SERCOM4_SPI_Read(void* pReceiveData, size_t rxSize);
+
+// *****************************************************************************
+/* Function:
+    void SERCOM4_SPI_CallbackRegister(const SERCOM_SPI_CALLBACK* callBack,
+                                                    uintptr_t context);
+
+  Summary:
+    Allows application to register callback with PLIB.
+
+  Description:
+    This function allows application to register an event handling function
+    for the PLIB to call back when requested data exchange operation has
+    completed or any error has occurred.
+    The callback should be registered before the client performs exchange
+    operation.
+    At any point if application wants to stop the callback, it can use this
+    function with "callBack" value as NULL.
+
+  Precondition:
+    The SERCOM4_SPI_Initialize function must have been called.
+
+  Parameters:
+    callBack - Pointer to the event handler function implemented by the
+               user .
+
+    context - The value of parameter will be passed back to the application
+              unchanged, when the callBack function is called. It can
+              be used to identify any application specific data object that
+              identifies the instance of the client module (for example,
+              it may be a pointer to the client module's state structure).
+
+  Returns:
+    None.
+
+  Example:
+    <code>
+    uint8_t txBuffer[10];
+    uint8_t rxBuffer[10];
+    size_t txSize = 10;
+    size_t rxSize = 10;
+
+    SERCOM4_SPI_Initialize();
+
+    SERCOM4_SPI_CallbackRegister(&APP_SPICallBack, (uintptr_t)NULL);
+
+    if(SERCOM4_SPI_WriteRead(&txBuffer, txSize, &rxBuffer, rxSize ))
+    {
+        request got accepted
+    }
+    else
+    {
+        request didn't get accepted, try again later with correct arguments
+    }
+
+    void APP_SPICallBack(uintptr_t contextHandle)
+    {
+        Exchange was completed without error, do something else.
+    }
+    </code>
+
+  Remarks:
+    If the client does not want to be notified when the queued operation
+    has completed, it does not need to register a callback.
+*/
+
+void SERCOM4_SPI_CallbackRegister(SERCOM_SPI_CALLBACK callBack, uintptr_t context);
+
+// *****************************************************************************
+/* Function:
+    bool SERCOM4_SPI_IsBusy (void);
+
+  Summary:
+    Returns transfer status of SERCOM SERCOM4SPI.
+
+  Description:
+    This function ture if the SERCOM SERCOM4SPI module is busy with a transfer. The
+    application can use the function to check if SERCOM SERCOM4SPI module is busy
+    before calling any of the data transfer functions. The library does not
+    allow a data transfer operation if another transfer operation is already in
+    progress. This function returns true when the SPI PLIB software state machine is idle and
+    all the bytes are transmitted out on the bus (shift register is empty).
+
+    This function can be used as an alternative to the callback function when
+    the library is operating interrupt mode. The allow the application to
+    implement a synchronous interface to the library.
+
+  Precondition:
+    The SERCOM4_SPI_Initialize() should have been called once. The module should
+    have been configured for interrupt mode operation in MHC.
+
+  Parameters:
+    None.
+
+  Returns:
+    true -  Transfer is still in progress
+    false - Transfer is completed or no transfer is currently in progress.
+
+  Example:
+    <code>
+        The following code example demonstrates the use of the
+        SERCOM4_SPI_IsBusy() function. This example shows a blocking while
+        loop. The function can also be called periodically.
+
+        uint8_t dataBuffer[20];
+
+        SERCOM4_SPI_Initialize();
+        SERCOM4_SPI_Write(dataBuffer, 20);
+
+        while (SERCOM4_SPI_IsBusy() == true)
+        {
+            Wait here till the transfer is done.
+        }
+    </code>
+
+  Remarks:
+    None.
+*/
+
+bool SERCOM4_SPI_IsBusy (void);
 
 // *****************************************************************************
 /* Function:
