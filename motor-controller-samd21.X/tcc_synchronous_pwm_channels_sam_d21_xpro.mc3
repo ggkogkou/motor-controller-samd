@@ -63,7 +63,7 @@
       </entry>
    </usedClasses>
    <usedLibraries class="java.util.ArrayList">
-      <ILibraryFile class="com.microchip.mcc.core.library.BaseLibraryFile" libraryClass="com.microchip.mcc.harmony.Harmony3Library" version="1.5.3"/>
+      <ILibraryFile class="com.microchip.mcc.core.library.BaseLibraryFile" libraryClass="com.microchip.mcc.harmony.Harmony3Library" version="1.5.5"/>
    </usedLibraries>
    <tokenMap class="java.util.TreeMap">
       <entry>
@@ -168,7 +168,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;adc&gt;
   &lt;adc dnOrder=&quot;0&quot; id=&quot;ADC_CONV_TRIGGER&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;User dnOrder=&quot;0&quot; value=&quot;SW Trigger&quot;/&gt;
+      &lt;User dnOrder=&quot;0&quot; value=&quot;HW Event Trigger&quot;/&gt;
     &lt;/Values&gt;
   &lt;/adc&gt;
 &lt;/adc&gt;
@@ -198,7 +198,9 @@
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="adc" name="ADC_CTRLB_PRESCALER"/>
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;adc&gt;
   &lt;adc dnOrder=&quot;0&quot; id=&quot;ADC_CTRLB_PRESCALER&quot;&gt;
-    &lt;Values dnOrder=&quot;0&quot;/&gt;
+    &lt;Values dnOrder=&quot;0&quot;&gt;
+      &lt;User dnOrder=&quot;0&quot; value=&quot;2&quot;/&gt;
+    &lt;/Values&gt;
   &lt;/adc&gt;
 &lt;/adc&gt;
 </value>
@@ -240,7 +242,7 @@
       &lt;/Boolean&gt;
     &lt;/Attributes&gt;
     &lt;Values dnOrder=&quot;1&quot;&gt;
-      &lt;User dnOrder=&quot;0&quot; value=&quot;false&quot;/&gt;
+      &lt;User dnOrder=&quot;0&quot; value=&quot;true&quot;/&gt;
     &lt;/Values&gt;
   &lt;/adc&gt;
 &lt;/adc&gt;
@@ -290,7 +292,9 @@
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="adc" name="ADC_INPUTCTRL_INPUTSCAN"/>
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;adc&gt;
   &lt;adc dnOrder=&quot;0&quot; id=&quot;ADC_INPUTCTRL_INPUTSCAN&quot;&gt;
-    &lt;Values dnOrder=&quot;0&quot;/&gt;
+    &lt;Values dnOrder=&quot;0&quot;&gt;
+      &lt;User dnOrder=&quot;0&quot; value=&quot;2&quot;/&gt;
+    &lt;/Values&gt;
   &lt;/adc&gt;
 &lt;/adc&gt;
 </value>
@@ -309,7 +313,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;adc&gt;
   &lt;adc dnOrder=&quot;0&quot; id=&quot;ADC_INPUTCTRL_MUXPOS&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;User dnOrder=&quot;0&quot; value=&quot;22&quot;/&gt;
+      &lt;User dnOrder=&quot;0&quot; value=&quot;2&quot;/&gt;
     &lt;/Values&gt;
   &lt;/adc&gt;
 &lt;/adc&gt;
@@ -743,7 +747,9 @@
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="adc" name="ADC_REFCTRL_REFSEL"/>
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;adc&gt;
   &lt;adc dnOrder=&quot;0&quot; id=&quot;ADC_REFCTRL_REFSEL&quot;&gt;
-    &lt;Values dnOrder=&quot;0&quot;/&gt;
+    &lt;Values dnOrder=&quot;0&quot;&gt;
+      &lt;User dnOrder=&quot;0&quot; value=&quot;1&quot;/&gt;
+    &lt;/Values&gt;
   &lt;/adc&gt;
 &lt;/adc&gt;
 </value>
@@ -860,7 +866,7 @@
     &lt;/PowerProfiles&gt;
     &lt;ComponentGraph dnOrder=&quot;2&quot; id=&quot;__ROOTVIEW&quot;&gt;
       &lt;ElementPositions dnOrder=&quot;0&quot;&gt;
-        &lt;ElementPosition dnOrder=&quot;0&quot; id=&quot;adc&quot; x=&quot;470&quot; y=&quot;60&quot;/&gt;
+        &lt;ElementPosition dnOrder=&quot;0&quot; id=&quot;adc&quot; x=&quot;469&quot; y=&quot;63&quot;/&gt;
         &lt;ElementPosition dnOrder=&quot;1&quot; id=&quot;cmsis&quot; x=&quot;500&quot; y=&quot;20&quot;/&gt;
         &lt;ElementPosition dnOrder=&quot;2&quot; id=&quot;core&quot; x=&quot;401&quot; y=&quot;20&quot;/&gt;
         &lt;ElementPosition dnOrder=&quot;3&quot; id=&quot;dfp&quot; x=&quot;180&quot; y=&quot;20&quot;/&gt;
@@ -1304,7 +1310,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;core&gt;
   &lt;core dnOrder=&quot;0&quot; id=&quot;EVSYS_0_CLOCK_ENABLE&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;evsys&quot; value=&quot;false&quot;/&gt;
+      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;evsys&quot; value=&quot;true&quot;/&gt;
     &lt;/Values&gt;
   &lt;/core&gt;
 &lt;/core&gt;
@@ -1315,7 +1321,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;core&gt;
   &lt;core dnOrder=&quot;0&quot; id=&quot;EVSYS_0_CLOCK_FREQUENCY&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;core&quot; value=&quot;0&quot;/&gt;
+      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;core&quot; value=&quot;48000000&quot;/&gt;
     &lt;/Values&gt;
   &lt;/core&gt;
 &lt;/core&gt;
@@ -1795,7 +1801,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;core&gt;
   &lt;core dnOrder=&quot;0&quot; id=&quot;GCLK_ID_7_CHEN&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;core&quot; value=&quot;false&quot;/&gt;
+      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;core&quot; value=&quot;true&quot;/&gt;
     &lt;/Values&gt;
   &lt;/core&gt;
 &lt;/core&gt;
@@ -1806,7 +1812,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;core&gt;
   &lt;core dnOrder=&quot;0&quot; id=&quot;GCLK_ID_7_FREQ&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;core&quot; value=&quot;0&quot;/&gt;
+      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;core&quot; value=&quot;48000000&quot;/&gt;
     &lt;/Values&gt;
   &lt;/core&gt;
 &lt;/core&gt;
@@ -6782,7 +6788,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;core&gt;
   &lt;core dnOrder=&quot;0&quot; id=&quot;PM_APBC_INITIAL_VALUE&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;core&quot; value=&quot;0x11fe0&quot;/&gt;
+      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;core&quot; value=&quot;0x11fe2&quot;/&gt;
     &lt;/Values&gt;
   &lt;/core&gt;
 &lt;/core&gt;
@@ -9682,7 +9688,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;evsys&gt;
   &lt;evsys dnOrder=&quot;0&quot; id=&quot;EVSYS_CHANNEL_0&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;User dnOrder=&quot;0&quot; value=&quot;false&quot;/&gt;
+      &lt;User dnOrder=&quot;0&quot; value=&quot;true&quot;/&gt;
     &lt;/Values&gt;
   &lt;/evsys&gt;
 &lt;/evsys&gt;
@@ -9704,7 +9710,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;evsys&gt;
   &lt;evsys dnOrder=&quot;0&quot; id=&quot;EVSYS_CHANNEL_0_GENERATOR&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;User dnOrder=&quot;0&quot; value=&quot;59&quot;/&gt;
+      &lt;User dnOrder=&quot;0&quot; value=&quot;54&quot;/&gt;
     &lt;/Values&gt;
   &lt;/evsys&gt;
 &lt;/evsys&gt;
@@ -9726,7 +9732,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;evsys&gt;
   &lt;evsys dnOrder=&quot;0&quot; id=&quot;EVSYS_CHANNEL_0_PATH&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;User dnOrder=&quot;0&quot; value=&quot;0&quot;/&gt;
+      &lt;User dnOrder=&quot;0&quot; value=&quot;2&quot;/&gt;
     &lt;/Values&gt;
   &lt;/evsys&gt;
 &lt;/evsys&gt;
@@ -9737,7 +9743,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;evsys&gt;
   &lt;evsys dnOrder=&quot;0&quot; id=&quot;EVSYS_CHANNEL_0_USER_READY&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;evsys&quot; value=&quot;false&quot;/&gt;
+      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;evsys&quot; value=&quot;true&quot;/&gt;
     &lt;/Values&gt;
   &lt;/evsys&gt;
 &lt;/evsys&gt;
@@ -9903,7 +9909,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;evsys&gt;
   &lt;evsys dnOrder=&quot;0&quot; id=&quot;EVSYS_CHANNEL_2_GENERATOR_ACTIVE&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;evsys&quot; value=&quot;false&quot;/&gt;
+      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;evsys&quot; value=&quot;true&quot;/&gt;
     &lt;/Values&gt;
   &lt;/evsys&gt;
 &lt;/evsys&gt;
@@ -10156,7 +10162,9 @@
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="evsys" name="EVSYS_USER_23"/>
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;evsys&gt;
   &lt;evsys dnOrder=&quot;0&quot; id=&quot;EVSYS_USER_23&quot;&gt;
-    &lt;Values dnOrder=&quot;0&quot;/&gt;
+    &lt;Values dnOrder=&quot;0&quot;&gt;
+      &lt;User dnOrder=&quot;0&quot; value=&quot;1&quot;/&gt;
+    &lt;/Values&gt;
   &lt;/evsys&gt;
 &lt;/evsys&gt;
 </value>
@@ -10166,7 +10174,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;evsys&gt;
   &lt;evsys dnOrder=&quot;0&quot; id=&quot;EVSYS_USER_27&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;User dnOrder=&quot;0&quot; value=&quot;1&quot;/&gt;
+      &lt;User dnOrder=&quot;0&quot; value=&quot;0&quot;/&gt;
     &lt;/Values&gt;
   &lt;/evsys&gt;
 &lt;/evsys&gt;
@@ -10241,7 +10249,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;evsys&gt;
   &lt;evsys dnOrder=&quot;0&quot; id=&quot;GENERATOR_TCC0_OVF_ACTIVE&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;tcc0&quot; value=&quot;false&quot;/&gt;
+      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;tcc0&quot; value=&quot;true&quot;/&gt;
     &lt;/Values&gt;
   &lt;/evsys&gt;
 &lt;/evsys&gt;
@@ -10272,7 +10280,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;evsys&gt;
   &lt;evsys dnOrder=&quot;0&quot; id=&quot;USER_ADC_START_READY&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;adc&quot; value=&quot;false&quot;/&gt;
+      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;adc&quot; value=&quot;true&quot;/&gt;
     &lt;/Values&gt;
   &lt;/evsys&gt;
 &lt;/evsys&gt;
@@ -15642,6 +15650,17 @@
 </value>
       </entry>
       <entry>
+         <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="tcc0" name="TCC_COMPARE_INTENSET_OVF"/>
+         <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;tcc0&gt;
+  &lt;tcc0 dnOrder=&quot;0&quot; id=&quot;TCC_COMPARE_INTENSET_OVF&quot;&gt;
+    &lt;Values dnOrder=&quot;0&quot;&gt;
+      &lt;User dnOrder=&quot;0&quot; value=&quot;false&quot;/&gt;
+    &lt;/Values&gt;
+  &lt;/tcc0&gt;
+&lt;/tcc0&gt;
+</value>
+      </entry>
+      <entry>
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="tcc0" name="TCC_COMPARE_INTERRUPT_MODE"/>
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;tcc0&gt;
   &lt;tcc0 dnOrder=&quot;0&quot; id=&quot;TCC_COMPARE_INTERRUPT_MODE&quot;&gt;
@@ -15788,7 +15807,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;tcc0&gt;
   &lt;tcc0 dnOrder=&quot;0&quot; id=&quot;TCC_EVCTRL_OVFEO&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;User dnOrder=&quot;0&quot; value=&quot;false&quot;/&gt;
+      &lt;User dnOrder=&quot;0&quot; value=&quot;true&quot;/&gt;
     &lt;/Values&gt;
   &lt;/tcc0&gt;
 &lt;/tcc0&gt;
@@ -15812,7 +15831,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;tcc0&gt;
   &lt;tcc0 dnOrder=&quot;0&quot; id=&quot;TCC_INTENSET_MC_1&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;User dnOrder=&quot;0&quot; value=&quot;true&quot;/&gt;
+      &lt;User dnOrder=&quot;0&quot; value=&quot;false&quot;/&gt;
     &lt;/Values&gt;
   &lt;/tcc0&gt;
 &lt;/tcc0&gt;
@@ -18391,11 +18410,11 @@
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/initialization.c</file>
-         <hash>5c70bff1117ef36536b6dec65485912f8c44a2f3f07d121086c04e66797a77b3</hash>
+         <hash>4e0746d929d1985bde0406563784afacee5b20699a8306b80d5bb09189c5f233</hash>
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/interrupts.c</file>
-         <hash>0d1010e74878a4204c372012242f6a535257d876b28c5f9177b5b503e2c3a08e</hash>
+         <hash>b9943265ef6f06d4a613b81a6bff211d4c31fc422b858740c1b355381cd8f095</hash>
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/interrupts.h</file>
@@ -18407,7 +18426,7 @@
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/peripheral/adc/plib_adc.c</file>
-         <hash>a944d81174fe35d3beba6b2af0804903bcbaa43ecfd983d348c1fa098a83cc0d</hash>
+         <hash>5d9968521e30bea8bdaacc7e5ed285bb8e32d78cacbbf2eef14a43abd7594d7c</hash>
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/peripheral/adc/plib_adc.h</file>
@@ -18419,7 +18438,7 @@
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/peripheral/clock/plib_clock.c</file>
-         <hash>d3a6b9951c5b1b13f3770b6bcab8170173fc012e78a2164d6e818d8e72fe7e65</hash>
+         <hash>a30e0c69ec45879c9e43d45fa74f99e566b4ed0e2598b3f9fbd1b25c8ea052db</hash>
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/peripheral/clock/plib_clock.h</file>
@@ -18435,11 +18454,11 @@
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/peripheral/evsys/plib_evsys.c</file>
-         <hash>d542e30ec3df592157db479c067de67b1aa98c548d9e9b5f512b303d231e8c06</hash>
+         <hash>6a0b739726107d25e55174234ab232413dd3b852a483d0ab979d2f19c8bb0823</hash>
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/peripheral/evsys/plib_evsys.h</file>
-         <hash>f7d08eb8162f271ce1db384c082586a6624e506aa7f502c64c4ab5a1aadac47d</hash>
+         <hash>49852fa7ccb3dd52f06b6b2409fb8d197758703eeefc250fe86e13942e0626b4</hash>
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/peripheral/nvic/plib_nvic.c</file>
@@ -18527,7 +18546,7 @@
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/peripheral/tcc/plib_tcc0.c</file>
-         <hash>353d962d891a788f25099d6b492e9e8f9cf24c431a2fd4261c3207b835115271</hash>
+         <hash>0a60f27fcd1b4b990a130bda5d78bdc7f3c726dd86e41ab833f827a97029c4b1</hash>
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/peripheral/tcc/plib_tcc0.h</file>

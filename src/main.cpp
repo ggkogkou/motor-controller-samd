@@ -56,9 +56,6 @@ static volatile uint8_t adcScanIndex = 0;
 void PWM_IRQ_Callback(uint32_t status, uintptr_t context) {
         (void)context;
 
-        if (status & TCC_INTFLAG_MC2_Msk)
-                ADC_ConversionStart();
-
         if (status & TCC_INTFLAG_OVF_Msk) {
                 TCC0_PWM24bitDutySet(TCC0_CHANNEL1, TCC_PeriodU);
                 TCC0_PWM24bitDutySet(TCC0_CHANNEL2, TCC_PeriodV);
@@ -85,8 +82,10 @@ void ADC_Callback(ADC_STATUS status, uintptr_t context) {
                         adcResultsReady = true;
         }
 
-        if (status & ADC_INTFLAG_OVERRUN_Msk)
+        if (status & ADC_INTFLAG_OVERRUN_Msk) {
                 ADC_InterruptsClear(ADC_INTFLAG_OVERRUN_Msk);
+        }
+
 }
 
 static volatile bool closedLoopControlCurrent = true;
@@ -96,11 +95,9 @@ static volatile float soW_off = 1.65f;
 static volatile float soV_off = 1.65f;
 
 static void get_currents_BC(float& iA, float& iB, float& iC) {
-        __disable_irq();
         const uint16_t rv = adcResultV;
         const uint16_t rw = adcResultW;
         adcResultsReady = false;
-        __enable_irq();
 
         iB = static_cast<float>(rv) * 3.3f / 4095.0f;
         iC = static_cast<float>(rw) * 3.3f / 4095.0f;
@@ -115,11 +112,9 @@ static void calibrateDRV8316_SOx(PhaseDutyCycles &cycles) {
         static float sumV = 0.0, sumW = 0.0;
 
         if (adcResultsReady) {
-                __disable_irq();
                 const uint16_t rv = adcResultV;
                 const uint16_t rw = adcResultW;
                 adcResultsReady = false;
-                __enable_irq();
 
                 const float soV = static_cast<float>(rv) * 3.3f / 4095.0f;
                 const float soW = static_cast<float>(rw) * 3.3f / 4095.0f;
@@ -145,9 +140,7 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
         static PhaseDutyCycles duty{TCC_PeriodU, TCC_PeriodV, TCC_PeriodW};
 
         if (not switchToCloseLoop) {
-                __disable_irq();
                 const float ThetaAlign = degreesToRadians(Encoder.measureAngleCompensated());
-                __enable_irq();
                 switchToCloseLoop = brushlessMotor.startupCalibration(duty, ThetaAlign);
                 return;
         }
@@ -155,9 +148,7 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
         if (ongoingSOOffsetCal)
                 calibrateDRV8316_SOx(duty);
         else if (closedLoopControlCurrent) {
-                __disable_irq();
                 const float ThetaMech = degreesToRadians(Encoder.measureAngleCompensated());
-                __enable_irq();
 
                 static float iA = 0;
                 static float iB = 0;
