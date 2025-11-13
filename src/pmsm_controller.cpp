@@ -122,15 +122,13 @@ void PMSM_Controller::update(const PhaseCurrents& phaseCurrents, const PhaseDuty
 }
 
 void PMSM_Controller::updateVelocity(const PhaseCurrents& phaseCurrents, const PhaseDutyCycles& dutyCycles, float thetaEncoder) {
-        const float ThetaEncoderWrapped = std::remainderf(thetaEncoder, TWO_PI);
-
         if (!angleVel_)
                 return;
 
-        angleVel_->update(ThetaEncoderWrapped, dT);
+        angleVel_->update(std::remainderf(thetaEncoder, TWO_PI), dT);
 
         const auto ThetaEl =
-                wrapAngle(dirSign * PMSM_Config::MotorPolePairs * ThetaEncoderWrapped - ZeroOffsetElectricalAngle);
+                wrapAngle(dirSign * PMSM_Config::MotorPolePairs * thetaEncoder - ZeroOffsetElectricalAngle);
         const auto dqFrameCurrents = performClarkeParkTransforms(phaseCurrents.Ia, phaseCurrents.Ib, ThetaEl);
 
         const float VelocityError = PMSM_Config::TargetVelocity - std::fabs(angleVel_->angularVelocity);

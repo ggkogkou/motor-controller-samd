@@ -128,7 +128,7 @@ static void calibrateDRV8316_SOx(PhaseDutyCycles &cycles) {
                         soW_off = static_cast<float>(sumW / static_cast<float>(n));
                         sumV = sumW = 0.0;
                         n = 0;
-                        drv8316.setOffsetVoltages(soV, soW);
+                        drv8316.setOffsetVoltages(soV_off, soW_off);
                         ongoingSOOffsetCal = false;
                 }
         }
