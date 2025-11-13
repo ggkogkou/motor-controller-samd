@@ -103,6 +103,7 @@ set(SOURCES
         src/pid.cpp
         src/logger.cpp
         src/pmsm_controller.cpp
+        src/spi_buffer.cpp
 
         # System initialization and configuration
         src/config/sam_d21_xpro/initialization.c

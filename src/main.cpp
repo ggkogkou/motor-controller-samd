@@ -11,7 +11,7 @@ using namespace MathUtilities;
 using namespace PermanentMagnetSynchronousMotor;
 
 PMSM_Controller brushlessMotor;
-AS5047P Encoder;
+
 DRV8316 drv8316;
 
 /**
@@ -137,42 +137,42 @@ static void calibrateDRV8316_SOx(PhaseDutyCycles &cycles) {
 bool switchToCloseLoop = false;
 
 void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
-        static PhaseDutyCycles duty{TCC_PeriodU, TCC_PeriodV, TCC_PeriodW};
-
-        if (not switchToCloseLoop) {
-                const float ThetaAlign = degreesToRadians(Encoder.measureAngleCompensated());
-                switchToCloseLoop = brushlessMotor.startupCalibration(duty, ThetaAlign);
-                return;
-        }
-
-        if (ongoingSOOffsetCal)
-                calibrateDRV8316_SOx(duty);
-        else if (closedLoopControlCurrent) {
-                const float ThetaMech = degreesToRadians(Encoder.measureAngleCompensated());
-
-                static float iA = 0;
-                static float iB = 0;
-                static float iC = 0;
-
-                if (adcResultsReady) {
-                        get_currents_BC(iA, iB, iC);
-                        static PhaseCurrents phaseCurrents{};
-
-                        phaseCurrents.Ia = iA;
-                        phaseCurrents.Ib = iB;
-                        phaseCurrents.Ic = iC;
-
-                        // brushlessMotor.update(phaseCurrents, duty, ThetaMech);
-                        brushlessMotor.updateVelocity(phaseCurrents, duty, ThetaMech);
-                }
-        }
+        // static PhaseDutyCycles duty{TCC_PeriodU, TCC_PeriodV, TCC_PeriodW};
+        //
+        // if (not switchToCloseLoop) {
+        //         const float ThetaAlign = degreesToRadians(Encoder.measureAngleCompensated());
+        //         switchToCloseLoop = brushlessMotor.startupCalibration(duty, ThetaAlign);
+        //         return;
+        // }
+        //
+        // if (ongoingSOOffsetCal)
+        //         calibrateDRV8316_SOx(duty);
+        // else if (closedLoopControlCurrent) {
+        //         const float ThetaMech = degreesToRadians(Encoder.measureAngleCompensated());
+        //
+        //         static float iA = 0;
+        //         static float iB = 0;
+        //         static float iC = 0;
+        //
+        //         if (adcResultsReady) {
+        //                 get_currents_BC(iA, iB, iC);
+        //                 static PhaseCurrents phaseCurrents{};
+        //
+        //                 phaseCurrents.Ia = iA;
+        //                 phaseCurrents.Ib = iB;
+        //                 phaseCurrents.Ic = iC;
+        //
+        //                 // brushlessMotor.update(phaseCurrents, duty, ThetaMech);
+        //                 brushlessMotor.updateVelocity(phaseCurrents, duty, ThetaMech);
+        //         }
+        // }
 }
 
 void devices_init() {
-        SPARE_GPIO_Clear();
-        drv8316.unlockAllRegisters();
-        drv8316.setPWMMode(DRV8316::PWM_Mode::MODE_3x);
-        drv8316.setCurrentSenseAmplifierGain(DRV8316::CurrentSenseGain::CSA_GAIN_0_30);
+        // SPARE_GPIO_Clear();
+        // drv8316.unlockAllRegisters();
+        // drv8316.setPWMMode(DRV8316::PWM_Mode::MODE_3x);
+        // drv8316.setCurrentSenseAmplifierGain(DRV8316::CurrentSenseGain::CSA_GAIN_0_30);
 }
 
 void peripherals_init() {
@@ -190,9 +190,9 @@ void peripherals_init() {
         TCC0_PWMCallbackRegister(PWM_IRQ_Callback, 0);
         TC3_TimerCallbackRegister(TC3_FOC_HandlerOpenLoop, 0);
 
-        TCC0_PWMStart();
-        TCC1_PWMStart();
-        TC3_TimerStart();
+        // TCC0_PWMStart();
+        // TCC1_PWMStart();
+        // TC3_TimerStart();
 
         __enable_irq();
 }
@@ -200,9 +200,15 @@ void peripherals_init() {
 [[noreturn]] int main() {
         SYS_Initialize(nullptr);
 
+        AS5047P Encoder;
+
         devices_init();
         peripherals_init();
 
         while (true) {
+                auto xx = Encoder.readDeviceRegister(AS5047P::RegisterAddress::ANGLEUNC);
+                auto x = Encoder.latestRegisterRequested;
+                const auto Theta = static_cast<float>(x) / static_cast<float>(Encoder.AngleResolutionSPI) * Encoder.FullRotationDegrees;
+                Encoder.readAGC_Diagnostics();
         }
 }
