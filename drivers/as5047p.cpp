@@ -17,7 +17,7 @@ bool AS5047P::readDeviceRegister(RegisterAddress registerAddress) {
         spiRequest.callback = &AS5047P::spiTransferCallback;
         spiRequest.context = this;
 
-        if (not SPI_Buffer::submit(spiRequest))
+        if (SPI_Buffer::submit(spiRequest) != SPI_Buffer::TransactionState::PLACED)
                 return false;
 
         return true;

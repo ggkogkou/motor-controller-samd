@@ -4,10 +4,11 @@ namespace ATSAMD21_GGKOGKOU {
 
 void SPI_Buffer::init() { SERCOM4_SPI_CallbackRegister(&onTransferCompletion, reinterpret_cast<uintptr_t>(nullptr)); }
 
-bool SPI_Buffer::submit(const SPI_Request& job) {
-        if (SERCOM4_SPI_IsBusy())
-                return false;
+SPI_Buffer::TransactionState SPI_Buffer::submit(const SPI_Request& job) {
+        if (SERCOM4_SPI_IsBusy() || not finished)
+                return TransactionState::FAILED;
 
+        finished = false;
         cachedRequest = job;
 
         PORT_PinClear(job.chipSelectPin);
@@ -17,10 +18,10 @@ bool SPI_Buffer::submit(const SPI_Request& job) {
 
         if (not Success) {
                 PORT_PinSet(cachedRequest.chipSelectPin);
-                return false;
+                return TransactionState::FAILED;
         }
 
-        return true;
+        return TransactionState::PLACED;
 }
 
 void SPI_Buffer::onTransferCompletion(uintptr_t context) {
@@ -34,6 +35,8 @@ void SPI_Buffer::onTransferCompletion(uintptr_t context) {
         if (callback) {
                 callback(userContext);
         }
+
+        finished = true;
 }
 
 } // namespace ATSAMD21_GGKOGKOU

@@ -30,12 +30,22 @@ public:
         static void init();
 
         /**
+         * @enum TransactionState
+         *
+         * Possible SPI transaction states; might be used for error handling
+         */
+        enum class TransactionState {
+                PLACED,
+                FAILED,
+        };
+
+        /**
          * Function that fires an SPI transaction
          *
          * @param job The SPI specifics defined by the caller
          * @return false if a transfer is already happening
          */
-        static bool submit(const SPI_Request& job);
+        static TransactionState submit(const SPI_Request& job);
 
         SPI_Buffer() = delete;
         SPI_Buffer(const SPI_Buffer&) = delete;
@@ -56,6 +66,11 @@ private:
          * Keeping a copy of the SPI in order to be callable from the onTransferCompletion callback
          */
         static inline SPI_Request cachedRequest{};
+
+        /**
+         * If SPI transaction is done and caller's callback is over, mark buffer as ready
+         */
+        static inline bool finished = true;
 };
 
 } // namespace ATSAMD21_GGKOGKOU
