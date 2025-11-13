@@ -164,8 +164,12 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
                         phaseCurrents.Ib = iB;
                         phaseCurrents.Ic = iC;
 
+                        encoder.request(AS5047P::RegisterAddress::ANGLECOM);
+
                         // brushlessMotor.update(phaseCurrents, duty, ThetaMech);
                         brushlessMotor.updateVelocity(phaseCurrents, duty, ThetaMech);
+
+                        encoder.request(AS5047P::RegisterAddress::ANGLECOM);
                 }
         }
 }
