@@ -7,8 +7,8 @@
 #include <limits>
 #include <type_traits>
 #include "definitions.h"
-#include "spi_buffer.hpp"
 #include "logger.hpp"
+#include "spi_buffer.hpp"
 
 using namespace ATSAMD21_GGKOGKOU;
 
@@ -125,13 +125,22 @@ struct AS5047P_Config {
 class AS5047P {
 public:
         /**
+         * Type aliases for the device registers addresses and data
+         */
+        using RegisterAddress_t = std::uint16_t;
+        using RegisterData_t = std::uint16_t;
+        using ReadWriteCommandMask_t = std::uint16_t;
+        using Angle_t = float;
+        using FieldMagnitude_t = float;
+
+        /**
          * Default constructor of the driver class
          *
          * Meant to be used when default configurations are OK or device OTP is programmed
          */
         AS5047P() {
                 AS5047_CS_Set();
-                spiJob.chipSelectPin = AS5047_CS_PIN;
+                spiRequest.chipSelectPin = AS5047_CS_PIN;
         }
 
         /**
@@ -146,17 +155,10 @@ public:
          */
         ~AS5047P() = default;
 
-        SPI_Request spiJob;
-        SPI_Buffer spi;
-
         /**
-         * Type aliases for the device registers addresses and data
+         * SPI_Request object; passed between the SPI_Buffer layer and AS5047 driver
          */
-        using RegisterAddress_t = std::uint16_t;
-        using RegisterData_t = std::uint16_t;
-        using ReadWriteCommandMask_t = std::uint16_t;
-        using Angle_t = float;
-        using FieldMagnitude_t = float;
+        SPI_Request spiRequest;
 
         /**
          * @enum RegisterAddress
@@ -174,26 +176,77 @@ public:
          */
         enum class RegisterAddress : RegisterAddress_t {
                 /// Volatile registers
-                NOP = 0x0000, // No operation
-                ERRFL = 0x0001, // Error register (Read-Only)
-                PROG = 0x0003, // Programming register (Read/Write)
-                DIAAGC = 0x3FFC, // Diagnostic and AGC (Read-Only)
-                MAG = 0x3FFD, // CORDIC magnitude (Read-Only)
-                ANGLEUNC = 0x3FFE, // Measured angle without dynamic angle error compensation (Read-Only)
-                ANGLECOM = 0x3FFF, // Measured angle with dynamic angle error compensation (Read-Only)
+                NOP = 0x0000, /// No operation
+                ERRFL = 0x0001, /// Error register (Read-Only)
+                PROG = 0x0003, /// Programming register (Read/Write)
+                DIAAGC = 0x3FFC, /// Diagnostic and AGC (Read-Only)
+                MAG = 0x3FFD, /// CORDIC magnitude (Read-Only)
+                ANGLEUNC = 0x3FFE, /// Measured angle without dynamic angle error compensation (Read-Only)
+                ANGLECOM = 0x3FFF, /// Measured angle with dynamic angle error compensation (Read-Only)
 
                 /// Non-volatile registers
-                ZPOSM = 0x0016, // Zero position MSB (Read/Write/Program)
-                ZPOSL = 0x0017, // Zero position LSB/MAG diagnostic (Read/Write/Program)
-                SETTINGS1 = 0x0018, // Custom setting register 1 (Read/Write/Program)
-                SETTINGS2 = 0x0019 // Custom setting register 2 (Read/Write/Program)
+                ZPOSM = 0x0016, /// Zero position MSB (Read/Write/Program)
+                ZPOSL = 0x0017, /// Zero position LSB/MAG diagnostic (Read/Write/Program)
+                SETTINGS1 = 0x0018, /// Custom setting register 1 (Read/Write/Program)
+                SETTINGS2 = 0x0019 /// Custom setting register 2 (Read/Write/Program)
         };
 
+        /**
+         * Function that initiates a new SPI Read transaction
+         *
+         * @param registerAddress
+         * @return
+         */
         bool request(RegisterAddress registerAddress);
 
+        /**
+         * Function that reads the uncompensated angle (skip DAEC)
+         *
+         * @return The 14-bit measured angle uncompensated
+         */
+        [[nodiscard]] Angle_t measureAngleUncompensated() const;
+
+        /**
+         * Function that reads the compensated angle (DAEC output)
+         *
+         * @return The 14-bit measured angle compensated
+         */
+        [[nodiscard]] Angle_t measureAngleCompensated() const;
+
+        /**
+         * Function that reads the CORDIC magnetic field magnitude
+         *
+         * @return The 14-bit measured magnetic field magnitude
+         */
+        [[nodiscard]] FieldMagnitude_t measureFieldMagnitude() const;
+
+        /**
+         * Function that reads the DIAAGC register and logs the warnings
+         *
+         * TODO: Return the warnings properly in a data structure
+         */
+        void readAGC_Diagnostics() const;
+
+        /**
+         * Function that reads and clears (by IC design) the error flags from ERRFL register
+         */
+        void readAndClearErrorFlags() const;
+
+private:
         uint16_t latestRegisterRequested = 0;
 
-        static void spiTransferCallback(void* context);
+        /**
+         * @enum ERRFL_RegisterMask
+         * @brief Represents the bitmask definitions for the ERRFL (Error Flag) register.
+         *
+         * The ERRFL register provides diagnostic error flags that indicate specific sensor errors.
+         * Each bit in this enumeration corresponds to a particular type of error detected by the sensor.
+         */
+        enum class ERRFL_RegisterMask : RegisterData_t {
+                PARITY_ERROR = 0b0000'0000'0000'0100,
+                INVALID_COMMAND = 0b0000'0000'0000'0010,
+                FRAMING_ERROR = 0b0000'0000'0000'0001,
+        };
 
         /**
          * @enum ReadWriteCommandMask
@@ -218,6 +271,22 @@ public:
         };
 
         /**
+         * @enum DIAAGC_RegisterMask
+         * @brief Represents the bitmask definitions for the DIAAGC register.
+         *
+         * The DIAAGC register provides diagnostic and automatic gain control (AGC) information.
+         * This enumeration defines specific flags and fields within the register that
+         * indicate diagnostics or configuration status of the AS5047P sensor.
+         */
+        enum class DIAAGC_RegisterMask : RegisterData_t {
+                MAG_FIELD_TOO_LOW = 0b0000'1000'0000'0000,
+                MAG_FIELD_TOO_HIGH = 0b0000'0100'0000'0000,
+                CORDIC_OVF = 0b0000'0010'0000'0000,
+                OFFSET_COMP = 0b0000'0001'0000'0000,
+                AGC_VALUE = 0b0000'0000'1111'1111,
+        };
+
+        /**
          * The SPI command frame size in bytes
          */
         static constexpr size_t CommandFrameSize = 2;
@@ -226,6 +295,26 @@ public:
          * The SPI data frame size in bytes
          */
         static constexpr size_t DataFrameSize = 2;
+
+        /**
+         * AS5047P 14-bit angular resolution: number of discrete angle steps per 360° revolution
+         * Range: 0 to 16383 (0x0000 to 0x3FFF), providing ~0.022° per step
+         */
+        static constexpr uint16_t AngleResolutionSPI = 16384;
+
+        static_assert(AngleResolutionSPI <= std::numeric_limits<uint16_t>::max(),
+                      "AngleResolutionSPI must fit in 'int'");
+
+        /**
+         * The full rotation angle in degrees
+         */
+        static constexpr float FullRotationDegrees = 360.0f;
+
+        /**
+         * Callback function -- called by the SPI_Buffer ISR
+         * @param context
+         */
+        static void spiTransferCallback(void* context);
 
         /**
          * Function that performs the SPI Read operation between MCU and AS5047P magnetic encoder
@@ -244,81 +333,14 @@ public:
         void writeDeviceRegister(RegisterAddress registerAddress, RegisterData_t data);
 
         /**
-         * Function that reads the uncompensated angle (skip DAEC)
+         * Operator | overload for the construction of the command
          *
-         * @return The 14-bit measured angle uncompensated
+         * @param commandMask
+         * @param registerAddress
+         * @return
          */
-        [[nodiscard]] Angle_t measureAngleUncompensated() const;
-
-        /**
-         * Function that reads the compensated angle (DAEC output)
-         *
-         * @return The 14-bit measured angle compensated
-         */
-        [[nodiscard]] Angle_t measureAngleCompensated() const;
-
-        /**
-         * Function that reads the CORDIC magnetic field magnitude
-         *
-         * @return The 14-bit measured magnetic field magnitude
-         */
-        [[nodiscard]] FieldMagnitude_t measureFieldMagnitude() const;
-
-        /**
-         * @enum DIAAGC_RegisterMask
-         * @brief Represents the bitmask definitions for the DIAAGC register.
-         *
-         * The DIAAGC register provides diagnostic and automatic gain control (AGC) information.
-         * This enumeration defines specific flags and fields within the register that
-         * indicate diagnostics or configuration status of the AS5047P sensor.
-         */
-        enum class DIAAGC_RegisterMask : RegisterData_t {
-                MAG_FIELD_TOO_LOW = 0b0000'1000'0000'0000,
-                MAG_FIELD_TOO_HIGH = 0b0000'0100'0000'0000,
-                CORDIC_OVF = 0b0000'0010'0000'0000,
-                OFFSET_COMP = 0b0000'0001'0000'0000,
-                AGC_VALUE = 0b0000'0000'1111'1111,
+        friend constexpr uint16_t operator|(ReadWriteCommandMask commandMask,
+                                        RegisterAddress registerAddress) {
+                return static_cast<uint16_t>(commandMask) | static_cast<uint16_t>(registerAddress);
         };
-
-        /**
-         * Function that reads the DIAAGC register and logs the warnings
-         *
-         * TODO: Return the warnings properly in a data structure
-         */
-        void readAGC_Diagnostics() const;
-
-        /**
-         * @enum ERRFL_RegisterMask
-         * @brief Represents the bitmask definitions for the ERRFL (Error Flag) register.
-         *
-         * The ERRFL register provides diagnostic error flags that indicate specific sensor errors.
-         * Each bit in this enumeration corresponds to a particular type of error detected by the sensor.
-         */
-        enum class ERRFL_RegisterMask : RegisterData_t {
-                PARITY_ERROR = 0b0000'0000'0000'0100,
-                INVALID_COMMAND = 0b0000'0000'0000'0010,
-                FRAMING_ERROR = 0b0000'0000'0000'0001,
-        };
-
-        /**
-         * Function that reads and clears (by IC design) the error flags from ERRFL register
-         */
-        void readAndClearErrorFlags() const;
-
-        /**
-         * AS5047P 14-bit angular resolution: number of discrete angle steps per 360° revolution
-         * Range: 0 to 16383 (0x0000 to 0x3FFF), providing ~0.022° per step
-         */
-        static constexpr uint16_t AngleResolutionSPI = 16384;
-        static_assert(AngleResolutionSPI <= std::numeric_limits<uint16_t>::max(),
-                      "AngleResolutionSPI must fit in 'int'");
-
-        /**
-         * The full rotation angle in degrees
-         */
-        static constexpr float FullRotationDegrees = 360.0f;
 };
-
-constexpr uint16_t operator|(AS5047P::ReadWriteCommandMask commandMask, AS5047P::RegisterAddress registerAddress) {
-        return static_cast<uint16_t>(commandMask) | static_cast<uint16_t>(registerAddress);
-}

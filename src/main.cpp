@@ -200,15 +200,17 @@ void peripherals_init() {
 [[noreturn]] int main() {
         SYS_Initialize(nullptr);
 
+        SPI_Buffer::init();
+
         AS5047P Encoder;
 
         devices_init();
         peripherals_init();
 
         while (true) {
-                auto xx = Encoder.readDeviceRegister(AS5047P::RegisterAddress::ANGLEUNC);
-                auto x = Encoder.latestRegisterRequested;
-                const auto Theta = static_cast<float>(x) / static_cast<float>(Encoder.AngleResolutionSPI) * Encoder.FullRotationDegrees;
-                Encoder.readAGC_Diagnostics();
+                Encoder.request(AS5047P::RegisterAddress::ANGLEUNC);
+                const auto x = Encoder.measureAngleUncompensated();
+
+                continue;
         }
 }

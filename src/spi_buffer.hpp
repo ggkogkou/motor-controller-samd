@@ -23,9 +23,11 @@ struct SPI_Request {
 class SPI_Buffer {
 public:
         /**
-         * Constructor that registers the callback function to the HAL provided ISR
+         * Initialization function that registers the callback function to the HAL provided ISR
+         *
+         * @warning MUST BE CALLED BEFORE THE 'SPI_Buffer' IS USED
          */
-        SPI_Buffer();
+        static void init();
 
         /**
          * Function that fires an SPI transaction
@@ -34,6 +36,12 @@ public:
          * @return false if a transfer is already happening
          */
         static bool submit(const SPI_Request& job);
+
+        SPI_Buffer() = delete;
+        SPI_Buffer(const SPI_Buffer&) = delete;
+        SPI_Buffer& operator=(const SPI_Buffer&) = delete;
+        SPI_Buffer(SPI_Buffer&&) = delete;
+        SPI_Buffer& operator=(SPI_Buffer&&) = delete;
 
 private:
         /**

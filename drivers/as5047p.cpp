@@ -12,12 +12,12 @@ bool AS5047P::readDeviceRegister(RegisterAddress registerAddress) {
         const auto CommandFrameMSB = static_cast<uint8_t>(commandFrame >> 8);
         const auto CommandFrameLSB = static_cast<uint8_t>(commandFrame & 0b1111'1111);
 
-        spiJob.txBuffer = {CommandFrameMSB, CommandFrameLSB};
-        spiJob.chipSelectPin = AS5047_CS_PIN;
-        spiJob.callback = &AS5047P::spiTransferCallback;
-        spiJob.context = const_cast<AS5047P*>(this);
+        spiRequest.txBuffer = {CommandFrameMSB, CommandFrameLSB};
+        spiRequest.chipSelectPin = AS5047_CS_PIN;
+        spiRequest.callback = &AS5047P::spiTransferCallback;
+        spiRequest.context = this;
 
-        if (not SPI_Buffer::submit(spiJob))
+        if (not SPI_Buffer::submit(spiRequest))
                 return false;
 
         return true;
@@ -63,7 +63,7 @@ void AS5047P::spiTransferCallback(void* context) {
 
         // Hold reference? For 2 elements copy constructor is basically free
         // const auto& rxBuffer = self->spiJob.rxBuffer;
-        const auto rxBuffer = self->spiJob.rxBuffer;
+        const auto rxBuffer = self->spiRequest.rxBuffer;
 
         const auto PARD_Bit = static_cast<uint8_t>(rxBuffer[0] & 0b0111'1111);
         const auto ParityCount = std::popcount(rxBuffer[0]) + std::popcount(rxBuffer[1]);

@@ -2,7 +2,7 @@
 
 namespace ATSAMD21_GGKOGKOU {
 
-SPI_Buffer::SPI_Buffer() { SERCOM4_SPI_CallbackRegister(&onTransferCompletion, reinterpret_cast<uintptr_t>(this)); }
+void SPI_Buffer::init() { SERCOM4_SPI_CallbackRegister(&onTransferCompletion, reinterpret_cast<uintptr_t>(nullptr)); }
 
 bool SPI_Buffer::submit(const SPI_Request& job) {
         if (SERCOM4_SPI_IsBusy())
