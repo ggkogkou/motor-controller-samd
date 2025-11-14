@@ -28,11 +28,17 @@ void PMSM_Controller::encoderOffsetCalibration(const PhaseDutyCycles& dutyCycles
 
         const auto AlphaBetaFrame = performInverseParkTransform(Vd, Vq, ThetaElectricalLock);
         const auto DutyCycles = pwm.compute(AlphaBetaFrame[0], AlphaBetaFrame[1]);
-        const auto [dutyCycleA, dutyCycleB, dutyCycleC] = DutyCycles;
+        const auto [dA, dB, dC] = DutyCycles;
 
-        dutyCycles.perA = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dutyCycleA);
-        dutyCycles.perB = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dutyCycleB);
-        dutyCycles.perC = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dutyCycleC);
+        const auto tmpPeriodA = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dA);
+        const auto tmpPeriodB = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dB);
+        const auto tmpPeriodC = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dC);
+
+        __disable_irq();
+        dutyCycles.perA = tmpPeriodA;
+        dutyCycles.perB = tmpPeriodB;
+        dutyCycles.perC = tmpPeriodC;
+        __enable_irq();
 
         timerCounter++;
 
@@ -90,11 +96,17 @@ void PMSM_Controller::updateOpenLoop(const PhaseDutyCycles& dutyCycles) {
         constexpr float Vq = PMSM_Config::OpenLoopVoltageLimit;
 
         const auto InvPark = performInverseParkTransform(Vd, Vq, thetaElectrical);
-        const auto [dutyCycleA, dutyCycleB, dutyCycleC] = pwm.compute(InvPark[0], InvPark[1]);
+        const auto [dA, dB, dC] = pwm.compute(InvPark[0], InvPark[1]);
 
-        dutyCycles.perA = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dutyCycleA);
-        dutyCycles.perB = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dutyCycleB);
-        dutyCycles.perC = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dutyCycleC);
+        const auto tmpPeriodA = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dA);
+        const auto tmpPeriodB = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dB);
+        const auto tmpPeriodC = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dC);
+
+        __disable_irq();
+        dutyCycles.perA = tmpPeriodA;
+        dutyCycles.perB = tmpPeriodB;
+        dutyCycles.perC = tmpPeriodC;
+        __enable_irq();
 }
 
 void PMSM_Controller::update(const PhaseCurrents& phaseCurrents, const PhaseDutyCycles& dutyCycles, float thetaEncoder) {
@@ -116,9 +128,15 @@ void PMSM_Controller::update(const PhaseCurrents& phaseCurrents, const PhaseDuty
         const auto AlphaBetaFrame = performInverseParkTransform(Vd, Vq, ThetaEl);
         const auto [dA, dB, dC] = pwm.compute(AlphaBetaFrame[0], AlphaBetaFrame[1]);
 
-        dutyCycles.perA = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dA);
-        dutyCycles.perB = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dB);
-        dutyCycles.perC = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dC);
+        const auto tmpPeriodA = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dA);
+        const auto tmpPeriodB = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dB);
+        const auto tmpPeriodC = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dC);
+
+        __disable_irq();
+        dutyCycles.perA = tmpPeriodA;
+        dutyCycles.perB = tmpPeriodB;
+        dutyCycles.perC = tmpPeriodC;
+        __enable_irq();
 }
 
 void PMSM_Controller::updateVelocity(const PhaseCurrents& phaseCurrents, const PhaseDutyCycles& dutyCycles, float thetaEncoder) {
@@ -147,9 +165,15 @@ void PMSM_Controller::updateVelocity(const PhaseCurrents& phaseCurrents, const P
         const auto AlphaBetaFrame = performInverseParkTransform(Vd, Vq, ThetaEl);
         const auto [dA, dB, dC] = pwm.compute(AlphaBetaFrame[0], AlphaBetaFrame[1]);
 
-        dutyCycles.perA = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dA);
-        dutyCycles.perB = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dB);
-        dutyCycles.perC = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dC);
+        const auto tmpPeriodA = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dA);
+        const auto tmpPeriodB = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dB);
+        const auto tmpPeriodC = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dC);
+
+        __disable_irq();
+        dutyCycles.perA = tmpPeriodA;
+        dutyCycles.perB = tmpPeriodB;
+        dutyCycles.perC = tmpPeriodC;
+        __enable_irq();
 }
 
 void PMSM_Controller::stopMotor(const PhaseDutyCycles& dutyCycles) const {
@@ -158,9 +182,15 @@ void PMSM_Controller::stopMotor(const PhaseDutyCycles& dutyCycles) const {
 
         const auto [dA, dB, dC] = pwm.compute(Vd, Vq);
 
-        dutyCycles.perA = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dA);
-        dutyCycles.perB = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dB);
-        dutyCycles.perC = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dC);
+        const auto tmpPeriodA = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dA);
+        const auto tmpPeriodB = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dB);
+        const auto tmpPeriodC = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dC);
+
+        __disable_irq();
+        dutyCycles.perA = tmpPeriodA;
+        dutyCycles.perB = tmpPeriodB;
+        dutyCycles.perC = tmpPeriodC;
+        __enable_irq();
 }
 
 } // namespace PermanentMagnetSynchronousMotor
