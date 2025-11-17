@@ -61,6 +61,8 @@
 /* SERCOM4 SPI baud value for 1000000 Hz baud rate */
 #define SERCOM4_SPIM_BAUD_VALUE         (23UL)
 
+/*Global object to save SPI Exchange related data  */
+static volatile SPI_OBJECT sercom4SPIObj;
 
 // *****************************************************************************
 // *****************************************************************************
@@ -87,6 +89,11 @@
 
 void SERCOM4_SPI_Initialize(void)
 {
+    /* Instantiate the SERCOM4 SPI object */
+    sercom4SPIObj.callback = NULL ;
+    sercom4SPIObj.transferIsBusy = false ;
+    sercom4SPIObj.txSize = 0U;
+    sercom4SPIObj.rxSize = 0U;
 
     /* Selection of the Character Size and Receiver Enable */
     SERCOM4_REGS->SPIM.SERCOM_CTRLB = SERCOM_SPIM_CTRLB_CHSIZE_8_BIT | SERCOM_SPIM_CTRLB_RXEN_Msk ;
@@ -104,9 +111,7 @@ void SERCOM4_SPI_Initialize(void)
      * Data In and Pin Out,Data Order and Standby mode if configured
      * and Selection of the Clock Phase and Polarity and Enable the SPI Module
      */
-    SERCOM4_REGS->SPIM.SERCOM_CTRLA = SERCOM_SPIM_CTRLA_MODE_SPI_MASTER | SERCOM_SPIM_CTRLA_DOPO_PAD1 |
-        SERCOM_SPIM_CTRLA_DIPO_PAD0 | SERCOM_SPIM_CTRLA_CPOL_IDLE_LOW | SERCOM_SPIM_CTRLA_CPHA_TRAILING_EDGE |
-        SERCOM_SPIM_CTRLA_DORD_MSB | SERCOM_SPIM_CTRLA_ENABLE_Msk;
+    SERCOM4_REGS->SPIM.SERCOM_CTRLA = SERCOM_SPIM_CTRLA_MODE_SPI_MASTER | SERCOM_SPIM_CTRLA_DOPO_PAD1 | SERCOM_SPIM_CTRLA_DIPO_PAD0 | SERCOM_SPIM_CTRLA_CPOL_IDLE_LOW | SERCOM_SPIM_CTRLA_CPHA_TRAILING_EDGE | SERCOM_SPIM_CTRLA_DORD_MSB | SERCOM_SPIM_CTRLA_ENABLE_Msk ;
 
 
     /* Wait for synchronization */
@@ -159,6 +164,13 @@ bool SERCOM4_SPI_TransferSetup(SPI_TRANSFER_SETUP *setup, uint32_t spiSourceCloc
     /* Disable the SPI Module */
     SERCOM4_REGS->SPIM.SERCOM_CTRLA &= ~(SERCOM_SPIM_CTRLA_ENABLE_Msk);
 
+    /* Disabling SPI module, also clears the TXC (Transmit Complete) bit to 0. TXC = 0 means transfer is not complete (busy).
+       As a result, calling SERCOM4_SPI_IsBusy() after a call to SERCOM4_SPI_TransferSetup() always returns busy.
+       Since, application must call the SERCOM4_SPI_TransferSetup() API only after ensuring that no transfer is in progress,
+       it is safe to clear the rxSize and txSize to 0, so as to let the SERCOM4_SPI_IsBusy() return false (not busy).
+    */
+    sercom4SPIObj.rxSize = 0;
+    sercom4SPIObj.txSize = 0;
 
     /* Wait for synchronization */
     while((SERCOM4_REGS->SPIM.SERCOM_SYNCBUSY) != 0U)
@@ -212,6 +224,74 @@ bool SERCOM4_SPI_TransferSetup(SPI_TRANSFER_SETUP *setup, uint32_t spiSourceCloc
 }
 
 
+// *****************************************************************************
+/* Function:
+    void SERCOM4_SPI_CallbackRegister(const SERCOM_SPI_CALLBACK* callBack,
+                                                    uintptr_t context);
+
+  Summary:
+    Allows application to register callback with PLIB.
+
+  Description:
+    This function allows application to register an event handling function
+    for the PLIB to call back when requested data exchange operation has
+    completed or any error has occurred.
+    The callback should be registered before the client performs exchange
+    operation.
+    At any point if application wants to stop the callback, it can use this
+    function with "callBack" value as NULL.
+
+  Remarks:
+    Refer plib_sercom4_spi.h file for more information.
+*/
+
+void SERCOM4_SPI_CallbackRegister(SERCOM_SPI_CALLBACK callBack, uintptr_t context )
+{
+    sercom4SPIObj.callback = callBack;
+
+    sercom4SPIObj.context = context;
+}
+
+// *****************************************************************************
+/* Function:
+    bool SERCOM4_SPI_IsBusy(void);
+
+  Summary:
+    Returns transfer status of SERCOM SERCOM4SPI.
+
+  Description:
+    This function ture if the SERCOM SERCOM4SPI module is busy with a transfer. The
+    application can use the function to check if SERCOM SERCOM4SPI module is busy
+    before calling any of the data transfer functions. The library does not
+    allow a data transfer operation if another transfer operation is already in
+    progress.
+
+    This function can be used as an alternative to the callback function when
+    the library is operating interrupt mode. The allow the application to
+    implement a synchronous interface to the library.
+
+  Remarks:
+    Refer plib_sercom4_spi.h file for more information.
+*/
+
+bool SERCOM4_SPI_IsBusy(void)
+{
+    bool isBusy = false;
+    size_t txSize = sercom4SPIObj.txSize;
+    bool transferIsBusy = sercom4SPIObj.transferIsBusy;
+
+    if ((sercom4SPIObj.rxSize == 0U) && (txSize == 0U))
+    {
+        /* This means no transfer has been requested yet; hence SPI is not busy. */
+        isBusy = false;
+    }
+    else
+    {
+        /* if transmit is not complete or if the state flag is not set, SPI is busy */
+        isBusy = (((SERCOM4_REGS->SPIM.SERCOM_INTFLAG & SERCOM_SPIM_INTFLAG_TXC_Msk) == 0U) || transferIsBusy);
+    }
+    return isBusy;
+}
 
 bool SERCOM4_SPI_IsTransmitterBusy(void)
 {
@@ -256,140 +336,129 @@ bool SERCOM4_SPI_IsTransmitterBusy(void)
 
 bool SERCOM4_SPI_WriteRead (void* pTransmitData, size_t txSize, void* pReceiveData, size_t rxSize)
 {
-    size_t txCount = 0U;
-    size_t rxCount = 0U;
-    size_t dummySize = 0U;
-    size_t receivedData;
-    uint32_t dataBits;
-    bool isSuccess = false;
+    bool isRequestAccepted = false;
+    uint32_t dummyData = 0U;
+    size_t txSz;
 
-    /* Verify the request */
-    if(((txSize > 0U) && (pTransmitData != NULL)) || ((rxSize > 0U) && (pReceiveData != NULL)))
+    if (sercom4SPIObj.transferIsBusy == false)
     {
-        dataBits = SERCOM4_REGS->SPIM.SERCOM_CTRLB & SERCOM_SPIM_CTRLB_CHSIZE_Msk;
-
-        if(dataBits != (uint32_t)SPI_DATA_BITS_8)
+        /* Verify the request */
+        if(((txSize > 0U) && (pTransmitData != NULL)) || ((rxSize > 0U) && (pReceiveData != NULL)))
         {
-            /* For 9-bit transmission, the txSize and rxSize must be an even number. */
-            if(((txSize > 0U) && ((txSize & 0x01U) != 0U)) || ((rxSize > 0U) && ((rxSize & 0x01U) != 0U)))
+            if((SERCOM4_REGS->SPIM.SERCOM_CTRLB & SERCOM_SPIM_CTRLB_CHSIZE_Msk) == (uint32_t)SPI_DATA_BITS_9)
             {
-                return isSuccess;
-            }
-        }
-
-        if(pTransmitData == NULL)
-        {
-            txSize = 0U;
-        }
-
-        if(pReceiveData == NULL)
-        {
-            rxSize = 0U;
-        }
-
-        /* Flush out any unread data in SPI DATA Register from the previous transfer */
-        while((SERCOM4_REGS->SPIM.SERCOM_INTFLAG & SERCOM_SPIM_INTFLAG_RXC_Msk) == SERCOM_SPIM_INTFLAG_RXC_Msk)
-        {
-            receivedData = SERCOM4_REGS->SPIM.SERCOM_DATA;
-        }
-
-        SERCOM4_REGS->SPIM.SERCOM_STATUS |= (uint16_t)SERCOM_SPIM_STATUS_BUFOVF_Msk;
-
-        SERCOM4_REGS->SPIM.SERCOM_INTFLAG |= (uint8_t)SERCOM_SPIM_INTFLAG_ERROR_Msk;
-
-        if(rxSize > txSize)
-        {
-            dummySize = rxSize - txSize;
-        }
-
-        if(dataBits != (uint32_t)SPI_DATA_BITS_8)
-        {
-            rxSize >>= 1U;
-            txSize >>= 1U;
-            dummySize >>= 1U;
-        }
-
-        /* Make sure DRE is empty */
-        while((SERCOM4_REGS->SPIM.SERCOM_INTFLAG & SERCOM_SPIM_INTFLAG_DRE_Msk) != SERCOM_SPIM_INTFLAG_DRE_Msk)
-        {
-            /* Do nothing */
-        }
-
-        while((txCount != txSize) || (dummySize != 0U))
-        {
-            if(txCount != txSize)
-            {
-                if(dataBits == (uint32_t)SPI_DATA_BITS_8)
+                /* For 9-bit transmission, the txSize and rxSize must be an even number. */
+                if(((txSize > 0U) && ((txSize & 0x01U) != 0U)) || ((rxSize > 0U) && ((rxSize & 0x01U) != 0U)))
                 {
-                    SERCOM4_REGS->SPIM.SERCOM_DATA = ((uint8_t*)pTransmitData)[txCount];
-                    txCount++;
-                }
-                else
-                {
-                    SERCOM4_REGS->SPIM.SERCOM_DATA = ((uint16_t*)pTransmitData)[txCount] & SERCOM_SPIM_DATA_Msk;
-                    txCount++;
+                    return isRequestAccepted;
                 }
             }
-            else if(dummySize > 0U)
+
+            isRequestAccepted = true;
+            sercom4SPIObj.txBuffer = pTransmitData;
+            sercom4SPIObj.rxBuffer = pReceiveData;
+            sercom4SPIObj.rxCount = 0U;
+            sercom4SPIObj.txCount = 0U;
+            sercom4SPIObj.dummySize = 0U;
+
+            if(pTransmitData != NULL)
             {
-                if(dataBits == (uint32_t)SPI_DATA_BITS_8)
+                sercom4SPIObj.txSize = txSize;
+            }
+            else
+            {
+                sercom4SPIObj.txSize = 0U;
+            }
+
+            if(pReceiveData != NULL)
+            {
+                sercom4SPIObj.rxSize = rxSize;
+            }
+            else
+            {
+                sercom4SPIObj.rxSize = 0U;
+            }
+
+            sercom4SPIObj.transferIsBusy = true;
+
+            /* Flush out any unread data in SPI read buffer */
+            while((SERCOM4_REGS->SPIM.SERCOM_INTFLAG & SERCOM_SPIM_INTFLAG_RXC_Msk) == SERCOM_SPIM_INTFLAG_RXC_Msk)
+            {
+                dummyData = SERCOM4_REGS->SPIM.SERCOM_DATA;
+                (void)dummyData;
+            }
+
+            SERCOM4_REGS->SPIM.SERCOM_STATUS |= SERCOM_SPIM_STATUS_BUFOVF_Msk;
+
+            SERCOM4_REGS->SPIM.SERCOM_INTFLAG |= (uint8_t)SERCOM_SPIM_INTFLAG_ERROR_Msk;
+
+            txSz = sercom4SPIObj.txSize;
+
+            if(sercom4SPIObj.rxSize > txSz)
+            {
+                sercom4SPIObj.dummySize = sercom4SPIObj.rxSize - txSz;
+            }
+
+            /* Start the first write here itself, rest will happen in ISR context */
+            if((SERCOM4_REGS->SPIM.SERCOM_CTRLB & SERCOM_SPIM_CTRLB_CHSIZE_Msk) == (uint32_t)SPI_DATA_BITS_8)
+            {
+                if(sercom4SPIObj.txCount < txSz)
+                {
+                    SERCOM4_REGS->SPIM.SERCOM_DATA = *((uint8_t*)sercom4SPIObj.txBuffer);
+
+                    sercom4SPIObj.txCount++;
+                }
+                else if(sercom4SPIObj.dummySize > 0U)
                 {
                     SERCOM4_REGS->SPIM.SERCOM_DATA = 0xFFU;
+
+                    sercom4SPIObj.dummySize--;
                 }
                 else
                 {
+                    /* Do nothing */
+                }
+            }
+            else
+            {
+                sercom4SPIObj.txSize >>= 1U;
+                sercom4SPIObj.dummySize >>= 1U;
+                sercom4SPIObj.rxSize >>= 1U;
+
+                txSz = sercom4SPIObj.txSize;
+
+                if(sercom4SPIObj.txCount < txSz)
+                {
+                    SERCOM4_REGS->SPIM.SERCOM_DATA = *((uint16_t*)sercom4SPIObj.txBuffer) & SERCOM_SPIM_DATA_Msk;
+
+                    sercom4SPIObj.txCount++;
+                }
+                else if(sercom4SPIObj.dummySize > 0U)
+                {
                     SERCOM4_REGS->SPIM.SERCOM_DATA = 0xFFFFU & SERCOM_SPIM_DATA_Msk;
+
+                    sercom4SPIObj.dummySize--;
                 }
-
-                dummySize--;
-            }
-            else
-            {
-                /* Do nothing */
-            }
-
-            if(rxSize == 0U)
-            {
-                /* For transmit only request, wait for DRE to become empty */
-                while((SERCOM4_REGS->SPIM.SERCOM_INTFLAG & SERCOM_SPIM_INTFLAG_DRE_Msk) != SERCOM_SPIM_INTFLAG_DRE_Msk)
+                else
                 {
                     /* Do nothing */
                 }
             }
+
+            if(rxSize > 0U)
+            {
+                /* Enable ReceiveComplete  */
+                SERCOM4_REGS->SPIM.SERCOM_INTENSET = (uint8_t)SERCOM_SPIM_INTENSET_RXC_Msk;
+            }
             else
             {
-                /* If data is read, wait for the Receiver Data Register to become full */
-                while((SERCOM4_REGS->SPIM.SERCOM_INTFLAG & SERCOM_SPIM_INTFLAG_RXC_Msk) != SERCOM_SPIM_INTFLAG_RXC_Msk)
-                {
-                    /* Do nothing */
-                }
-
-                receivedData = SERCOM4_REGS->SPIM.SERCOM_DATA;
-
-                if(rxCount < rxSize)
-                {
-                    if(dataBits == (uint32_t)SPI_DATA_BITS_8)
-                    {
-                        ((uint8_t*)pReceiveData)[rxCount++] = (uint8_t)receivedData;
-                    }
-                    else
-                    {
-                        ((uint16_t*)pReceiveData)[rxCount++] = (uint16_t)(receivedData & SERCOM_SPIM_DATA_Msk);
-                    }
-                }
+                /* Enable the DataRegisterEmpty  */
+                SERCOM4_REGS->SPIM.SERCOM_INTENSET = (uint8_t)SERCOM_SPIM_INTENSET_DRE_Msk;
             }
         }
-
-        /* Make sure no data is pending in the shift register */
-        while((SERCOM4_REGS->SPIM.SERCOM_INTFLAG & SERCOM_SPIM_INTFLAG_TXC_Msk) != SERCOM_SPIM_INTFLAG_TXC_Msk)
-        {
-            /* Do nothing */
-        }
-
-        isSuccess = true;
     }
 
-    return isSuccess;
+    return isRequestAccepted;
 }
 
 bool SERCOM4_SPI_Write(void* pTransmitData, size_t txSize)
@@ -402,3 +471,152 @@ bool SERCOM4_SPI_Read(void* pReceiveData, size_t rxSize)
     return SERCOM4_SPI_WriteRead(NULL, 0U, pReceiveData, rxSize);
 }
 
+// *****************************************************************************
+/* Function:
+    void SERCOM4_SPI_InterruptHandler(void);
+
+  Summary:
+    Handler that handles the SPI interrupts
+
+  Description:
+    This Function is called from the handler to handle the exchange based on the
+    Interrupts.
+
+  Remarks:
+    Refer plib_sercom4_spi.h file for more information.
+*/
+
+void __attribute__((used)) SERCOM4_SPI_InterruptHandler(void)
+{
+    uint32_t dataBits = 0U;
+    uint32_t receivedData = 0U;
+    static bool isLastByteTransferInProgress = false;
+    uintptr_t context = sercom4SPIObj.context;
+
+    if(SERCOM4_REGS->SPIM.SERCOM_INTENSET != 0U)
+    {
+        dataBits = SERCOM4_REGS->SPIM.SERCOM_CTRLB & SERCOM_SPIM_CTRLB_CHSIZE_Msk;
+
+        size_t rxCount = sercom4SPIObj.rxCount;
+        size_t txCount = sercom4SPIObj.txCount;
+        size_t txSize  = sercom4SPIObj.txSize;
+
+        if((SERCOM4_REGS->SPIM.SERCOM_INTFLAG & SERCOM_SPIM_INTFLAG_RXC_Msk) == SERCOM_SPIM_INTFLAG_RXC_Msk)
+        {
+            receivedData =  SERCOM4_REGS->SPIM.SERCOM_DATA;
+
+            if(rxCount < sercom4SPIObj.rxSize)
+            {
+                if(dataBits == (uint32_t)SPI_DATA_BITS_8)
+                {
+                    ((uint8_t*)sercom4SPIObj.rxBuffer)[rxCount] = (uint8_t)receivedData;
+                    rxCount++;
+                }
+                else
+                {
+                    ((uint16_t*)sercom4SPIObj.rxBuffer)[rxCount] = (uint16_t)receivedData;
+                    rxCount++;
+                }
+            }
+        }
+
+        /* If there are more words to be transmitted, then transmit them here and keep track of the count */
+        if((SERCOM4_REGS->SPIM.SERCOM_INTFLAG & SERCOM_SPIM_INTFLAG_DRE_Msk) == SERCOM_SPIM_INTFLAG_DRE_Msk)
+        {
+            /* Disable the DRE interrupt. This will be enabled back if more than
+             * one byte is pending to be transmitted */
+            SERCOM4_REGS->SPIM.SERCOM_INTENCLR = (uint8_t)SERCOM_SPIM_INTENCLR_DRE_Msk;
+
+            if(dataBits == (uint32_t)SPI_DATA_BITS_8)
+            {
+                if(txCount < sercom4SPIObj.txSize)
+                {
+                    SERCOM4_REGS->SPIM.SERCOM_DATA = ((uint8_t*)sercom4SPIObj.txBuffer)[txCount];
+                    txCount++;
+                }
+                else if(sercom4SPIObj.dummySize > 0U)
+                {
+                    SERCOM4_REGS->SPIM.SERCOM_DATA = 0xFFU;
+
+                    sercom4SPIObj.dummySize--;
+                }
+                else
+                {
+                    /* Do nothing */
+                }
+            }
+            else
+            {
+                if(txCount < sercom4SPIObj.txSize)
+                {
+                    SERCOM4_REGS->SPIM.SERCOM_DATA = ((uint16_t*)sercom4SPIObj.txBuffer)[txCount];
+                    txCount++;
+                }
+                else if(sercom4SPIObj.dummySize > 0U)
+                {
+                    SERCOM4_REGS->SPIM.SERCOM_DATA = 0xFFFFU;
+
+                    sercom4SPIObj.dummySize--;
+                }
+                else
+                {
+                    /* Do nothing */
+                }
+            }
+
+            if((sercom4SPIObj.dummySize == 0U) && (txCount == txSize))
+            {
+                 /* At higher baud rates, the data in the shift register can be
+                 * shifted out and TXC flag can get set resulting in a
+                 * callback been given to the application with the SPI interrupt
+                 * pending with the application. This will then result in the
+                 * interrupt handler being called again with nothing to transmit.
+                 * To avoid this, a software flag is set, but
+                 * the TXC interrupt is not enabled until the very end.
+                 */
+
+                isLastByteTransferInProgress = true;
+            }
+            else if(rxCount == sercom4SPIObj.rxSize)
+            {
+                SERCOM4_REGS->SPIM.SERCOM_INTENSET = (uint8_t)SERCOM_SPIM_INTENSET_DRE_Msk;
+
+                SERCOM4_REGS->SPIM.SERCOM_INTENCLR = (uint8_t)SERCOM_SPIM_INTENCLR_RXC_Msk;
+            }
+            else
+            {
+                /* Do nothing */
+            }
+        }
+
+        sercom4SPIObj.rxCount = rxCount;
+        sercom4SPIObj.txCount = txCount;
+
+        if(((SERCOM4_REGS->SPIM.SERCOM_INTFLAG & SERCOM_SPIM_INTFLAG_TXC_Msk) == SERCOM_SPIM_INTFLAG_TXC_Msk) && (isLastByteTransferInProgress == true))
+        {
+            if(rxCount == sercom4SPIObj.rxSize)
+            {
+                sercom4SPIObj.transferIsBusy = false;
+
+                /* Disable the Data Register empty and Receive Complete Interrupt flags */
+                SERCOM4_REGS->SPIM.SERCOM_INTENCLR = (uint8_t)(SERCOM_SPIM_INTENCLR_DRE_Msk | SERCOM_SPIM_INTENCLR_RXC_Msk | SERCOM_SPIM_INTENSET_TXC_Msk);
+
+                isLastByteTransferInProgress = false;
+
+                if(sercom4SPIObj.callback != NULL)
+                {
+                    sercom4SPIObj.callback(context);
+                }
+            }
+        }
+
+        if(isLastByteTransferInProgress == true)
+        {
+            /* For the last byte transfer, the DRE interrupt is already disabled.
+             * Enable TXC interrupt to ensure no data is present in the shift
+             * register before application callback is called.
+             */
+            SERCOM4_REGS->SPIM.SERCOM_INTENSET = (uint8_t)SERCOM_SPIM_INTENSET_TXC_Msk;
+        }
+    }
+}

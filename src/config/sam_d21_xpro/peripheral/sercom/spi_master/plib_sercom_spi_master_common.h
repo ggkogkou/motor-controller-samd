@@ -22,30 +22,30 @@
 
 // DOM-IGNORE-BEGIN
 /*******************************************************************************
-* Copyright (C) 2018 Microchip Technology Inc. and its subsidiaries.
-*
-* Subject to your compliance with these terms, you may use Microchip software
-* and any derivatives exclusively with Microchip products. It is your
-* responsibility to comply with third party license terms applicable to your
-* use of third party software (including open source software) that may
-* accompany Microchip software.
-*
-* THIS SOFTWARE IS SUPPLIED BY MICROCHIP "AS IS". NO WARRANTIES, WHETHER
-* EXPRESS, IMPLIED OR STATUTORY, APPLY TO THIS SOFTWARE, INCLUDING ANY IMPLIED
-* WARRANTIES OF NON-INFRINGEMENT, MERCHANTABILITY, AND FITNESS FOR A
-* PARTICULAR PURPOSE.
-*
-* IN NO EVENT WILL MICROCHIP BE LIABLE FOR ANY INDIRECT, SPECIAL, PUNITIVE,
-* INCIDENTAL OR CONSEQUENTIAL LOSS, DAMAGE, COST OR EXPENSE OF ANY KIND
-* WHATSOEVER RELATED TO THE SOFTWARE, HOWEVER CAUSED, EVEN IF MICROCHIP HAS
-* BEEN ADVISED OF THE POSSIBILITY OR THE DAMAGES ARE FORESEEABLE. TO THE
-* FULLEST EXTENT ALLOWED BY LAW, MICROCHIP'S TOTAL LIABILITY ON ALL CLAIMS IN
-* ANY WAY RELATED TO THIS SOFTWARE WILL NOT EXCEED THE AMOUNT OF FEES, IF ANY,
-* THAT YOU HAVE PAID DIRECTLY TO MICROCHIP FOR THIS SOFTWARE.
-*******************************************************************************/
+ * Copyright (C) 2018 Microchip Technology Inc. and its subsidiaries.
+ *
+ * Subject to your compliance with these terms, you may use Microchip software
+ * and any derivatives exclusively with Microchip products. It is your
+ * responsibility to comply with third party license terms applicable to your
+ * use of third party software (including open source software) that may
+ * accompany Microchip software.
+ *
+ * THIS SOFTWARE IS SUPPLIED BY MICROCHIP "AS IS". NO WARRANTIES, WHETHER
+ * EXPRESS, IMPLIED OR STATUTORY, APPLY TO THIS SOFTWARE, INCLUDING ANY IMPLIED
+ * WARRANTIES OF NON-INFRINGEMENT, MERCHANTABILITY, AND FITNESS FOR A
+ * PARTICULAR PURPOSE.
+ *
+ * IN NO EVENT WILL MICROCHIP BE LIABLE FOR ANY INDIRECT, SPECIAL, PUNITIVE,
+ * INCIDENTAL OR CONSEQUENTIAL LOSS, DAMAGE, COST OR EXPENSE OF ANY KIND
+ * WHATSOEVER RELATED TO THE SOFTWARE, HOWEVER CAUSED, EVEN IF MICROCHIP HAS
+ * BEEN ADVISED OF THE POSSIBILITY OR THE DAMAGES ARE FORESEEABLE. TO THE
+ * FULLEST EXTENT ALLOWED BY LAW, MICROCHIP'S TOTAL LIABILITY ON ALL CLAIMS IN
+ * ANY WAY RELATED TO THIS SOFTWARE WILL NOT EXCEED THE AMOUNT OF FEES, IF ANY,
+ * THAT YOU HAVE PAID DIRECTLY TO MICROCHIP FOR THIS SOFTWARE.
+ *******************************************************************************/
 // DOM-IGNORE-END
 
-#ifndef PLIB_SERCOM_SPI_MASTER_COMMON_H  // Guards against multiple inclusion
+#ifndef PLIB_SERCOM_SPI_MASTER_COMMON_H // Guards against multiple inclusion
 #define PLIB_SERCOM_SPI_MASTER_COMMON_H
 
 // *****************************************************************************
@@ -54,15 +54,15 @@
 // *****************************************************************************
 // *****************************************************************************
 
-#include <stdint.h>
-#include <stddef.h>
-#include <stdbool.h>
 #include <device.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
 // DOM-IGNORE-BEGIN
 #ifdef __cplusplus // Provide C++ Compatibility
 
-    extern "C" {
+extern "C" {
 
 #endif
 // DOM-IGNORE-END
@@ -86,14 +86,13 @@
     None.
 */
 
-typedef enum
-{
+typedef enum {
         SPI_CLOCK_PHASE_LEADING_EDGE = SERCOM_SPIM_CTRLA_CPHA_LEADING_EDGE,
-    SPI_CLOCK_PHASE_TRAILING_EDGE = SERCOM_SPIM_CTRLA_CPHA_TRAILING_EDGE,
+        SPI_CLOCK_PHASE_TRAILING_EDGE = SERCOM_SPIM_CTRLA_CPHA_TRAILING_EDGE,
 
 
-    /* Force the compiler to reserve 32-bit space for each enum value */
-    SPI_CLOCK_PHASE_INVALID = 0xFFFFFFFFU
+        /* Force the compiler to reserve 32-bit space for each enum value */
+        SPI_CLOCK_PHASE_INVALID = 0xFFFFFFFFU
 
 } SPI_CLOCK_PHASE;
 
@@ -110,14 +109,13 @@ typedef enum
     None.
 */
 
-typedef enum
-{
-         SPI_CLOCK_POLARITY_IDLE_LOW = SERCOM_SPIM_CTRLA_CPOL_IDLE_LOW,
-    SPI_CLOCK_POLARITY_IDLE_HIGH = SERCOM_SPIM_CTRLA_CPOL_IDLE_HIGH,
+typedef enum {
+        SPI_CLOCK_POLARITY_IDLE_LOW = SERCOM_SPIM_CTRLA_CPOL_IDLE_LOW,
+        SPI_CLOCK_POLARITY_IDLE_HIGH = SERCOM_SPIM_CTRLA_CPOL_IDLE_HIGH,
 
 
-    /* Force the compiler to reserve 32-bit space for each enum value */
-    SPI_CLOCK_POLARITY_INVALID = 0xFFFFFFFFU
+        /* Force the compiler to reserve 32-bit space for each enum value */
+        SPI_CLOCK_POLARITY_INVALID = 0xFFFFFFFFU
 
 } SPI_CLOCK_POLARITY;
 
@@ -135,14 +133,13 @@ typedef enum
     memory location.
 */
 
-typedef enum
-{
+typedef enum {
         SPI_DATA_BITS_8 = SERCOM_SPIM_CTRLB_CHSIZE_8_BIT,
-    SPI_DATA_BITS_9 = SERCOM_SPIM_CTRLB_CHSIZE_9_BIT,
+        SPI_DATA_BITS_9 = SERCOM_SPIM_CTRLB_CHSIZE_9_BIT,
 
 
-    /* Force the compiler to reserve 32-bit space for each enum value */
-    SPI_DATA_BITS_INVALID = 0xFFFFFFFFU
+        /* Force the compiler to reserve 32-bit space for each enum value */
+        SPI_DATA_BITS_INVALID = 0xFFFFFFFFU
 
 } SPI_DATA_BITS;
 
@@ -160,19 +157,18 @@ typedef enum
     None.
 */
 
-typedef struct
-{
-    /* Baud Rate or clock frequency */
-    uint32_t            clockFrequency;
+typedef struct {
+        /* Baud Rate or clock frequency */
+        uint32_t clockFrequency;
 
-    /* Clock Phase */
-    SPI_CLOCK_PHASE     clockPhase;
+        /* Clock Phase */
+        SPI_CLOCK_PHASE clockPhase;
 
-    /* Clock Polarity */
-    SPI_CLOCK_POLARITY  clockPolarity;
+        /* Clock Polarity */
+        SPI_CLOCK_POLARITY clockPolarity;
 
-    /* Number of bits per transfer */
-    SPI_DATA_BITS       dataBits;
+        /* Number of bits per transfer */
+        SPI_DATA_BITS dataBits;
 
 } SPI_TRANSFER_SETUP;
 
@@ -254,43 +250,41 @@ typedef void (*SERCOM_SPI_CALLBACK)(uintptr_t context);
     None.
 */
 
-typedef struct
-{
-    /* Pointer to the transmitter buffer */
-    void *                   txBuffer;
+typedef struct {
+        /* Pointer to the transmitter buffer */
+        void* txBuffer;
 
-    /* Pointer to the received buffer */
-    void *                   rxBuffer;
+        /* Pointer to the received buffer */
+        void* rxBuffer;
 
-    size_t                   txSize;
+        size_t txSize;
 
-    size_t                   rxSize;
+        size_t rxSize;
 
-    size_t                   dummySize;
+        size_t dummySize;
 
-    /* Size of the receive processed exchange size */
-    size_t                   rxCount;
+        /* Size of the receive processed exchange size */
+        size_t rxCount;
 
-    /* Size of the transmit processed exchange size */
-    size_t                   txCount;
+        /* Size of the transmit processed exchange size */
+        size_t txCount;
 
-    /* Exchange busy status of the SPI */
-    bool                     transferIsBusy;
+        /* Exchange busy status of the SPI */
+        bool transferIsBusy;
 
-    /* SPI Event handler */
-    SERCOM_SPI_CALLBACK      callback;
+        /* SPI Event handler */
+        SERCOM_SPI_CALLBACK callback;
 
-    /* Context */
-    uintptr_t                context;
+        /* Context */
+        uintptr_t context;
 
-    uint32_t                 status;
+        uint32_t status;
 
 } SPI_OBJECT;
 
 #ifdef __cplusplus // Provide C++ Compatibility
-
-    }
+}
 
 #endif
 
-#endif //PLIB_SERCOM_SPI_MASTER_COMMON_H
+#endif // PLIB_SERCOM_SPI_MASTER_COMMON_H

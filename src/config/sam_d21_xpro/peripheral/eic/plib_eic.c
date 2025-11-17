@@ -22,27 +22,27 @@
 
 // DOM-IGNORE-BEGIN
 /*******************************************************************************
-* Copyright (C) 2018 Microchip Technology Inc. and its subsidiaries.
-*
-* Subject to your compliance with these terms, you may use Microchip software
-* and any derivatives exclusively with Microchip products. It is your
-* responsibility to comply with third party license terms applicable to your
-* use of third party software (including open source software) that may
-* accompany Microchip software.
-*
-* THIS SOFTWARE IS SUPPLIED BY MICROCHIP "AS IS". NO WARRANTIES, WHETHER
-* EXPRESS, IMPLIED OR STATUTORY, APPLY TO THIS SOFTWARE, INCLUDING ANY IMPLIED
-* WARRANTIES OF NON-INFRINGEMENT, MERCHANTABILITY, AND FITNESS FOR A
-* PARTICULAR PURPOSE.
-*
-* IN NO EVENT WILL MICROCHIP BE LIABLE FOR ANY INDIRECT, SPECIAL, PUNITIVE,
-* INCIDENTAL OR CONSEQUENTIAL LOSS, DAMAGE, COST OR EXPENSE OF ANY KIND
-* WHATSOEVER RELATED TO THE SOFTWARE, HOWEVER CAUSED, EVEN IF MICROCHIP HAS
-* BEEN ADVISED OF THE POSSIBILITY OR THE DAMAGES ARE FORESEEABLE. TO THE
-* FULLEST EXTENT ALLOWED BY LAW, MICROCHIP'S TOTAL LIABILITY ON ALL CLAIMS IN
-* ANY WAY RELATED TO THIS SOFTWARE WILL NOT EXCEED THE AMOUNT OF FEES, IF ANY,
-* THAT YOU HAVE PAID DIRECTLY TO MICROCHIP FOR THIS SOFTWARE.
-*******************************************************************************/
+ * Copyright (C) 2018 Microchip Technology Inc. and its subsidiaries.
+ *
+ * Subject to your compliance with these terms, you may use Microchip software
+ * and any derivatives exclusively with Microchip products. It is your
+ * responsibility to comply with third party license terms applicable to your
+ * use of third party software (including open source software) that may
+ * accompany Microchip software.
+ *
+ * THIS SOFTWARE IS SUPPLIED BY MICROCHIP "AS IS". NO WARRANTIES, WHETHER
+ * EXPRESS, IMPLIED OR STATUTORY, APPLY TO THIS SOFTWARE, INCLUDING ANY IMPLIED
+ * WARRANTIES OF NON-INFRINGEMENT, MERCHANTABILITY, AND FITNESS FOR A
+ * PARTICULAR PURPOSE.
+ *
+ * IN NO EVENT WILL MICROCHIP BE LIABLE FOR ANY INDIRECT, SPECIAL, PUNITIVE,
+ * INCIDENTAL OR CONSEQUENTIAL LOSS, DAMAGE, COST OR EXPENSE OF ANY KIND
+ * WHATSOEVER RELATED TO THE SOFTWARE, HOWEVER CAUSED, EVEN IF MICROCHIP HAS
+ * BEEN ADVISED OF THE POSSIBILITY OR THE DAMAGES ARE FORESEEABLE. TO THE
+ * FULLEST EXTENT ALLOWED BY LAW, MICROCHIP'S TOTAL LIABILITY ON ALL CLAIMS IN
+ * ANY WAY RELATED TO THIS SOFTWARE WILL NOT EXCEED THE AMOUNT OF FEES, IF ANY,
+ * THAT YOU HAVE PAID DIRECTLY TO MICROCHIP FOR THIS SOFTWARE.
+ *******************************************************************************/
 // DOM-IGNORE-END
 
 // *****************************************************************************
@@ -51,7 +51,7 @@
 // *****************************************************************************
 // *****************************************************************************
 /* This section lists the other files that are included in this file.
-*/
+ */
 
 #include "plib_eic.h"
 #include "interrupts.h"
@@ -62,49 +62,35 @@
 // *****************************************************************************
 // *****************************************************************************
 
-void EIC_Initialize(void)
-{
-    /* Reset all registers in the EIC module to their initial state and
-       EIC will be disabled. */
-    EIC_REGS->EIC_CTRL |= EIC_CTRL_SWRST_Msk;
+void EIC_Initialize(void) {
+        /* Reset all registers in the EIC module to their initial state and
+           EIC will be disabled. */
+        EIC_REGS->EIC_CTRL |= EIC_CTRL_SWRST_Msk;
 
-    while((EIC_REGS->EIC_STATUS & EIC_STATUS_SYNCBUSY_Msk) == EIC_STATUS_SYNCBUSY_Msk)
-    {
-        /* Wait for sync */
-    }
+        while ((EIC_REGS->EIC_STATUS & EIC_STATUS_SYNCBUSY_Msk) == EIC_STATUS_SYNCBUSY_Msk) {
+                /* Wait for sync */
+        }
 
-    /* NMI Control register */
+        /* NMI Control register */
 
-    /* Interrupt sense type and filter control for EXTINT channels 0 to 7 */
-    EIC_REGS->EIC_CONFIG[0] = EIC_CONFIG_SENSE0_HIGH  |
-                              EIC_CONFIG_SENSE1_NONE  |
-                              EIC_CONFIG_SENSE2_NONE  |
-                              EIC_CONFIG_SENSE3_NONE  |
-                              EIC_CONFIG_SENSE4_NONE  |
-                              EIC_CONFIG_SENSE5_NONE  |
-                              EIC_CONFIG_SENSE6_NONE  |
-                              EIC_CONFIG_SENSE7_NONE ;
+        /* Interrupt sense type and filter control for EXTINT channels 0 to 7 */
+        EIC_REGS->EIC_CONFIG[0] = EIC_CONFIG_SENSE0_HIGH | EIC_CONFIG_SENSE1_NONE | EIC_CONFIG_SENSE2_NONE |
+                EIC_CONFIG_SENSE3_NONE | EIC_CONFIG_SENSE4_NONE | EIC_CONFIG_SENSE5_NONE | EIC_CONFIG_SENSE6_NONE |
+                EIC_CONFIG_SENSE7_NONE;
 
-    /* Interrupt sense type and filter control for EXTINT channels 8 to 15 */
-    EIC_REGS->EIC_CONFIG[1] = EIC_CONFIG_SENSE0_NONE  |
-                              EIC_CONFIG_SENSE1_NONE  |
-                              EIC_CONFIG_SENSE2_NONE  |
-                              EIC_CONFIG_SENSE3_NONE  |
-                              EIC_CONFIG_SENSE4_NONE  |
-                              EIC_CONFIG_SENSE5_NONE  |
-                              EIC_CONFIG_SENSE6_NONE  |
-                              EIC_CONFIG_SENSE7_NONE ;
+        /* Interrupt sense type and filter control for EXTINT channels 8 to 15 */
+        EIC_REGS->EIC_CONFIG[1] = EIC_CONFIG_SENSE0_NONE | EIC_CONFIG_SENSE1_NONE | EIC_CONFIG_SENSE2_NONE |
+                EIC_CONFIG_SENSE3_NONE | EIC_CONFIG_SENSE4_NONE | EIC_CONFIG_SENSE5_NONE | EIC_CONFIG_SENSE6_NONE |
+                EIC_CONFIG_SENSE7_NONE;
 
-    /* Event Control Output enable */
-    EIC_REGS->EIC_EVCTRL = 0x1;
+        /* Event Control Output enable */
+        EIC_REGS->EIC_EVCTRL = 0x1;
 
 
-    /* Enable the EIC */
-    EIC_REGS->EIC_CTRL |= EIC_CTRL_ENABLE_Msk;
+        /* Enable the EIC */
+        EIC_REGS->EIC_CTRL |= EIC_CTRL_ENABLE_Msk;
 
-    while((EIC_REGS->EIC_STATUS & EIC_STATUS_SYNCBUSY_Msk) == EIC_STATUS_SYNCBUSY_Msk)
-    {
-        /* Wait for sync */
-    }
+        while ((EIC_REGS->EIC_STATUS & EIC_STATUS_SYNCBUSY_Msk) == EIC_STATUS_SYNCBUSY_Msk) {
+                /* Wait for sync */
+        }
 }
-

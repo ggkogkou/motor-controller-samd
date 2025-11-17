@@ -99,11 +99,11 @@ include_directories(
 set(SOURCES
         # Main application
         src/main.cpp
-        src/logger.c
         src/svpwm.cpp
-        src/math_utils.cpp
         src/pid.cpp
         src/logger.cpp
+        src/pmsm_controller.cpp
+        src/spi_buffer.cpp
 
         # System initialization and configuration
         src/config/sam_d21_xpro/initialization.c

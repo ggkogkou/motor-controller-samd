@@ -26,10 +26,10 @@
 
 
 /* ========== Instance Parameter definitions for USB peripheral ========== */
-#define USB_EPT_NBR                              (8)        /* Number of USB end points (obsolete) */
-#define USB_EPT_NUM                              (8)        /* Number of USB end points */
-#define USB_GCLK_ID                              (6)        /* Index of Generic Clock */
-#define USB_PIPE_NUM                             (8)        /* Number of USB pipes */
-#define USB_INSTANCE_ID                          (37)       
+#define USB_EPT_NBR (8) /* Number of USB end points (obsolete) */
+#define USB_EPT_NUM (8) /* Number of USB end points */
+#define USB_GCLK_ID (6) /* Index of Generic Clock */
+#define USB_PIPE_NUM (8) /* Number of USB pipes */
+#define USB_INSTANCE_ID (37)
 
 #endif /* _SAMD21_USB_INSTANCE_ */

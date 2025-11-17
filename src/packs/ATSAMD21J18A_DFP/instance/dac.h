@@ -26,8 +26,8 @@
 
 
 /* ========== Instance Parameter definitions for DAC peripheral ========== */
-#define DAC_DMAC_ID_EMPTY                        (40)       /* Index of DMAC EMPTY trigger */
-#define DAC_GCLK_ID                              (33)       /* Index of Generic Clock */
-#define DAC_INSTANCE_ID                          (82)       
+#define DAC_DMAC_ID_EMPTY (40) /* Index of DMAC EMPTY trigger */
+#define DAC_GCLK_ID (33) /* Index of Generic Clock */
+#define DAC_INSTANCE_ID (82)
 
 #endif /* _SAMD21_DAC_INSTANCE_ */

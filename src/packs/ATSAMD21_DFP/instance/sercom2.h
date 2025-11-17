@@ -26,11 +26,11 @@
 
 
 /* ========== Instance Parameter definitions for SERCOM2 peripheral ========== */
-#define SERCOM2_DMAC_ID_RX                       (5)        /* Index of DMA RX trigger */
-#define SERCOM2_DMAC_ID_TX                       (6)        /* Index of DMA TX trigger */
-#define SERCOM2_GCLK_ID_CORE                     (22)       /* Index of Generic Clock for Core */
-#define SERCOM2_GCLK_ID_SLOW                     (19)       /* Index of Generic Clock for SMbus timeout */
-#define SERCOM2_INT_MSB                          (6)        
-#define SERCOM2_INSTANCE_ID                      (68)       
+#define SERCOM2_DMAC_ID_RX (5) /* Index of DMA RX trigger */
+#define SERCOM2_DMAC_ID_TX (6) /* Index of DMA TX trigger */
+#define SERCOM2_GCLK_ID_CORE (22) /* Index of Generic Clock for Core */
+#define SERCOM2_GCLK_ID_SLOW (19) /* Index of Generic Clock for SMbus timeout */
+#define SERCOM2_INT_MSB (6)
+#define SERCOM2_INSTANCE_ID (68)
 
 #endif /* _SAMD21_SERCOM2_INSTANCE_ */

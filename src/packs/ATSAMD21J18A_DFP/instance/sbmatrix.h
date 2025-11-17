@@ -26,18 +26,18 @@
 
 
 /* ========== Instance Parameter definitions for SBMATRIX peripheral ========== */
-#define SBMATRIX_MASTER_NUM                      (3)        
-#define SBMATRIX_MASTER_CM0PLUS                  (0)        
-#define SBMATRIX_MASTER_DSU                      (1)        
-#define SBMATRIX_MASTER_DMAC                     (2)        
-#define SBMATRIX_SLAVE_NUM                       (7)        
-#define SBMATRIX_SLAVE_FLASH                     (0)        
-#define SBMATRIX_SLAVE_HPB0                      (1)        
-#define SBMATRIX_SLAVE_HPB1                      (2)        
-#define SBMATRIX_SLAVE_HPB2                      (3)        
-#define SBMATRIX_SLAVE_HMCRAMC0                  (4)        
-#define SBMATRIX_SLAVE_HMCRAMC0_ALT0             (5)        
-#define SBMATRIX_SLAVE_HMCRAMC0_ALT1             (6)        
-#define SBMATRIX_INSTANCE_ID                     (39)       
+#define SBMATRIX_MASTER_NUM (3)
+#define SBMATRIX_MASTER_CM0PLUS (0)
+#define SBMATRIX_MASTER_DSU (1)
+#define SBMATRIX_MASTER_DMAC (2)
+#define SBMATRIX_SLAVE_NUM (7)
+#define SBMATRIX_SLAVE_FLASH (0)
+#define SBMATRIX_SLAVE_HPB0 (1)
+#define SBMATRIX_SLAVE_HPB1 (2)
+#define SBMATRIX_SLAVE_HPB2 (3)
+#define SBMATRIX_SLAVE_HMCRAMC0 (4)
+#define SBMATRIX_SLAVE_HMCRAMC0_ALT0 (5)
+#define SBMATRIX_SLAVE_HMCRAMC0_ALT1 (6)
+#define SBMATRIX_INSTANCE_ID (39)
 
 #endif /* _SAMD21_SBMATRIX_INSTANCE_ */

@@ -26,11 +26,11 @@
 
 
 /* ========== Instance Parameter definitions for PORT peripheral ========== */
-#define PORT_BITS                                (84)       /* Number of PORT pins */
-#define PORT_DRVSTR                              (1)        /* DRVSTR supported */
-#define PORT_GROUPS                              (2)        /* Number of 32-bit PORT groups */
-#define PORT_ODRAIN                              (0)        /* ODRAIN supported */
-#define PORT_SLEWLIM                             (0)        /* SLEWLIM supported */
-#define PORT_INSTANCE_ID                         (35)       
+#define PORT_BITS (84) /* Number of PORT pins */
+#define PORT_DRVSTR (1) /* DRVSTR supported */
+#define PORT_GROUPS (2) /* Number of 32-bit PORT groups */
+#define PORT_ODRAIN (0) /* ODRAIN supported */
+#define PORT_SLEWLIM (0) /* SLEWLIM supported */
+#define PORT_INSTANCE_ID (35)
 
 #endif /* _SAMD21_PORT_INSTANCE_ */

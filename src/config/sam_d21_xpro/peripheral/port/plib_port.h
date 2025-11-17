@@ -102,6 +102,10 @@
 #define TCC0_WO2_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 10U)) & 0x01U)
 #define TCC0_WO2_PIN                  PORT_PIN_PA10
 
+/*** Macros for TCC0_WO3 pin ***/
+#define TCC0_WO3_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 11U)) & 0x01U)
+#define TCC0_WO3_PIN                  PORT_PIN_PA11
+
 /*** Macros for SPI_MOSI pin ***/
 #define SPI_MOSI_Get()               (((PORT_REGS->GROUP[1].PORT_IN >> 10U)) & 0x01U)
 #define SPI_MOSI_PIN                  PORT_PIN_PB10
@@ -113,6 +117,10 @@
 /*** Macros for SPI_MISO pin ***/
 #define SPI_MISO_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 12U)) & 0x01U)
 #define SPI_MISO_PIN                  PORT_PIN_PA12
+
+/*** Macros for TCC0_WO7 pin ***/
+#define TCC0_WO7_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 13U)) & 0x01U)
+#define TCC0_WO7_PIN                  PORT_PIN_PA13
 
 /*** Macros for TCC0_WO5 pin ***/
 #define TCC0_WO5_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 15U)) & 0x01U)
@@ -165,6 +173,15 @@
 #define DRV8316_CS_InputEnable()       (PORT_REGS->GROUP[1].PORT_DIRCLR = ((uint32_t)1U << 23U))
 #define DRV8316_CS_Get()               (((PORT_REGS->GROUP[1].PORT_IN >> 23U)) & 0x01U)
 #define DRV8316_CS_PIN                  PORT_PIN_PB23
+
+/*** Macros for DBG_LED pin ***/
+#define DBG_LED_Set()               (PORT_REGS->GROUP[0].PORT_OUTSET = ((uint32_t)1U << 27U))
+#define DBG_LED_Clear()             (PORT_REGS->GROUP[0].PORT_OUTCLR = ((uint32_t)1U << 27U))
+#define DBG_LED_Toggle()            (PORT_REGS->GROUP[0].PORT_OUTTGL = ((uint32_t)1U << 27U))
+#define DBG_LED_OutputEnable()      (PORT_REGS->GROUP[0].PORT_DIRSET = ((uint32_t)1U << 27U))
+#define DBG_LED_InputEnable()       (PORT_REGS->GROUP[0].PORT_DIRCLR = ((uint32_t)1U << 27U))
+#define DBG_LED_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 27U)) & 0x01U)
+#define DBG_LED_PIN                  PORT_PIN_PA27
 
 // *****************************************************************************
 /* PORT Group

@@ -26,6 +26,6 @@
 
 
 /* ========== Instance Parameter definitions for DSU peripheral ========== */
-#define DSU_INSTANCE_ID                          (33)       
+#define DSU_INSTANCE_ID (33)
 
 #endif /* _SAMD21_DSU_INSTANCE_ */

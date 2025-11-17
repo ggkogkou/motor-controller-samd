@@ -264,7 +264,7 @@ __packed struct  __iar_u32 { uint32_t v; };
 #endif
 
 #ifndef __VECTOR_TABLE_ATTRIBUTE
-#define __VECTOR_TABLE_ATTRIBUTE  @".intvec"
+#define __VECTOR_TABLE_ATTRIBUTE  @ ".intvec"
 #endif
 
 #if defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U)

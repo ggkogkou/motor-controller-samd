@@ -26,7 +26,7 @@
 
 
 /* ========== Instance Parameter definitions for WDT peripheral ========== */
-#define WDT_GCLK_ID                              (3)        /* Index of Generic Clock */
-#define WDT_INSTANCE_ID                          (4)        
+#define WDT_GCLK_ID (3) /* Index of Generic Clock */
+#define WDT_INSTANCE_ID (4)
 
 #endif /* _SAMD21_WDT_INSTANCE_ */

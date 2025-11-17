@@ -2,10 +2,10 @@
 
 namespace SpaceVectorModulation {
 
-    DutyCycles SVPWM::compute(float vAlpha, float vBeta) const {
+DutyCycles SVPWM::compute(float vAlpha, float vBeta) const {
         float Va = vAlpha;
-        float Vb = - 0.5f * vAlpha + MathUtilities::SQRT3_2 * vBeta;
-        float Vc = - 0.5f * vAlpha - MathUtilities::SQRT3_2 * vBeta;
+        float Vb = -0.5f * vAlpha + MathUtilities::SQRT3_2 * vBeta;
+        float Vc = -0.5f * vAlpha - MathUtilities::SQRT3_2 * vBeta;
 
         /// TODO: The ZSM categorization
         /// TODO: Log/flag when duty cycle saturates 0 or 1 (for anti-windup)
@@ -14,7 +14,7 @@ namespace SpaceVectorModulation {
         float zeroSequenceComponent = 0.0f;
 
         if (zeroSequenceModulation == ZeroSequenceModulationType::MIDPOINT_CLAMP)
-            zeroSequenceComponent -= 0.5f * (V_Min + V_Max);
+                zeroSequenceComponent -= 0.5f * (V_Min + V_Max);
 
         Va = Va + zeroSequenceComponent;
         Vb = Vb + zeroSequenceComponent;
@@ -22,9 +22,9 @@ namespace SpaceVectorModulation {
 
         const float invVDC = 1.0f / dcLinkVoltage;
         auto convertVoltageToDutyCycle = [&](float voltage) -> float {
-            constexpr float MinimumDutyCycle = 0.0f;
-            constexpr float MaximumDutyCycle = 1.0f;
-            return std::clamp(0.5f + (voltage * invVDC), MinimumDutyCycle, MaximumDutyCycle);
+                constexpr float MinimumDutyCycle = 0.0f;
+                constexpr float MaximumDutyCycle = 1.0f;
+                return std::clamp(0.5f + (voltage * invVDC), MinimumDutyCycle, MaximumDutyCycle);
         };
 
         const float DutyCycleA = convertVoltageToDutyCycle(Va);
@@ -32,6 +32,6 @@ namespace SpaceVectorModulation {
         const float DutyCycleC = convertVoltageToDutyCycle(Vc);
 
         return DutyCycles{DutyCycleA, DutyCycleB, DutyCycleC};
-    }
+}
 
-} /// namespace SpaceVectorModulation
+} // namespace SpaceVectorModulation
