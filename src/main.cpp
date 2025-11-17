@@ -196,6 +196,13 @@ void peripherals_init() {
         __enable_irq();
 }
 
+void debug_led_task(PORT_PIN dbg_led) {
+        SYSTICK_DelayMs(1000);
+        PORT_PinWrite(dbg_led, true);
+        SYSTICK_DelayMs(1000);
+        PORT_PinWrite(dbg_led, false);
+}
+
 [[noreturn]] int main() {
         SYS_Initialize(nullptr);
 
@@ -203,19 +210,21 @@ void peripherals_init() {
 
         SPI_Buffer::init();
 
-        peripherals_init();
+        // peripherals_init();
+        //
+        // SPARE_GPIO_Clear();
+        // drv8316.unlockAllRegisters();
+        // drv8316.setPWMMode(DRV8316::PWM_Mode::MODE_3x);
+        // drv8316.setCurrentSenseAmplifierGain(DRV8316::CurrentSenseGain::CSA_GAIN_0_30);
+        //
+        // while (not drv8316.deviceIsReady()) { }
+        //
+        // encoder.request(AS5047P::RegisterAddress::ANGLEUNC);
+        //
+        // SYSTICK_DelayUs(5);
 
-        SPARE_GPIO_Clear();
-        drv8316.unlockAllRegisters();
-        drv8316.setPWMMode(DRV8316::PWM_Mode::MODE_3x);
-        drv8316.setCurrentSenseAmplifierGain(DRV8316::CurrentSenseGain::CSA_GAIN_0_30);
-
-        while (not drv8316.deviceIsReady()) { }
-
-        encoder.request(AS5047P::RegisterAddress::ANGLEUNC);
-
-        SYSTICK_DelayUs(5);
-
-        while (true) { }
+        while (true) {
+                debug_led_task(DBG_LED_PIN);
+        }
 
 }
