@@ -64,9 +64,9 @@ bool PMSM_Controller::startupCalibration(const PhaseDutyCycles& dutyCycles, floa
         }
 
         if (calibrationState == CalibrationState::DONE) {
-                if (!angleVel_) {
+                if (!velocityEstimator) {
                         const float thetaEncWrapped = std::remainderf(thetaEncoder, TWO_PI);
-                        angleVel_.emplace(thetaEncWrapped, 0.010f);
+                        velocityEstimator.emplace(thetaEncWrapped, 0.010f);
                 }
 
                 return true;
@@ -140,16 +140,16 @@ void PMSM_Controller::update(const PhaseCurrents& phaseCurrents, const PhaseDuty
 }
 
 void PMSM_Controller::updateVelocity(const PhaseCurrents& phaseCurrents, const PhaseDutyCycles& dutyCycles, float thetaEncoder) {
-        if (!angleVel_)
+        if (!velocityEstimator)
                 return;
 
-        angleVel_->update(std::remainderf(thetaEncoder, TWO_PI), dT);
+        velocityEstimator->update(std::remainderf(thetaEncoder, TWO_PI), dT);
 
         const auto ThetaEl =
                 wrapAngle(dirSign * PMSM_Config::MotorPolePairs * thetaEncoder - ZeroOffsetElectricalAngle);
         const auto dqFrameCurrents = performClarkeParkTransforms(phaseCurrents.Ia, phaseCurrents.Ib, ThetaEl);
 
-        const float VelocityError = PMSM_Config::TargetVelocity - std::fabs(angleVel_->angularVelocity);
+        const float VelocityError = PMSM_Config::TargetVelocity - std::fabs(velocityEstimator->angularVelocity);
         const float IqRef = pidVelocity.compute(VelocityError);
 
         constexpr float IdRef = 0.0f;

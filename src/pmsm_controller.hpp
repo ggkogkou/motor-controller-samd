@@ -148,7 +148,7 @@ private:
         uint32_t timerCounter = 0;
         uint32_t neededTicks = 250; // a quarter
 
-        std::optional<AngleVelocityEstimator> angleVel_;
+        std::optional<AngleVelocityEstimator> velocityEstimator;
 
 
         float dT = 0.001f;
