@@ -145,7 +145,6 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS, uintptr_t)
 {
         static PhaseDutyCycles duty{TCC_PeriodU, TCC_PeriodV, TCC_PeriodW};
 
-        // Prime the pipeline once (first IRQ)
         static bool primed = false;
         if (!primed) {
                 (void)encoder.request(AS5047P::RegisterAddress::ANGLECOM);
@@ -153,46 +152,20 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS, uintptr_t)
                 return;
         }
 
-        // Use the latest completed sample (your driver stores it in latestRegisterRequested)
         const float thetaAlignRad = degreesToRadians(encoder.measureAngleCompensated());
 
-        // Kick the next SPI transaction only if the previous one is done
-        // (no waiting inside the ISR)
         if (not AS5047P::sensorBusy()) {
                 (void)encoder.request(AS5047P::RegisterAddress::ANGLECOM);
         }
 
-        // Startup calibration state machine
         if (!switchToCloseLoop) {
                 switchToCloseLoop = brushlessMotor.startupCalibration(duty, thetaAlignRad);
                 return;
         }
 
-        // Closed-loop (or whatever you want after startup)
         PhaseCurrents temp{};
         brushlessMotor.updateVelocity(temp, duty, thetaAlignRad);
 }
-
-// void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS, uintptr_t) {
-//         static PhaseDutyCycles duty{TCC_PeriodU, TCC_PeriodV, TCC_PeriodW};
-//
-//         if (!switchToCloseLoop) {
-//                 while (AS5047P::sensorBusy()) {
-//                 }
-//                 const float ThetaAlign = degreesToRadians(encoder.measureAngleCompensated());
-//                 encoder.request(AS5047P::RegisterAddress::ANGLECOM);
-//                 switchToCloseLoop = brushlessMotor.startupCalibration(duty, ThetaAlign);
-//                 return;
-//         }
-//
-//         encoder.request(AS5047P::RegisterAddress::ANGLECOM);
-//         while (AS5047P::sensorBusy()) { }
-//         const float theta = degreesToRadians(encoder.measureAngleCompensated());
-//
-//         PhaseCurrents temp{};
-//         brushlessMotor.updateVelocity(temp, duty, theta);
-//         // brushlessMotor.updateOpenLoop(duty);
-// }
 
 void peripherals_init() {
         __disable_irq();
