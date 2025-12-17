@@ -162,7 +162,7 @@ void PMSM_Controller::updateVelocity(const PhaseCurrents& phaseCurrents, const P
 
         limitCircle(Vd, Vq, PMSM_Config::CloseLoopVoltageLimit);
 
-        const auto AlphaBetaFrame = performInverseParkTransform(Vd, Vq, ThetaEl);
+        const auto AlphaBetaFrame = performInverseParkTransform(0, IqRef, ThetaEl);
         const auto [dA, dB, dC] = pwm.compute(AlphaBetaFrame[0], AlphaBetaFrame[1]);
 
         const auto tmpPeriodA = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dA);

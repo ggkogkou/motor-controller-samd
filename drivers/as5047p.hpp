@@ -138,10 +138,7 @@ public:
          *
          * Meant to be used when default configurations are OK or device OTP is programmed
          */
-        AS5047P() {
-                AS5047_CS_Set();
-                spiRequest.chipSelectPin = AS5047_CS_PIN;
-        }
+        AS5047P();
 
         /**
          * Constructor that initializes the device with the user-defined configurations
@@ -232,8 +229,12 @@ public:
          */
         void readAndClearErrorFlags() const;
 
+        static bool sensorBusy();
+
 private:
         uint16_t latestRegisterRequested = 0;
+
+        inline static bool isSensorBusy = false;
 
         /**
          * @enum ERRFL_RegisterMask

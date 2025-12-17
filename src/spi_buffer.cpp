@@ -2,10 +2,10 @@
 
 namespace ATSAMD21_GGKOGKOU {
 
-void SPI_Buffer::init() { SERCOM4_SPI_CallbackRegister(&onTransferCompletion, reinterpret_cast<uintptr_t>(nullptr)); }
+void SPI_Buffer::init() { SERCOM5_SPI_CallbackRegister(&onTransferCompletion, reinterpret_cast<uintptr_t>(nullptr)); }
 
 SPI_Buffer::TransactionState SPI_Buffer::submit(const SPI_Request& job) {
-        if (SERCOM4_SPI_IsBusy() || not finished)
+        if (SERCOM5_SPI_IsBusy() || not finished)
                 return TransactionState::FAILED;
 
         finished = false;
@@ -13,7 +13,7 @@ SPI_Buffer::TransactionState SPI_Buffer::submit(const SPI_Request& job) {
 
         PORT_PinClear(job.chipSelectPin);
 
-        const auto Success = SERCOM4_SPI_WriteRead(&cachedRequest.txBuffer[0], cachedRequest.txBuffer.size(),
+        const auto Success = SERCOM5_SPI_WriteRead(&cachedRequest.txBuffer[0], cachedRequest.txBuffer.size(),
                                                    &job.rxBuffer[0], job.rxBuffer.size());
 
         if (not Success) {

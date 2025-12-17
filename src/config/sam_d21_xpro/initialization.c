@@ -141,29 +141,23 @@ void SYS_Initialize ( void* data )
 
 
 
+    TCC1_PWMInitialize();
+
     SERCOM3_USART_Initialize();
 
     NVMCTRL_Initialize( );
 
     EVSYS_Initialize();
 
-	SYSTICK_TimerInitialize();
-    SERCOM5_USART_Initialize();
+    TCC0_PWMInitialize();
 
-    SERCOM4_SPI_Initialize();
+	SYSTICK_TimerInitialize();
+    SERCOM5_SPI_Initialize();
 
     ADC_Initialize();
     EIC_Initialize();
 
     TC3_TimerInitialize();
-
-    TC4_CaptureInitialize();
-
-    TCC1_PWMInitialize();
-
-    TCC2_PWMInitialize();
-
-    TCC0_PWMInitialize();
 
 
     NVIC_Initialize();

@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include "USART_TxStream.hpp"
 #include "as5047p.hpp"
 #include "definitions.h"
 #include "drv8316.hpp"
@@ -32,9 +33,9 @@ uint32_t TCC_PeriodU = 0;
 uint32_t TCC_PeriodV = 0;
 uint32_t TCC_PeriodW = 0;
 
-inline constexpr ADC_POSINPUT ADC_InputU = ADC_POSINPUT_PIN2;
-inline constexpr ADC_POSINPUT ADC_InputV = ADC_POSINPUT_PIN3;
-inline constexpr ADC_POSINPUT ADC_InputW = ADC_POSINPUT_PIN4;
+inline constexpr ADC_POSINPUT ADC_InputU = ADC_POSINPUT_PIN3;
+inline constexpr ADC_POSINPUT ADC_InputV = ADC_POSINPUT_PIN10;
+inline constexpr ADC_POSINPUT ADC_InputW = ADC_POSINPUT_PIN11;
 
 static volatile uint16_t adcResultU = 0;
 static volatile uint16_t adcResultV = 0;
@@ -47,7 +48,7 @@ inline constexpr uint16_t ADC_VREF = 2230; // mV
 
 SVPWM svpwm{20.0f, ZeroSequenceModulationType::MIDPOINT_CLAMP};
 
-Logger logger;
+USART_TxStream logging;
 
 uint32_t period = 0;
 
@@ -57,9 +58,10 @@ void PWM_IRQ_Callback(uint32_t status, uintptr_t context) {
         (void)context;
 
         if (status & TCC_INTFLAG_OVF_Msk) {
-                TCC0_PWM24bitDutySet(TCC0_CHANNEL1, TCC_PeriodU);
-                TCC0_PWM24bitDutySet(TCC0_CHANNEL2, TCC_PeriodV);
-                TCC1_PWM24bitDutySet(TCC1_CHANNEL1, TCC_PeriodW);
+                TCC0_PWM24bitDutySet(TCC0_CHANNEL0, TCC_PeriodU);
+                TCC0_PWM24bitDutySet(TCC0_CHANNEL1, TCC_PeriodV);
+                TCC0_PWM24bitDutySet(TCC0_CHANNEL2, TCC_PeriodW);
+                TCC0_PWM24bitDutySet(TCC0_CHANNEL3, 1000);
         }
 }
 
@@ -69,23 +71,24 @@ void ADC_Callback(ADC_STATUS status, uintptr_t context) {
         if (status & ADC_INTFLAG_RESRDY_Msk) {
                 const uint16_t sample = ADC_ConversionResultGet();
 
-                if (adcScanIndex == 0)
+                if (adcScanIndex == 0u) {
                         adcResultU = sample;
-                else if (adcScanIndex == 1)
+                } else if (adcScanIndex == 7u) {
                         adcResultV = sample;
-                else
+                } else if (adcScanIndex == 8u) {
                         adcResultW = sample;
+                }
 
-                adcScanIndex = (adcScanIndex + 1u) % 3u;
+                adcScanIndex = (adcScanIndex + 1u) % 9u;
 
-                if (adcScanIndex == 0u)
+                if (adcScanIndex == 0u) {
                         adcResultsReady = true;
+                }
         }
 
         if (status & ADC_INTFLAG_OVERRUN_Msk) {
                 ADC_InterruptsClear(ADC_INTFLAG_OVERRUN_Msk);
         }
-
 }
 
 static volatile bool closedLoopControlCurrent = true;
@@ -105,7 +108,7 @@ static void get_currents_BC(float& iA, float& iB, float& iC) {
         drv8316.calculateCurrents(iA, iB, iC);
 }
 
-static void calibrateDRV8316_SOx(PhaseDutyCycles &cycles) {
+static void calibrateDRV8316_SOx(PhaseDutyCycles& cycles) {
         brushlessMotor.stopMotor(cycles);
 
         static uint32_t n = 0;
@@ -136,43 +139,60 @@ static void calibrateDRV8316_SOx(PhaseDutyCycles &cycles) {
 
 bool switchToCloseLoop = false;
 
-void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS status, uintptr_t context) {
+volatile uint8_t counter = 0;
+
+void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS, uintptr_t)
+{
         static PhaseDutyCycles duty{TCC_PeriodU, TCC_PeriodV, TCC_PeriodW};
 
-        if (not switchToCloseLoop) {
-                const float ThetaAlign = degreesToRadians(encoder.measureAngleCompensated());
-                encoder.request(AS5047P::RegisterAddress::ANGLECOM);
-                switchToCloseLoop = brushlessMotor.startupCalibration(duty, ThetaAlign);
+        // Prime the pipeline once (first IRQ)
+        static bool primed = false;
+        if (!primed) {
+                (void)encoder.request(AS5047P::RegisterAddress::ANGLECOM);
+                primed = true;
                 return;
         }
 
-        if (ongoingSOOffsetCal)
-                calibrateDRV8316_SOx(duty);
-        else if (closedLoopControlCurrent) {
-                const float ThetaMech = degreesToRadians(encoder.measureAngleCompensated());
-                encoder.request(AS5047P::RegisterAddress::ANGLECOM);
+        // Use the latest completed sample (your driver stores it in latestRegisterRequested)
+        const float thetaAlignRad = degreesToRadians(encoder.measureAngleCompensated());
 
-                static float iA = 0;
-                static float iB = 0;
-                static float iC = 0;
-
-                if (adcResultsReady) {
-                        get_currents_BC(iA, iB, iC);
-                        static PhaseCurrents phaseCurrents{};
-
-                        phaseCurrents.Ia = iA;
-                        phaseCurrents.Ib = iB;
-                        phaseCurrents.Ic = iC;
-
-                        encoder.request(AS5047P::RegisterAddress::ANGLECOM);
-
-                        // brushlessMotor.update(phaseCurrents, duty, ThetaMech);
-                        brushlessMotor.updateVelocity(phaseCurrents, duty, ThetaMech);
-
-                        encoder.request(AS5047P::RegisterAddress::ANGLECOM);
-                }
+        // Kick the next SPI transaction only if the previous one is done
+        // (no waiting inside the ISR)
+        if (not AS5047P::sensorBusy()) {
+                (void)encoder.request(AS5047P::RegisterAddress::ANGLECOM);
         }
+
+        // Startup calibration state machine
+        if (!switchToCloseLoop) {
+                switchToCloseLoop = brushlessMotor.startupCalibration(duty, thetaAlignRad);
+                return;
+        }
+
+        // Closed-loop (or whatever you want after startup)
+        PhaseCurrents temp{};
+        brushlessMotor.updateVelocity(temp, duty, thetaAlignRad);
 }
+
+// void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS, uintptr_t) {
+//         static PhaseDutyCycles duty{TCC_PeriodU, TCC_PeriodV, TCC_PeriodW};
+//
+//         if (!switchToCloseLoop) {
+//                 while (AS5047P::sensorBusy()) {
+//                 }
+//                 const float ThetaAlign = degreesToRadians(encoder.measureAngleCompensated());
+//                 encoder.request(AS5047P::RegisterAddress::ANGLECOM);
+//                 switchToCloseLoop = brushlessMotor.startupCalibration(duty, ThetaAlign);
+//                 return;
+//         }
+//
+//         encoder.request(AS5047P::RegisterAddress::ANGLECOM);
+//         while (AS5047P::sensorBusy()) { }
+//         const float theta = degreesToRadians(encoder.measureAngleCompensated());
+//
+//         PhaseCurrents temp{};
+//         brushlessMotor.updateVelocity(temp, duty, theta);
+//         // brushlessMotor.updateOpenLoop(duty);
+// }
 
 void peripherals_init() {
         __disable_irq();
@@ -183,48 +203,37 @@ void peripherals_init() {
         period = TCC0_PWM24bitPeriodGet();
 
         SYSTICK_TimerStart();
-        ADC_Enable();
+        // ADC_Enable();
 
-        ADC_CallbackRegister(ADC_Callback, 0);
+        // ADC_CallbackRegister(ADC_Callback, 0);
         TCC0_PWMCallbackRegister(PWM_IRQ_Callback, 0);
         TC3_TimerCallbackRegister(TC3_FOC_HandlerOpenLoop, 0);
 
         TCC0_PWMStart();
-        TCC1_PWMStart();
         TC3_TimerStart();
 
         __enable_irq();
 }
 
-void debug_led_task(PORT_PIN dbg_led) {
-        SYSTICK_DelayMs(1000);
-        PORT_PinWrite(dbg_led, true);
-        SYSTICK_DelayMs(1000);
-        PORT_PinWrite(dbg_led, false);
-}
-
 [[noreturn]] int main() {
         SYS_Initialize(nullptr);
-
         SYSTICK_TimerStart();
 
         SPI_Buffer::init();
+        logging.init();
+        peripherals_init();
 
-        // peripherals_init();
-        //
-        // SPARE_GPIO_Clear();
-        // drv8316.unlockAllRegisters();
-        // drv8316.setPWMMode(DRV8316::PWM_Mode::MODE_3x);
-        // drv8316.setCurrentSenseAmplifierGain(DRV8316::CurrentSenseGain::CSA_GAIN_0_30);
-        //
-        // while (not drv8316.deviceIsReady()) { }
-        //
-        // encoder.request(AS5047P::RegisterAddress::ANGLEUNC);
-        //
-        // SYSTICK_DelayUs(5);
+        encoder.request(AS5047P::RegisterAddress::ANGLECOM);
 
         while (true) {
-                debug_led_task(DBG_LED_PIN);
-        }
+                static uint8_t c = 'A';
+                logging.write(std::span(&c, 1));
+                if (++c > 'Z')
+                        c = 'A';
 
+                uint8_t eol[2] = {'\r', '\n'};
+                logging.write(std::span(eol, 2));
+
+                SYSTICK_DelayMs(500);
+        }
 }

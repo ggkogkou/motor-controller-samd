@@ -86,10 +86,6 @@
 #define FEATHER_CS_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 5U)) & 0x01U)
 #define FEATHER_CS_PIN                  PORT_PIN_PA05
 
-/*** Macros for TCC1_WO1 pin ***/
-#define TCC1_WO1_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 7U)) & 0x01U)
-#define TCC1_WO1_PIN                  PORT_PIN_PA07
-
 /*** Macros for TCC0_WO0 pin ***/
 #define TCC0_WO0_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 8U)) & 0x01U)
 #define TCC0_WO0_PIN                  PORT_PIN_PA08
@@ -106,64 +102,22 @@
 #define TCC0_WO3_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 11U)) & 0x01U)
 #define TCC0_WO3_PIN                  PORT_PIN_PA11
 
-/*** Macros for SPI_MOSI pin ***/
-#define SPI_MOSI_Get()               (((PORT_REGS->GROUP[1].PORT_IN >> 10U)) & 0x01U)
-#define SPI_MOSI_PIN                  PORT_PIN_PB10
-
-/*** Macros for SPI_SCLK pin ***/
-#define SPI_SCLK_Get()               (((PORT_REGS->GROUP[1].PORT_IN >> 11U)) & 0x01U)
-#define SPI_SCLK_PIN                  PORT_PIN_PB11
-
-/*** Macros for SPI_MISO pin ***/
-#define SPI_MISO_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 12U)) & 0x01U)
-#define SPI_MISO_PIN                  PORT_PIN_PA12
+/*** Macros for TCC0_WO5 pin ***/
+#define TCC0_WO5_Get()               (((PORT_REGS->GROUP[1].PORT_IN >> 11U)) & 0x01U)
+#define TCC0_WO5_PIN                  PORT_PIN_PB11
 
 /*** Macros for TCC0_WO7 pin ***/
 #define TCC0_WO7_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 13U)) & 0x01U)
 #define TCC0_WO7_PIN                  PORT_PIN_PA13
 
-/*** Macros for TCC0_WO5 pin ***/
-#define TCC0_WO5_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 15U)) & 0x01U)
-#define TCC0_WO5_PIN                  PORT_PIN_PA15
-
-/*** Macros for SPARE_GPIO pin ***/
-#define SPARE_GPIO_Set()               (PORT_REGS->GROUP[0].PORT_OUTSET = ((uint32_t)1U << 16U))
-#define SPARE_GPIO_Clear()             (PORT_REGS->GROUP[0].PORT_OUTCLR = ((uint32_t)1U << 16U))
-#define SPARE_GPIO_Toggle()            (PORT_REGS->GROUP[0].PORT_OUTTGL = ((uint32_t)1U << 16U))
-#define SPARE_GPIO_OutputEnable()      (PORT_REGS->GROUP[0].PORT_DIRSET = ((uint32_t)1U << 16U))
-#define SPARE_GPIO_InputEnable()       (PORT_REGS->GROUP[0].PORT_DIRCLR = ((uint32_t)1U << 16U))
-#define SPARE_GPIO_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 16U)) & 0x01U)
-#define SPARE_GPIO_PIN                  PORT_PIN_PA16
-
-/*** Macros for DEBUG_LED pin ***/
-#define DEBUG_LED_Set()               (PORT_REGS->GROUP[0].PORT_OUTSET = ((uint32_t)1U << 17U))
-#define DEBUG_LED_Clear()             (PORT_REGS->GROUP[0].PORT_OUTCLR = ((uint32_t)1U << 17U))
-#define DEBUG_LED_Toggle()            (PORT_REGS->GROUP[0].PORT_OUTTGL = ((uint32_t)1U << 17U))
-#define DEBUG_LED_OutputEnable()      (PORT_REGS->GROUP[0].PORT_DIRSET = ((uint32_t)1U << 17U))
-#define DEBUG_LED_InputEnable()       (PORT_REGS->GROUP[0].PORT_DIRCLR = ((uint32_t)1U << 17U))
-#define DEBUG_LED_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 17U)) & 0x01U)
-#define DEBUG_LED_PIN                  PORT_PIN_PA17
-
-/*** Macros for TCC0_WO6 pin ***/
-#define TCC0_WO6_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 20U)) & 0x01U)
-#define TCC0_WO6_PIN                  PORT_PIN_PA20
-
-/*** Macros for USART_USBD- pin ***/
-#define USART_USBD-_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 24U)) & 0x01U)
-#define USART_USBD-_PIN                  PORT_PIN_PA24
-
-/*** Macros for USART_USBD+ pin ***/
-#define USART_USBD+_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 25U)) & 0x01U)
-#define USART_USBD+_PIN                  PORT_PIN_PA25
-
-/*** Macros for AS5047_CS pin ***/
-#define AS5047_CS_Set()               (PORT_REGS->GROUP[1].PORT_OUTSET = ((uint32_t)1U << 22U))
-#define AS5047_CS_Clear()             (PORT_REGS->GROUP[1].PORT_OUTCLR = ((uint32_t)1U << 22U))
-#define AS5047_CS_Toggle()            (PORT_REGS->GROUP[1].PORT_OUTTGL = ((uint32_t)1U << 22U))
-#define AS5047_CS_OutputEnable()      (PORT_REGS->GROUP[1].PORT_DIRSET = ((uint32_t)1U << 22U))
-#define AS5047_CS_InputEnable()       (PORT_REGS->GROUP[1].PORT_DIRCLR = ((uint32_t)1U << 22U))
-#define AS5047_CS_Get()               (((PORT_REGS->GROUP[1].PORT_IN >> 22U)) & 0x01U)
-#define AS5047_CS_PIN                  PORT_PIN_PB22
+/*** Macros for ENCODER_CS pin ***/
+#define ENCODER_CS_Set()               (PORT_REGS->GROUP[0].PORT_OUTSET = ((uint32_t)1U << 24U))
+#define ENCODER_CS_Clear()             (PORT_REGS->GROUP[0].PORT_OUTCLR = ((uint32_t)1U << 24U))
+#define ENCODER_CS_Toggle()            (PORT_REGS->GROUP[0].PORT_OUTTGL = ((uint32_t)1U << 24U))
+#define ENCODER_CS_OutputEnable()      (PORT_REGS->GROUP[0].PORT_DIRSET = ((uint32_t)1U << 24U))
+#define ENCODER_CS_InputEnable()       (PORT_REGS->GROUP[0].PORT_DIRCLR = ((uint32_t)1U << 24U))
+#define ENCODER_CS_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 24U)) & 0x01U)
+#define ENCODER_CS_PIN                  PORT_PIN_PA24
 
 /*** Macros for DRV8316_CS pin ***/
 #define DRV8316_CS_Set()               (PORT_REGS->GROUP[1].PORT_OUTSET = ((uint32_t)1U << 23U))
@@ -182,6 +136,14 @@
 #define DBG_LED_InputEnable()       (PORT_REGS->GROUP[0].PORT_DIRCLR = ((uint32_t)1U << 27U))
 #define DBG_LED_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 27U)) & 0x01U)
 #define DBG_LED_PIN                  PORT_PIN_PA27
+
+/*** Macros for ADC_AIN10 pin ***/
+#define ADC_AIN10_Get()               (((PORT_REGS->GROUP[1].PORT_IN >> 2U)) & 0x01U)
+#define ADC_AIN10_PIN                  PORT_PIN_PB02
+
+/*** Macros for ADC_AIN11 pin ***/
+#define ADC_AIN11_Get()               (((PORT_REGS->GROUP[1].PORT_IN >> 3U)) & 0x01U)
+#define ADC_AIN11_PIN                  PORT_PIN_PB03
 
 // *****************************************************************************
 /* PORT Group

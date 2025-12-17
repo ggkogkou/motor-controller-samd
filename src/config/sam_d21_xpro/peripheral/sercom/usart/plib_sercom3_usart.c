@@ -59,7 +59,6 @@
 
 static volatile SERCOM_USART_OBJECT sercom3USARTObj;
 
-
 // *****************************************************************************
 // *****************************************************************************
 // Section: SERCOM3 USART Interface Routines
@@ -103,7 +102,7 @@ void SERCOM3_USART_Initialize(void) {
          */
 
         SERCOM3_REGS->USART_INT.SERCOM_CTRLA = SERCOM_USART_INT_CTRLA_MODE_USART_INT_CLK |
-                SERCOM_USART_INT_CTRLA_RXPO(0x0UL) | SERCOM_USART_INT_CTRLA_TXPO(0x0UL) |
+                SERCOM_USART_INT_CTRLA_RXPO(0x1UL) | SERCOM_USART_INT_CTRLA_TXPO(0x1UL) |
                 SERCOM_USART_INT_CTRLA_DORD_Msk | SERCOM_USART_INT_CTRLA_IBON_Msk | SERCOM_USART_INT_CTRLA_FORM(0x0UL) |
                 SERCOM_USART_INT_CTRLA_SAMPR(0UL);
 
@@ -124,7 +123,6 @@ void SERCOM3_USART_Initialize(void) {
         while ((SERCOM3_REGS->USART_INT.SERCOM_SYNCBUSY) != 0U) {
                 /* Do nothing */
         }
-
 
         /* Enable the UART after the configurations */
         SERCOM3_REGS->USART_INT.SERCOM_CTRLA |= SERCOM_USART_INT_CTRLA_ENABLE_Msk;
@@ -147,7 +145,6 @@ void SERCOM3_USART_Initialize(void) {
         sercom3USARTObj.txCallback = NULL;
         sercom3USARTObj.errorStatus = USART_ERROR_NONE;
 }
-
 
 uint32_t SERCOM3_USART_FrequencyGet(void) { return 48000000UL; }
 
@@ -266,7 +263,6 @@ void SERCOM3_USART_Disable(void) {
         }
 }
 
-
 void SERCOM3_USART_TransmitterEnable(void) {
         SERCOM3_REGS->USART_INT.SERCOM_CTRLB |= SERCOM_USART_INT_CTRLB_TXEN_Msk;
 
@@ -321,7 +317,6 @@ bool SERCOM3_USART_Write(void* buffer, const size_t size) {
         return writeStatus;
 }
 
-
 bool SERCOM3_USART_WriteIsBusy(void) { return sercom3USARTObj.txBusyStatus; }
 
 size_t SERCOM3_USART_WriteCountGet(void) { return sercom3USARTObj.txProcessedSize; }
@@ -331,7 +326,6 @@ void SERCOM3_USART_WriteCallbackRegister(SERCOM_USART_CALLBACK callback, uintptr
 
         sercom3USARTObj.txContext = context;
 }
-
 
 bool SERCOM3_USART_TransmitComplete(void) {
         bool transmitComplete = false;
@@ -414,7 +408,6 @@ void SERCOM3_USART_ReadCallbackRegister(SERCOM_USART_CALLBACK callback, uintptr_
         sercom3USARTObj.rxContext = context;
 }
 
-
 static void __attribute__((used)) SERCOM3_USART_ISR_ERR_Handler(void) {
         USART_ERROR errorStatus;
 
@@ -446,7 +439,6 @@ static void __attribute__((used)) SERCOM3_USART_ISR_ERR_Handler(void) {
 
 static void __attribute__((used)) SERCOM3_USART_ISR_RX_Handler(void) {
         uint16_t temp;
-
 
         if (sercom3USARTObj.rxBusyStatus == true) {
                 size_t rxSize = sercom3USARTObj.rxSize;

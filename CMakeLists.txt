@@ -104,6 +104,7 @@ set(SOURCES
         src/logger.cpp
         src/pmsm_controller.cpp
         src/spi_buffer.cpp
+        src/USART_TxStream.cpp
 
         # System initialization and configuration
         src/config/sam_d21_xpro/initialization.c
@@ -122,14 +123,10 @@ set(SOURCES
         src/config/sam_d21_xpro/peripheral/port/plib_port.c
         src/config/sam_d21_xpro/peripheral/systick/plib_systick.c
         src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom3_usart.c
-        src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom5_usart.c
-#        src/config/sam_d21_xpro/peripheral/sercom/spi_master/plib_sercom1_spi_master.c
-        src/config/sam_d21_xpro/peripheral/sercom/spi_master/plib_sercom4_spi_master.c
+        src/config/sam_d21_xpro/peripheral/sercom/spi_master/plib_sercom5_spi_master.c
         src/config/sam_d21_xpro/peripheral/tc/plib_tc3.c
-        src/config/sam_d21_xpro/peripheral/tc/plib_tc4.c
         src/config/sam_d21_xpro/peripheral/tcc/plib_tcc0.c
         src/config/sam_d21_xpro/peripheral/tcc/plib_tcc1.c
-        src/config/sam_d21_xpro/peripheral/tcc/plib_tcc2.c
 
         drivers/as5047p.cpp
         drivers/drv8316.cpp
