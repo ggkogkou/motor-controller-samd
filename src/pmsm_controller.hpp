@@ -1,10 +1,9 @@
 #pragma once
 
-#include <cmath>
 #include <cstdint>
 #include <optional>
 #include "definitions.h"
-#include "math_utils.hpp"   // contains MathUtils fixed-point transforms + LUTs
+#include "math_utils.hpp"   // MathUtils fixed-point transforms + LUTs
 #include "pid.hpp"
 #include "pid_q31.hpp"
 #include "pmsm_config.hpp"
@@ -102,15 +101,11 @@ struct AngleVelocityEstimator {
 
 class PMSM_Controller {
 public:
-        PMSM_Controller() {
-                q31pidVelocity.setGainsFloat(0.5f, 10.0f, 0.0f, 6.0f, 0.00100000005f);
-                q31pidId.setGainsFloat(0.25f, 20.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit, 0.00100000005f);
-                q31pidIq.setGainsFloat(0.35f, 50.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit, 0.00100000005f);
-        }
+        PMSM_Controller();
 
         explicit PMSM_Controller(const PMSM_Config) {}
 
-        // thetaEncoder is now raw 14-bit counts (0..16383)
+        // thetaEncoder is raw 14-bit counts (0..16383)
         void update(const PhaseCurrents& phaseCurrents, const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder);
 
         void updateVelocity(const PhaseCurrents& phaseCurrents, const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder);
@@ -131,9 +126,9 @@ private:
         SVPWM pwm{20'000, ZeroSequenceModulationType::MIDPOINT_CLAMP};
 
         /**
-         * The outer velocity control loop PI controller (float in rad/s -> outputs A)
+         * Velocity PI: error in mrad/s, output in mA
          */
-        PID<float> pidVelocity{0.5f, 10.0f, 0.0f, 6.0f, 0.001f};
+        PID<int32_t> pidVelocity{0.5f, 10.0f, 0.0f, 6000.0f, 0.001f};
 
         /**
          * Current PI controllers: inputs in mA, outputs in mV
@@ -141,15 +136,13 @@ private:
         PID<int32_t> pidId{0.25f, 20.0f, 0.0f, static_cast<float>(PMSM_Config::CloseLoopVoltageLimit * 1000.0f), 0.001f};
         PID<int32_t> pidIq{0.35f, 50.0f, 0.0f, static_cast<float>(PMSM_Config::CloseLoopVoltageLimit * 1000.0f), 0.001f};
 
+        // kept (not used here), as you already had them:
         PID_Q31 q31pidVelocity;
         PID_Q31 q31pidId;
         PID_Q31 q31pidIq;
 
-        float dirSign = 1.0f;
+        int8_t dirSign = 1; // +1 or -1
 
-        /**
-         * Represents the possible directions of rotation
-         */
         enum class Direction : int8_t {
                 CLOCKWISE = 1,
                 COUNTERCLOCKWISE = -1,
@@ -162,9 +155,6 @@ private:
 
         ControlType controlType = ControlType::OPEN_LOOP;
 
-        /**
-         * Rotor's direction; must be overrriden by the startup calbration procedures
-         */
         Direction direction = Direction::CLOCKWISE;
 
         /**
@@ -196,8 +186,13 @@ private:
         void directionCalibration(const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder);
         void encoderOffsetCalibration(const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder);
 
-        // Mechanical angle used by open-loop (raw 14-bit counts)
         uint16_t thetaMechanical14 = 0u;
+
+        // open-loop step in encoder counts per tick (computed once in ctor)
+        uint16_t openLoopStepCounts14 = 1u;
+
+        // TargetVelocity (rad/s) converted once to mrad/s
+        int32_t targetVelocity_mrad_s = 0;
 
         uint32_t pwmPeriod = 1000;
 

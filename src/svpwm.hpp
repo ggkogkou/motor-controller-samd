@@ -21,6 +21,15 @@ struct DutyCycles {
 };
 
 /**
+ * Q15 duty cycles (0..32767) where 32768 would be 1.0.
+ */
+struct DutyCyclesQ15 {
+        uint16_t dutyA_q15 = 0;
+        uint16_t dutyB_q15 = 0;
+        uint16_t dutyC_q15 = 0;
+};
+
+/**
  * Class that implements the SVPWM technique
  */
 class SVPWM {
@@ -35,6 +44,16 @@ public:
         }
 
         /**
+         * Fixed-point (preferred): returns duty in Q15.
+         *
+         * @param vAlpha (in mV)
+         * @param vBeta  (in mV)
+         */
+        [[nodiscard]] DutyCyclesQ15 computeQ15(int16_t vAlpha, int16_t vBeta) const;
+
+        /**
+         * Compatibility API: returns float duty (0..1). Internally uses computeQ15.
+         *
          * @param vAlpha (in mV)
          * @param vBeta  (in mV)
          */
