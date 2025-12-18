@@ -152,19 +152,20 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS, uintptr_t)
                 return;
         }
 
-        const float thetaAlignRad = degreesToRadians(encoder.measureAngleCompensated());
+        // ---- NEW: raw 14-bit encoder angle (0..16383) ----
+        const uint16_t theta14 = static_cast<uint16_t>(encoder.measureAngleCompensatedRaw() & 0x3FFFu);
 
         if (not AS5047P::sensorBusy()) {
                 (void)encoder.request(AS5047P::RegisterAddress::ANGLECOM);
         }
 
         if (!switchToCloseLoop) {
-                switchToCloseLoop = brushlessMotor.startupCalibration(duty, thetaAlignRad);
+                switchToCloseLoop = brushlessMotor.startupCalibration(duty, theta14);
                 return;
         }
 
         PhaseCurrents temp{};
-        brushlessMotor.updateVelocity(temp, duty, thetaAlignRad);
+        brushlessMotor.updateVelocity(temp, duty, theta14);
 }
 
 void peripherals_init() {

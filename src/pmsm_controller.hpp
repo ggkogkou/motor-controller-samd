@@ -1,9 +1,10 @@
 #pragma once
 
 #include <cmath>
+#include <cstdint>
 #include <optional>
 #include "definitions.h"
-#include "math_utils.hpp"
+#include "math_utils.hpp"   // contains MathUtils fixed-point transforms + LUTs
 #include "pid.hpp"
 #include "pid_q31.hpp"
 #include "pmsm_config.hpp"
@@ -12,7 +13,6 @@
 namespace PermanentMagnetSynchronousMotor {
 
 using namespace SpaceVectorModulation;
-using namespace MathUtilities;
 
 struct PhaseCurrents {
         float Ia = 0.0f;
@@ -29,10 +29,10 @@ struct PhaseDutyCycles {
 };
 
 struct AngleVelocityEstimator {
-        int32_t lastWrappedAngle; // mrad
-        int32_t unwrappedAngle; // mrad
-        int32_t angularVelocity; // mrad/sec
-        uint32_t filterTimeConstant; // usec
+        int32_t lastWrappedAngle;      // mrad
+        int32_t unwrappedAngle;        // mrad
+        int32_t angularVelocity;       // mrad/sec
+        uint32_t filterTimeConstant;   // usec
 
         /**
          * Usefull constants
@@ -47,7 +47,9 @@ struct AngleVelocityEstimator {
          * @param tau The change of time dT (in μsec)
          */
         explicit AngleVelocityEstimator(int32_t initialWrappedAngle, uint32_t tau = 10'000) :
-            lastWrappedAngle(initialWrappedAngle), unwrappedAngle(initialWrappedAngle), angularVelocity(0),
+            lastWrappedAngle(initialWrappedAngle),
+            unwrappedAngle(initialWrappedAngle),
+            angularVelocity(0),
             filterTimeConstant(tau) {}
 
         /**
@@ -59,10 +61,8 @@ struct AngleVelocityEstimator {
         void update(int32_t wrappedAngle, uint32_t deltaTime) {
                 const auto wrapDelta = [&](int32_t a, int32_t b) -> int32_t {
                         int32_t d = a - b;
-                        if (d > PI_MRAD)
-                                d -= TWO_PI_MRAD;
-                        if (d < -PI_MRAD)
-                                d += TWO_PI_MRAD;
+                        if (d > PI_MRAD)  d -= TWO_PI_MRAD;
+                        if (d < -PI_MRAD) d += TWO_PI_MRAD;
                         return d;
                 };
 
@@ -78,10 +78,8 @@ struct AngleVelocityEstimator {
                         if (Denominator == 0u)
                                 return 0;
                         const auto a = (static_cast<int64_t>(tau_us) << 15) / static_cast<int64_t>(Denominator);
-                        if (a < 0)
-                                return 0;
-                        if (a > 32768)
-                                return 32768;
+                        if (a < 0)     return 0;
+                        if (a > 32768) return 32768;
                         return static_cast<int32_t>(a);
                 };
 
@@ -93,7 +91,8 @@ struct AngleVelocityEstimator {
                 const int32_t a_q15 = alpha_q15(filterTimeConstant, deltaTime);
                 const int32_t one_minus_a_q15 = 32768 - a_q15;
 
-                const auto filt = static_cast<int64_t>(a_q15) * static_cast<int64_t>(angularVelocity) +
+                const auto filt =
+                        static_cast<int64_t>(a_q15) * static_cast<int64_t>(angularVelocity) +
                         static_cast<int64_t>(one_minus_a_q15) * static_cast<int64_t>(rawDerivative);
 
                 angularVelocity = static_cast<int32_t>(filt >> 15);
@@ -111,16 +110,17 @@ public:
 
         explicit PMSM_Controller(const PMSM_Config) {}
 
-        void update(const PhaseCurrents& phaseCurrents, const PhaseDutyCycles& dutyCycles, float thetaEncoder);
+        // thetaEncoder is now raw 14-bit counts (0..16383)
+        void update(const PhaseCurrents& phaseCurrents, const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder);
 
-        void updateVelocity(const PhaseCurrents& phaseCurrents, const PhaseDutyCycles& dutyCycles, float thetaEncoder);
+        void updateVelocity(const PhaseCurrents& phaseCurrents, const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder);
 
         void updateOpenLoop(const PhaseDutyCycles& dutyCycles);
 
         /**
          * Function that performs the initial encoder offset and direction calibration
          */
-        bool startupCalibration(const PhaseDutyCycles& dutyCycles, float thetaEncoder);
+        bool startupCalibration(const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder);
 
         void stopMotor(const PhaseDutyCycles& dutyCycles) const;
 
@@ -131,24 +131,15 @@ private:
         SVPWM pwm{20'000, ZeroSequenceModulationType::MIDPOINT_CLAMP};
 
         /**
-         * The outer velocity control loop PI controller
+         * The outer velocity control loop PI controller (float in rad/s -> outputs A)
          */
-        // PID pidVelocity{0.5f, 10.0f, 0.0f, 6.0f, 0.00100000005};
         PID<float> pidVelocity{0.5f, 10.0f, 0.0f, 6.0f, 0.001f};
 
         /**
-         * The direct (d-axis) current PI controller Id
+         * Current PI controllers: inputs in mA, outputs in mV
          */
-        // PID<int32_t> pidId{0.25f, 20.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit, 0.00100000005};
-
-        /**
-         * The quadrature (q-axis) current PI controller Iq
-         */
-        // PID<int32_t> pidIq{0.35f, 50.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit, 0.00100000005};
-
-        PID<int32_t> pidId{0.25f, 20.0f, 0.0f, (PMSM_Config::CloseLoopVoltageLimit * 1000.0f), 0.001f};
-
-        PID<int32_t> pidIq{0.35f, 50.0f, 0.0f, (PMSM_Config::CloseLoopVoltageLimit * 1000.0f), 0.001f};
+        PID<int32_t> pidId{0.25f, 20.0f, 0.0f, static_cast<float>(PMSM_Config::CloseLoopVoltageLimit * 1000.0f), 0.001f};
+        PID<int32_t> pidIq{0.35f, 50.0f, 0.0f, static_cast<float>(PMSM_Config::CloseLoopVoltageLimit * 1000.0f), 0.001f};
 
         PID_Q31 q31pidVelocity;
         PID_Q31 q31pidId;
@@ -177,9 +168,9 @@ private:
         Direction direction = Direction::CLOCKWISE;
 
         /**
-         * The zero-offset electrical angle; must be updated by the startup calibration procedures
+         * Zero-offset electrical angle in raw 14-bit electrical counts
          */
-        float ZeroOffsetElectricalAngle = 0.0f;
+        uint16_t ZeroOffsetElectricalAngle14 = 0u;
 
         Direction calibrationDirection = Direction::CLOCKWISE;
 
@@ -201,11 +192,12 @@ private:
         };
 
         DirectionCalibrationState directionCalibrationState = DirectionCalibrationState::CALIBRATE_CW;
-        void directionCalibration(const PhaseDutyCycles& dutyCycles, float thetaEncoder);
 
-        void encoderOffsetCalibration(const PhaseDutyCycles& dutyCycles, float thetaEncoder);
+        void directionCalibration(const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder);
+        void encoderOffsetCalibration(const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder);
 
-        float thetaMechanical = 0.0f;
+        // Mechanical angle used by open-loop (raw 14-bit counts)
+        uint16_t thetaMechanical14 = 0u;
 
         uint32_t pwmPeriod = 1000;
 
@@ -213,23 +205,6 @@ private:
         uint32_t neededTicks = 250; // a quarter
 
         std::optional<AngleVelocityEstimator> velocityEstimator;
-
-        static q31_t float_to_q31(float x) {
-                float pu = x;
-
-                if (pu >= 0.99999994f)
-                        pu = 0.99999994f;
-
-                if (pu <= -1.0f)
-                        pu = -1.0f;
-
-                return static_cast<q31_t>(pu * 2147483648.0f);
-        }
-
-        static float q31_to_float_scaled(q31_t x, float full_scale) {
-                const float pu = static_cast<float>(x) / 2147483648.0f;
-                return pu * full_scale;
-        }
 
         float dT = 0.001f;
 };
