@@ -65,8 +65,11 @@ bool PMSM_Controller::startupCalibration(const PhaseDutyCycles& dutyCycles, floa
 
         if (calibrationState == CalibrationState::DONE) {
                 if (!velocityEstimator) {
-                        const float thetaEncWrapped = std::remainderf(thetaEncoder, TWO_PI);
-                        velocityEstimator.emplace(thetaEncWrapped, 0.010f);
+                        float wrapped = std::fmod(thetaEncoder, TWO_PI);
+                        if (wrapped < 0.0f) wrapped += TWO_PI;
+
+                        const auto wrappedAngleMilliRad = std::lroundf(wrapped * 1000.0f);
+                        velocityEstimator.emplace(wrappedAngleMilliRad, 10'000u); // tau = 10ms = 10000us
                 }
 
                 return true;
@@ -143,13 +146,24 @@ void PMSM_Controller::updateVelocity(const PhaseCurrents& phaseCurrents, const P
         if (!velocityEstimator)
                 return;
 
-        velocityEstimator->update(std::remainderf(thetaEncoder, TWO_PI), dT);
+        float wrapped = std::fmod(thetaEncoder, TWO_PI);
+        if (wrapped < 0.0f)
+                wrapped += TWO_PI;
+
+        auto wrappedAngleMilliRad = static_cast<int32_t>(std::lroundf(wrapped * 1000.0f));
+        if (wrappedAngleMilliRad >= AngleVelocityEstimator::TWO_PI_MRAD)
+                wrappedAngleMilliRad -= AngleVelocityEstimator::TWO_PI_MRAD;
+
+        constexpr uint32_t deltaTime = 1000;
+        velocityEstimator->update(wrappedAngleMilliRad, deltaTime);
+
+        const float omega_rad_s = static_cast<float>(velocityEstimator->angularVelocity) / 1000.0f;
+        const float VelocityError = PMSM_Config::TargetVelocity - std::fabs(omega_rad_s);
 
         const auto ThetaEl =
                 wrapAngle(dirSign * PMSM_Config::MotorPolePairs * thetaEncoder - ZeroOffsetElectricalAngle);
         const auto dqFrameCurrents = performClarkeParkTransforms(phaseCurrents.Ia, phaseCurrents.Ib, ThetaEl);
 
-        const float VelocityError = PMSM_Config::TargetVelocity - std::fabs(velocityEstimator->angularVelocity);
         const float IqRef = pidVelocity.compute(VelocityError);
 
         constexpr float IdRef = 0.0f;
@@ -157,12 +171,18 @@ void PMSM_Controller::updateVelocity(const PhaseCurrents& phaseCurrents, const P
         const float IdError = IdRef - dqFrameCurrents[0];
         const float IqError = IqRef - dqFrameCurrents[1];
 
-        float Vd = pidId.compute(IdError);
-        float Vq = pidIq.compute(IqError);
+        const auto IdError_mA = static_cast<int32_t>(std::lroundf(IdError * 1000.0f));
+        const auto IqError_mA = static_cast<int32_t>(std::lroundf(IqError * 1000.0f));
+
+        const int32_t Vd_mV = pidId.compute(IdError_mA);
+        const int32_t Vq_mV = pidIq.compute(IqError_mA);
+
+        float Vd = static_cast<float>(Vd_mV) / 1000.0f;
+        float Vq = static_cast<float>(Vq_mV) / 1000.0f;
 
         limitCircle(Vd, Vq, PMSM_Config::CloseLoopVoltageLimit);
 
-        const auto AlphaBetaFrame = performInverseParkTransform(0, IqRef, ThetaEl);
+        const auto AlphaBetaFrame = performInverseParkTransform(Vd, Vq, ThetaEl);
         const auto [dA, dB, dC] = pwm.compute(AlphaBetaFrame[0], AlphaBetaFrame[1]);
 
         const auto tmpPeriodA = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dA);

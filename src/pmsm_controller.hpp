@@ -5,8 +5,9 @@
 #include "definitions.h"
 #include "math_utils.hpp"
 #include "pid.hpp"
-#include "svpwm.hpp"
+#include "pid_q31.hpp"
 #include "pmsm_config.hpp"
+#include "svpwm.hpp"
 
 namespace PermanentMagnetSynchronousMotor {
 
@@ -28,31 +29,85 @@ struct PhaseDutyCycles {
 };
 
 struct AngleVelocityEstimator {
-        float lastWrappedAngle;
-        float unwrappedAngle;
-        float angularVelocity;
-        float filterTimeConstant;
+        int32_t lastWrappedAngle; // mrad
+        int32_t unwrappedAngle; // mrad
+        int32_t angularVelocity; // mrad/sec
+        uint32_t filterTimeConstant; // usec
 
-        explicit AngleVelocityEstimator(float initialWrappedAngle, float tau = 0.010f) noexcept :
-            lastWrappedAngle(initialWrappedAngle), unwrappedAngle(initialWrappedAngle), angularVelocity(0.0f),
+        /**
+         * Usefull constants
+         */
+        static constexpr int32_t TWO_PI_MRAD = 6283;
+        static constexpr int32_t PI_MRAD = TWO_PI_MRAD / 2;
+
+        /**
+         * Class constructor
+         *
+         * @param initialWrappedAngle The initial wrapped angle (in mrad)
+         * @param tau The change of time dT (in μsec)
+         */
+        explicit AngleVelocityEstimator(int32_t initialWrappedAngle, uint32_t tau = 10'000) :
+            lastWrappedAngle(initialWrappedAngle), unwrappedAngle(initialWrappedAngle), angularVelocity(0),
             filterTimeConstant(tau) {}
 
-        void update(float wrappedAngle, float deltaTime) noexcept {
-                const float delta = std::remainderf(wrappedAngle - lastWrappedAngle, TWO_PI);
+        /**
+         * Update function that runs in the velocity control loop
+         *
+         * @param wrappedAngle The wrapped angle (in mrad)
+         * @param deltaTime The change of time dT (in μsec)
+         */
+        void update(int32_t wrappedAngle, uint32_t deltaTime) {
+                const auto wrapDelta = [&](int32_t a, int32_t b) -> int32_t {
+                        int32_t d = a - b;
+                        if (d > PI_MRAD)
+                                d -= TWO_PI_MRAD;
+                        if (d < -PI_MRAD)
+                                d += TWO_PI_MRAD;
+                        return d;
+                };
 
+                const auto derivative_mrad_per_sec = [&](int32_t delta, uint32_t dt_us) -> int32_t {
+                        if (dt_us == 0u)
+                                return 0;
+                        const auto num = static_cast<int64_t>(delta) * 1'000'000LL;
+                        return static_cast<int32_t>(num / static_cast<int64_t>(dt_us));
+                };
+
+                const auto alpha_q15 = [&](uint32_t tau_us, uint32_t dt_us) -> int32_t {
+                        const uint32_t Denominator = tau_us + dt_us;
+                        if (Denominator == 0u)
+                                return 0;
+                        const auto a = (static_cast<int64_t>(tau_us) << 15) / static_cast<int64_t>(Denominator);
+                        if (a < 0)
+                                return 0;
+                        if (a > 32768)
+                                return 32768;
+                        return static_cast<int32_t>(a);
+                };
+
+                const int32_t delta = wrapDelta(wrappedAngle, lastWrappedAngle);
                 unwrappedAngle += delta;
 
-                const float rawDerivative = delta / deltaTime;
-                const float a = filterTimeConstant / (filterTimeConstant + deltaTime);
-                angularVelocity = a * angularVelocity + (1.0f - a) * rawDerivative;
+                const int32_t rawDerivative = derivative_mrad_per_sec(delta, deltaTime);
 
+                const int32_t a_q15 = alpha_q15(filterTimeConstant, deltaTime);
+                const int32_t one_minus_a_q15 = 32768 - a_q15;
+
+                const auto filt = static_cast<int64_t>(a_q15) * static_cast<int64_t>(angularVelocity) +
+                        static_cast<int64_t>(one_minus_a_q15) * static_cast<int64_t>(rawDerivative);
+
+                angularVelocity = static_cast<int32_t>(filt >> 15);
                 lastWrappedAngle = wrappedAngle;
         }
 };
 
 class PMSM_Controller {
 public:
-        PMSM_Controller() = default;
+        PMSM_Controller() {
+                q31pidVelocity.setGainsFloat(0.5f, 10.0f, 0.0f, 6.0f, 0.00100000005f);
+                q31pidId.setGainsFloat(0.25f, 20.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit, 0.00100000005f);
+                q31pidIq.setGainsFloat(0.35f, 50.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit, 0.00100000005f);
+        }
 
         explicit PMSM_Controller(const PMSM_Config) {}
 
@@ -73,22 +128,31 @@ private:
         /**
          * The Space Vector PWM block
          */
-        SVPWM pwm{PMSM_Config::DCLinkVoltage, ZeroSequenceModulationType::MIDPOINT_CLAMP};
+        SVPWM pwm{20'000, ZeroSequenceModulationType::MIDPOINT_CLAMP};
 
         /**
          * The outer velocity control loop PI controller
          */
-        PID pidVelocity{0.5f, 10.0f, 0.0f, 6.0f, 0.00100000005};
+        // PID pidVelocity{0.5f, 10.0f, 0.0f, 6.0f, 0.00100000005};
+        PID<float> pidVelocity{0.5f, 10.0f, 0.0f, 6.0f, 0.001f};
 
         /**
          * The direct (d-axis) current PI controller Id
          */
-        PID pidId{0.25f, 20.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit, 0.00100000005};
+        // PID<int32_t> pidId{0.25f, 20.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit, 0.00100000005};
 
         /**
          * The quadrature (q-axis) current PI controller Iq
          */
-        PID pidIq{0.35f, 50.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit, 0.00100000005};
+        // PID<int32_t> pidIq{0.35f, 50.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit, 0.00100000005};
+
+        PID<int32_t> pidId{0.25f, 20.0f, 0.0f, (PMSM_Config::CloseLoopVoltageLimit * 1000.0f), 0.001f};
+
+        PID<int32_t> pidIq{0.35f, 50.0f, 0.0f, (PMSM_Config::CloseLoopVoltageLimit * 1000.0f), 0.001f};
+
+        PID_Q31 q31pidVelocity;
+        PID_Q31 q31pidId;
+        PID_Q31 q31pidIq;
 
         float dirSign = 1.0f;
 
@@ -150,9 +214,24 @@ private:
 
         std::optional<AngleVelocityEstimator> velocityEstimator;
 
+        static q31_t float_to_q31(float x) {
+                float pu = x;
+
+                if (pu >= 0.99999994f)
+                        pu = 0.99999994f;
+
+                if (pu <= -1.0f)
+                        pu = -1.0f;
+
+                return static_cast<q31_t>(pu * 2147483648.0f);
+        }
+
+        static float q31_to_float_scaled(q31_t x, float full_scale) {
+                const float pu = static_cast<float>(x) / 2147483648.0f;
+                return pu * full_scale;
+        }
 
         float dT = 0.001f;
 };
-
 
 } // namespace PermanentMagnetSynchronousMotor

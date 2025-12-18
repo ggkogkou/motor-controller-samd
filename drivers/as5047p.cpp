@@ -18,15 +18,17 @@ bool AS5047P::readDeviceRegister(RegisterAddress registerAddress) {
         const auto CommandFrameMSB = static_cast<uint8_t>(commandFrame >> 8);
         const auto CommandFrameLSB = static_cast<uint8_t>(commandFrame & 0b1111'1111);
 
-        isSensorBusy = true;
-
         spiRequest.txBuffer = {CommandFrameMSB, CommandFrameLSB};
         spiRequest.chipSelectPin = ENCODER_CS_PIN;
         spiRequest.callback = &AS5047P::spiTransferCallback;
         spiRequest.context = this;
 
-        if (SPI_Buffer::submit(spiRequest) != SPI_Buffer::TransactionState::PLACED)
+        isSensorBusy = true;
+
+        if (SPI_Buffer::submit(spiRequest) != SPI_Buffer::TransactionState::PLACED) {
+                isSensorBusy = false;
                 return false;
+        }
 
         return true;
 }
@@ -41,22 +43,6 @@ void AS5047P::writeDeviceRegister(RegisterAddress registerAddress, RegisterData_
 
         std::array<uint8_t, CommandFrameSize> addressBuffer{CommandFrameMSB, CommandFrameLSB};
         std::array<uint8_t, DataFrameSize> dataBuffer{DataFrameMSB, DataFrameLSB};
-
-        // AS5047_CS_Clear();
-
-        // if (SERCOM4_SPI_Write(&addressBuffer[0], 2))
-        //         Logger_Info("SPI sent data\r\n");
-        // else
-        //         Logger_Error("SPI failed to send data\r\n");
-        //
-        // AS5047_CS_Set();
-        // SYSTICK_DelayMs(1);
-        // AS5047_CS_Clear();
-        //
-        // if (SERCOM4_SPI_Write(&dataBuffer[0], 2))
-        //         Logger_Info("SPI sent data\r\n");
-        // else
-        //         Logger_Error("SPI failed to send data\r\n");
 }
 
 bool AS5047P::request(RegisterAddress registerAddress) {
@@ -107,6 +93,8 @@ AS5047P::Angle_t AS5047P::measureAngleCompensated() const {
 
         return static_cast<Angle_t>(AngleComData) / static_cast<Angle_t>(AngleResolutionSPI) * FullRotationDegrees;
 }
+
+uint16_t AS5047P::measureAngleCompensatedRaw() const { return latestRegisterRequested; }
 
 AS5047P::FieldMagnitude_t AS5047P::measureFieldMagnitude() const {
         // return readDeviceRegister(RegisterAddress::MAG);

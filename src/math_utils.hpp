@@ -3,7 +3,11 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstdint>
+#include <numbers>
 #include <span>
+#include "sin_cos_lut_q15.hpp"
+#include "clarke_park_q31.hpp"
 
 namespace MathUtilities {
 
@@ -260,6 +264,17 @@ using AlphaBetaFrame = std::array<float, 2>;
 [[nodiscard]] inline float degreesToRadians(float angleDegrees) { return angleDegrees * PI / 180.0f; }
 
 /**
+ * Function that converts an angle from degrees to milli-radians (mrad); useful for fixed-point implementation
+ *
+ * @param angleDegrees The angle in degrees
+ * @return The angle in mrad
+ */
+[[nodiscard]] inline int32_t degreesToMilliRad(float angleDegrees) noexcept {
+        constexpr auto ConversionFactor = std::numbers::pi_v<float> / 180.0f * 1000.0f;
+        return static_cast<int32_t>(angleDegrees * ConversionFactor);
+}
+
+/**
  * Wrap an angle into [0, 2π)
  */
 [[nodiscard]] inline float wrapAngle(float x) noexcept {
@@ -276,7 +291,7 @@ using AlphaBetaFrame = std::array<float, 2>;
  * @param Vq The q-axis voltage
  * @param VLim The maximum/limiting voltage that marks the threshold of overmodulation
  */
-inline void limitCircle(float &Vd, float &Vq, float VLim) {
+inline void limitCircle(float& Vd, float& Vq, float VLim) {
         const float MagnitudeSquare = Vd * Vd + Vq * Vq;
 
         if (const float VLimSquare = VLim * VLim; MagnitudeSquare > VLimSquare) {

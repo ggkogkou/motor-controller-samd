@@ -105,6 +105,7 @@ set(SOURCES
         src/pmsm_controller.cpp
         src/spi_buffer.cpp
         src/USART_TxStream.cpp
+        src/pid_q31.cpp
 
         # System initialization and configuration
         src/config/sam_d21_xpro/initialization.c

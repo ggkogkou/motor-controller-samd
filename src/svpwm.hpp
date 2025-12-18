@@ -3,9 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
-#include <cmath>
 #include <cstdint>
-#include "math_utils.hpp"
 
 namespace SpaceVectorModulation {
 
@@ -27,38 +25,27 @@ struct DutyCycles {
  */
 class SVPWM {
 public:
-        /**
-         * Default constructor (call setters before use)
-         */
         SVPWM() = default;
 
         /**
-         * Simple constructor that initializes the useful member variables
-         *
-         * @param vdc The DC link voltage
+         * @param vdc The DC link voltage (in mV)
          */
-        explicit SVPWM(float vdc, ZeroSequenceModulationType zsm) : dcLinkVoltage(vdc), zeroSequenceModulation(zsm) {
-                assert(std::isfinite(vdc) && vdc > 0.0f);
+        explicit SVPWM(int16_t vdc, ZeroSequenceModulationType zsm) : dcLinkVoltage(vdc), zeroSequenceModulation(zsm) {
+                assert(vdc > 0);
         }
 
         /**
-         * Function that computes the dutiy cycles for the SVPWM
-         *
-         * @param vAlpha The voltage of coordinate alpha
-         * @param vBeta The voltage of coordinate beta
-         * @return The duty cycles binded as a struct
+         * @param vAlpha (in mV)
+         * @param vBeta  (in mV)
          */
-        [[nodiscard]] DutyCycles compute(float vAlpha, float vBeta) const;
+        [[nodiscard]] DutyCycles compute(int16_t vAlpha, int16_t vBeta) const;
 
 private:
         /**
-         * The DC link voltage (maybe it would be better to read it from somewhere else?)
+         * The DC link voltage in mV
          */
-        float dcLinkVoltage = 5.0f;
+        int16_t dcLinkVoltage = 5000;
 
-        /**
-         * The type of Zero-Sequence Modulation (ZSM) that is added to the carrier
-         */
         ZeroSequenceModulationType zeroSequenceModulation = ZeroSequenceModulationType::MIDPOINT_CLAMP;
 };
 

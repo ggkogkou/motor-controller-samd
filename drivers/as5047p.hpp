@@ -211,6 +211,13 @@ public:
         [[nodiscard]] Angle_t measureAngleCompensated() const;
 
         /**
+         * Function that reads the compensated angle (DAEC output)
+         *
+         * @return The 14-bit raw register value for angle compensated
+         */
+        [[nodiscard]] uint16_t measureAngleCompensatedRaw() const;
+
+        /**
          * Function that reads the CORDIC magnetic field magnitude
          *
          * @return The 14-bit measured magnetic field magnitude

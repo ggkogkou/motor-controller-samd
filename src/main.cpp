@@ -46,7 +46,7 @@ static volatile bool adcResultsReady = false;
 inline constexpr ADC_NEGINPUT NegativeInput = ADC_NEGINPUT_GND;
 inline constexpr uint16_t ADC_VREF = 2230; // mV
 
-SVPWM svpwm{20.0f, ZeroSequenceModulationType::MIDPOINT_CLAMP};
+SVPWM svpwm{20'000, ZeroSequenceModulationType::MIDPOINT_CLAMP};
 
 USART_TxStream logging;
 
@@ -207,6 +207,6 @@ void peripherals_init() {
                 uint8_t eol[2] = {'\r', '\n'};
                 logging.write(std::span(eol, 2));
 
-                SYSTICK_DelayMs(500);
+                SYSTICK_DelayMs(200);
         }
 }
