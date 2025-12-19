@@ -143,7 +143,6 @@ volatile uint8_t counter = 0;
 
 void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS, uintptr_t) {
 
-        // PORT_PinWrite(PORT_PIN_PA17, true);
         BENCHMARK_IO_Set();
 
         static PhaseDutyCycles duty{TCC_PeriodU, TCC_PeriodV, TCC_PeriodW};
@@ -175,8 +174,6 @@ void TC3_FOC_HandlerOpenLoop(TC_TIMER_STATUS, uintptr_t) {
         PhaseCurrents temp{};
         brushlessMotor.updateVelocity(temp, duty, theta14);
 
-        // PORT_PinWrite(PORT_PIN_PA17, false);
-
         BENCHMARK_IO_Clear();
 
         TCC0_PWM24bitDutySet(TCC0_CHANNEL0, TCC_PeriodU);
@@ -193,9 +190,9 @@ void peripherals_init() {
         period = TCC0_PWM24bitPeriodGet();
 
         SYSTICK_TimerStart();
-        // ADC_Enable();
+        ADC_Enable();
 
-        // ADC_CallbackRegister(ADC_Callback, 0);
+        ADC_CallbackRegister(ADC_Callback, 0);
         // TCC0_PWMCallbackRegister(PWM_IRQ_Callback, 0);
         TC3_TimerCallbackRegister(TC3_FOC_HandlerOpenLoop, 0);
 
