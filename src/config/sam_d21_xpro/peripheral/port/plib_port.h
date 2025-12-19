@@ -110,6 +110,15 @@
 #define TCC0_WO7_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 13U)) & 0x01U)
 #define TCC0_WO7_PIN                  PORT_PIN_PA13
 
+/*** Macros for BENCHMARK_IO pin ***/
+#define BENCHMARK_IO_Set()               (PORT_REGS->GROUP[0].PORT_OUTSET = ((uint32_t)1U << 17U))
+#define BENCHMARK_IO_Clear()             (PORT_REGS->GROUP[0].PORT_OUTCLR = ((uint32_t)1U << 17U))
+#define BENCHMARK_IO_Toggle()            (PORT_REGS->GROUP[0].PORT_OUTTGL = ((uint32_t)1U << 17U))
+#define BENCHMARK_IO_OutputEnable()      (PORT_REGS->GROUP[0].PORT_DIRSET = ((uint32_t)1U << 17U))
+#define BENCHMARK_IO_InputEnable()       (PORT_REGS->GROUP[0].PORT_DIRCLR = ((uint32_t)1U << 17U))
+#define BENCHMARK_IO_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 17U)) & 0x01U)
+#define BENCHMARK_IO_PIN                  PORT_PIN_PA17
+
 /*** Macros for ENCODER_CS pin ***/
 #define ENCODER_CS_Set()               (PORT_REGS->GROUP[0].PORT_OUTSET = ((uint32_t)1U << 24U))
 #define ENCODER_CS_Clear()             (PORT_REGS->GROUP[0].PORT_OUTCLR = ((uint32_t)1U << 24U))

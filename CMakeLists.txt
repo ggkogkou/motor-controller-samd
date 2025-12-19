@@ -127,7 +127,6 @@ set(SOURCES
         src/config/sam_d21_xpro/peripheral/sercom/spi_master/plib_sercom5_spi_master.c
         src/config/sam_d21_xpro/peripheral/tc/plib_tc3.c
         src/config/sam_d21_xpro/peripheral/tcc/plib_tcc0.c
-        src/config/sam_d21_xpro/peripheral/tcc/plib_tcc1.c
 
         drivers/as5047p.cpp
         drivers/drv8316.cpp

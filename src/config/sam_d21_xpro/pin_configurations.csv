@@ -28,7 +28,7 @@ Pin Number,Pin ID,Custom Name,Function,Mode, Direction,Latch,Pull Up,Pull Down,D
 31,PA14,,Available,,,,,,NORMAL
 32,PA15,,Available,,,,,,NORMAL
 35,PA16,,Available,,,,,,NORMAL
-36,PA17,,SERCOM3_PAD1,Digital,High Impedance,n/a,No,No,NORMAL
+36,PA17,BENCHMARK_IO,GPIO,Digital,Out,Low,,,NORMAL
 37,PA18,,SERCOM3_PAD2,Digital,High Impedance,n/a,No,No,NORMAL
 38,PA19,,Available,,,,,,NORMAL
 39,PB16,,EIC_EXTINT0,Digital,High Impedance,n/a,No,No,NORMAL
