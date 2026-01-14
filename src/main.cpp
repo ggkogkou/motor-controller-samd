@@ -54,17 +54,6 @@ uint32_t period = 0;
 
 static volatile uint8_t adcScanIndex = 0;
 
-void PWM_IRQ_Callback(uint32_t status, uintptr_t context) {
-        (void)context;
-
-        if (status & TCC_INTFLAG_OVF_Msk) {
-                TCC0_PWM24bitDutySet(TCC0_CHANNEL0, TCC_PeriodU);
-                TCC0_PWM24bitDutySet(TCC0_CHANNEL1, TCC_PeriodV);
-                TCC0_PWM24bitDutySet(TCC0_CHANNEL2, TCC_PeriodW);
-                TCC0_PWM24bitDutySet(TCC0_CHANNEL3, 1000);
-        }
-}
-
 void ADC_Callback(ADC_STATUS status, uintptr_t context) {
         (void)context;
 
@@ -195,7 +184,6 @@ void peripherals_init() {
         ADC_Enable();
 
         ADC_CallbackRegister(ADC_Callback, 0);
-        // TCC0_PWMCallbackRegister(PWM_IRQ_Callback, 0);
         TC3_TimerCallbackRegister(TC3_FOC_HandlerOpenLoop, 0);
 
         TCC0_PWMStart();

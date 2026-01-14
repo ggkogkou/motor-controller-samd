@@ -5,8 +5,8 @@ namespace PermanentMagnetSynchronousMotor {
 namespace {
 
 [[nodiscard]] uint32_t duty_q15_to_period(uint32_t pwmPeriod, uint16_t duty_q15) noexcept {
-        const uint64_t prod = static_cast<uint64_t>(pwmPeriod) * static_cast<uint64_t>(duty_q15);
-        return pwmPeriod - static_cast<uint32_t>(prod >> 15);
+        const uint32_t prod = pwmPeriod * static_cast<uint32_t>(duty_q15);
+        return pwmPeriod - ((prod + (1u << 14)) >> 15); // round-to-nearest
 }
 
 } // namespace
