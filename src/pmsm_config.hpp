@@ -35,9 +35,11 @@ struct PMSM_Config {
         /**
          * The motor's pole pairs
          */
-        static constexpr float MotorPolePairs = 11.0f;
+        static constexpr uint8_t MotorPolePairs = 11;
 
         static constexpr float OpenLoopVoltageLimit = InitialCalibrationVoltageLimit;
+
+        static constexpr auto OpenLoopVoltLimit_mV = static_cast<int32_t>(OpenLoopVoltageLimit * 1000.0f);
 
         /**
          *
