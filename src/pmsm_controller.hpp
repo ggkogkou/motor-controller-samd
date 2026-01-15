@@ -157,7 +157,7 @@ private:
         /**
          * Velocity PI: error in mrad/s, output in mA
          */
-        PID<int32_t> pidVelocity{0.5f, 10.0f, 0.0f, 6000.0f, 0.001f};
+        PID pidVelocity{0.5f, 10.0f, 0.0f, 6000.0f, 0.001f};
 
         /**
          * Current loop PI controllers (for Iq and Id)
@@ -165,8 +165,8 @@ private:
          *
          * TODO: Tune the P, I parameters
          */
-        PID<int32_t> pidId{0.25f, 20.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit * 1000.0f, 0.001f};
-        PID<int32_t> pidIq{0.35f, 50.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit * 1000.0f, 0.001f};
+        PID pidId{0.25f, 20.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit * 1000.0f, 0.001f};
+        PID pidIq{0.35f, 50.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit * 1000.0f, 0.001f};
 
         /**
          * @enum CalibrationState

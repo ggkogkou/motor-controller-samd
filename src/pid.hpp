@@ -4,6 +4,64 @@
 #include <cstdint>
 #include <type_traits>
 
+class Q16_t {
+public:
+        static constexpr int32_t Q16_Factor = 16;
+
+        constexpr Q16_t() = default;
+        explicit constexpr Q16_t(int32_t raw) : raw(raw) {}
+
+        explicit Q16_t(float x) : raw(static_cast<int32_t>(x * (1u << Q16_Factor))) {}
+
+        [[nodiscard]] int32_t getRaw() const {
+                return raw;
+        }
+
+        /**
+         * Operator overload to multiply Q16_t * int32_t numbers
+         *
+         * @param a
+         * @param b
+         * @return
+         */
+        friend inline int32_t operator*(Q16_t k, int32_t x) {
+                int64_t p = static_cast<int64_t>(k.getRaw()) * static_cast<int64_t>(x);
+                // optional rounding:
+                p += p >= 0 ? 1 << (Q16_Factor - 1) : -(1 << (Q16_Factor - 1));
+
+                return static_cast<int32_t>(p >> Q16_Factor);
+        }
+
+        /**
+         * Operator overload to multiply int32_t * Q16_t numbers
+         *
+         * @note Use the previous operator overload function in order to do that
+         *
+         * @param a
+         * @param b
+         * @return
+         */
+        friend inline int32_t operator*(int32_t x, Q16_t k) {
+                return k * x;
+        }
+
+        /**
+         * Operator overload to multiply Q16_t * Q16_t numbers
+         *
+         * @param a
+         * @param b
+         * @return
+         */
+        friend inline Q16_t operator*(Q16_t a, Q16_t b) {
+                int64_t p = static_cast<int64_t>(a.getRaw()) * static_cast<int64_t>(b.getRaw());
+                p += (p >= 0) ? (1LL << (Q16_Factor - 1)) : -(1LL << (Q16_Factor - 1));
+                return Q16_t(static_cast<int32_t>(p >> Q16_Factor));
+        }
+
+private:
+        int32_t raw = 0;
+};
+
 /**
  * @brief Simple PID controller with output clamp.
  *
@@ -18,7 +76,6 @@
  * TODO: Add a reset function
  * TODO: Require dT > 0, use of std::optional in the future
  */
-template<typename T, int GAIN_Q = 16>
 class PID {
 public:
         /**
@@ -35,7 +92,9 @@ public:
          * @param limit Absolute output clamp (±limit)
          * @param Ts Sampling time (seconds)
          */
-        PID(float Kp, float Ki, float Kd, float limit, float Ts);
+        PID(float Kp, float Ki, float Kd, float limit, float Ts) {
+                setGainsFloat(Kp, Ki, Kd, limit, Ts);
+        }
 
         /**
          * @brief Compute PID output for a given error (fixed dt implied in gains).
@@ -43,7 +102,37 @@ public:
          * @param error Setpoint minus measurement
          * @return Clamped controller output in ±limit
          */
-        T compute(T error);
+        int32_t compute(int32_t error);
+
+        /**
+         * @brief Reset the controller
+         */
+        void reset();
+
+private:
+        /**
+         * Proportional, integral, derivative gains
+         */
+        Q16_t K_Proportional {0.0f};
+        Q16_t K_Integral {0.0f};
+        Q16_t K_Derivative {0.0f};
+
+        /**
+         * Absolute output clamp (±limit)
+         */
+        int32_t limit = 0;
+
+        /**
+         * The sampling time (seconds)
+         */
+        float dT = 0.0f;
+
+        /**
+         * Internal integrator and last error (for D)
+         */
+        int32_t previousError = 0;
+        int32_t previousIntegralTerm = 0;
+        int32_t previousControllerOutput = 0;
 
         /**
          * @brief Set the given floating point gains.
@@ -60,42 +149,4 @@ public:
          * @param Ts Sampling time (seconds)
          */
         void setGainsFloat(float Kp, float Ki, float Kd, float limit, float Ts);
-
-        /**
-         * @brief Reset the controller
-         */
-        void reset();
-
-private:
-        // For float: gains are T. For int: gains are Q(GAIN_Q) in int32_t.
-        using GainType = std::conditional_t<std::is_floating_point_v<T>, T, int32_t>;
-
-        /**
-         * Proportional, integral, derivative gains
-         */
-        GainType K_Proportional = 0;
-        GainType K_Integral = 0;
-        GainType K_Derivative = 0;
-
-        /**
-         * Absolute output clamp (±limit)
-         */
-        T limit = 0;
-
-        /**
-         * The sampling time (seconds)
-         */
-        float dT = 0.0f;
-
-        /**
-         * Internal integrator and last error (for D)
-         */
-        T previousError = 0;
-        T previousIntegralTerm = 0;
-        T previousControllerOutput = 0;
-
-        static int32_t gainToQ(float g);
-        static T mulQ(int32_t gainQ, T x);
 };
-
-// Explicit instantiations are provided in pid_templated.cpp for PID<float> and PID<int32_t>.
