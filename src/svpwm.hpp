@@ -1,12 +1,16 @@
 #pragma once
 
 #include <algorithm>
-#include <array>
 #include <cassert>
 #include <cstdint>
 
 namespace SpaceVectorModulation {
 
+/**
+ * @enum ZeroSequenceModulationType
+ *
+ * A collection of the possible types that zero sequence modulation can be performed
+ */
 enum class ZeroSequenceModulationType {
         MIDPOINT_CLAMP,
         UPPER_BOUND_CLAMP,
@@ -14,6 +18,9 @@ enum class ZeroSequenceModulationType {
         THIRD_HARMONIC_INJECTION,
 };
 
+/**
+ * Structure that holds the duty cycles that are calculated by the SVPWM::compute function
+ */
 struct DutyCycles {
         int32_t dutyCycleA = 0;
         int32_t dutyCycleB = 0;
@@ -28,7 +35,10 @@ public:
         SVPWM() = default;
 
         /**
+         * Constructor of SVPWM class
+         *
          * @param dcMotorVoltage_mV The DC link voltage (in mV)
+         * @param zsm The zero sequence modulation type
          */
         explicit SVPWM(int16_t dcMotorVoltage_mV, ZeroSequenceModulationType zsm) :
             dcLinkVoltage(dcMotorVoltage_mV), zeroSequenceModulation(zsm) {
@@ -59,17 +69,25 @@ private:
         int32_t inverseVdc_Q15 = 0;
 
         /**
-         * The DC Link voltage in Volts
+         * The zero sequence modulation type
          */
-        int32_t DC_LinkVoltage = 5;
-
         ZeroSequenceModulationType zeroSequenceModulation = ZeroSequenceModulationType::MIDPOINT_CLAMP;
 
+        /**
+         * Structure that will hold the minimum and maximum values, meant to be used with findMinMax
+         */
         struct MinMax {
                 int32_t min;
                 int32_t max;
         };
 
+        /**
+         * Function that finds the minimum and maximum between three integer numbers
+         * @param a Number a
+         * @param b Number b
+         * @param c Number c
+         * @return
+         */
         static inline MinMax findMinMax(int32_t a, int32_t b, int32_t c) {
                 MinMax r{a, a};
                 if (b < r.min)
