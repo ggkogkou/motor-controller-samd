@@ -2,21 +2,10 @@
 
 namespace PermanentMagnetSynchronousMotor {
 
-namespace {
-
-[[nodiscard]] uint32_t duty_q15_to_period(uint32_t pwmPeriod, uint16_t duty_q15) noexcept {
-        const uint32_t prod = pwmPeriod * static_cast<uint32_t>(duty_q15);
-        return pwmPeriod - ((prod + (1u << 14)) >> 15); // round-to-nearest
-}
-
-} // namespace
-
 PMSM_Controller::PMSM_Controller() {
-        // Compute once (startup only) — removes float from the loop.
         targetVelocity_mrad_s = std::lroundf(PMSM_Config::TargetVelocity * 1000.0f);
 
-        const float step_counts =
-                PMSM_Config::TargetCalibrationVelocity * dT * (static_cast<float>(16384) / (2.0f * MathUtilities::PI));
+        const float step_counts = PMSM_Config::TargetCalibrationVelocity * dT * (static_cast<float>(16384) / (2.0f * PI));
 
         const int32_t step_i32 = std::lroundf(step_counts);
         openLoopStepCounts14 = (step_i32 <= 0) ? 1u : static_cast<uint16_t>(step_i32);
@@ -88,16 +77,12 @@ void PMSM_Controller::encoderOffsetCalibration(const PhaseDutyCycles& dutyCycles
         const int32_t Ud = std::lroundf(PMSM_Config::InitialCalibrationVoltageLimit * 1000.0f); /// in mV
         constexpr uint16_t ThetaElectricalLock = 0;
 
-        const auto AlphaBetaFrame = MathUtils::performInverseParkTransform(Ud, Uq, ThetaElectricalLock);
-        const auto DutyCycles = pwm.compute(clamp16Bits(AlphaBetaFrame[0]), clamp16Bits(AlphaBetaFrame[1]));
+        const auto InvPark = MathUtils::performInverseParkTransform(Ud, Uq, ThetaElectricalLock);
+        const auto [perA, perB, perC] = pwm.compute(InvPark[0], InvPark[1], pwmPeriod);
 
-        const uint32_t tmpPeriodA = duty_q15_to_period(pwmPeriod, DutyCycles.dutyCycleA);
-        const uint32_t tmpPeriodB = duty_q15_to_period(pwmPeriod, DutyCycles.dutyCycleB);
-        const uint32_t tmpPeriodC = duty_q15_to_period(pwmPeriod, DutyCycles.dutyCycleC);
-
-        dutyCycles.perA = tmpPeriodA;
-        dutyCycles.perB = tmpPeriodB;
-        dutyCycles.perC = tmpPeriodC;
+        dutyCycles.perA = pwmPeriod - perA;
+        dutyCycles.perB = pwmPeriod - perB;
+        dutyCycles.perC = pwmPeriod - perC;
 
         timerCounter++;
 
@@ -127,15 +112,11 @@ void PMSM_Controller::updateOpenLoop(const PhaseDutyCycles& dutyCycles) {
         constexpr int32_t Ud = 0; /// in mV
 
         const auto InvPark = MathUtils::performInverseParkTransform(Ud, Uq, thetaElectrical);
-        const auto [dA, dB, dC] = pwm.compute(clamp16Bits(InvPark[0]), clamp16Bits(InvPark[1]));
+        const auto [perA, perB, perC] = pwm.compute(InvPark[0], InvPark[1], pwmPeriod);
 
-        const uint32_t tmpPeriodA = duty_q15_to_period(pwmPeriod, dA);
-        const uint32_t tmpPeriodB = duty_q15_to_period(pwmPeriod, dB);
-        const uint32_t tmpPeriodC = duty_q15_to_period(pwmPeriod, dC);
-
-        dutyCycles.perA = tmpPeriodA;
-        dutyCycles.perB = tmpPeriodB;
-        dutyCycles.perC = tmpPeriodC;
+        dutyCycles.perA = pwmPeriod - perA;
+        dutyCycles.perB = pwmPeriod - perB;
+        dutyCycles.perC = pwmPeriod - perC;
 }
 
 void PMSM_Controller::updateVelocity(const PhaseCurrents& phaseCurrents, const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder) {
@@ -177,33 +158,25 @@ void PMSM_Controller::updateVelocity(const PhaseCurrents& phaseCurrents, const P
 
         /// TODO: Create a limit circle function that takes also care of overmodulation etc
 
-        const auto AlphaBetaFrame = MathUtils::performInverseParkTransform(Ud_mV, Uq_mV, ThetaEl);
-        const auto [dA, dB, dC] = pwm.compute(clamp16Bits(AlphaBetaFrame[0]), clamp16Bits(AlphaBetaFrame[1]));
+        const auto InvPark = MathUtils::performInverseParkTransform(Ud_mV, Uq_mV, ThetaEl);
+        const auto [perA, perB, perC] = pwm.compute(InvPark[0], InvPark[1], pwmPeriod);
 
-        const uint32_t tmpPeriodA = duty_q15_to_period(pwmPeriod, dA);
-        const uint32_t tmpPeriodB = duty_q15_to_period(pwmPeriod, dB);
-        const uint32_t tmpPeriodC = duty_q15_to_period(pwmPeriod, dC);
+        dutyCycles.perA = pwmPeriod - perA;
+        dutyCycles.perB = pwmPeriod - perB;
+        dutyCycles.perC = pwmPeriod - perC;
 
         BENCHMARK_IO_Clear();
-
-        dutyCycles.perA = tmpPeriodA;
-        dutyCycles.perB = tmpPeriodB;
-        dutyCycles.perC = tmpPeriodC;
 }
 
 void PMSM_Controller::stopMotor(const PhaseDutyCycles& dutyCycles) const {
         constexpr int16_t V_Alpha = 0;
         constexpr int16_t V_Beta = 0;
 
-        const auto [dA, dB, dC] = pwm.compute(V_Alpha, V_Beta);
+        const auto [perA, perB, perC] = pwm.compute(V_Alpha, V_Beta, pwmPeriod);
 
-        const uint32_t tmpPeriodA = duty_q15_to_period(pwmPeriod, dA);
-        const uint32_t tmpPeriodB = duty_q15_to_period(pwmPeriod, dB);
-        const uint32_t tmpPeriodC = duty_q15_to_period(pwmPeriod, dC);
-
-        dutyCycles.perA = tmpPeriodA;
-        dutyCycles.perB = tmpPeriodB;
-        dutyCycles.perC = tmpPeriodC;
+        dutyCycles.perA = pwmPeriod - perA;
+        dutyCycles.perB = pwmPeriod - perB;
+        dutyCycles.perC = pwmPeriod - perC;
 }
 
 } // namespace PermanentMagnetSynchronousMotor

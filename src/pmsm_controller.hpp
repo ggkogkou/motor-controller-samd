@@ -280,21 +280,6 @@ private:
                 return static_cast<uint16_t>(angle) & EncoderMask;
         }
 
-        /**
-         * Helper function that clamps the int32_t to a safe value before converted to int16_t
-         * TODO: Change the algorithm so that can be made unnecessary
-         * @param x
-         * @return
-         */
-        [[nodiscard]] static int16_t clamp16Bits(int32_t x) {
-                if (x > 32767)
-                        return 32767;
-                if (x < -32768)
-                        return -32768;
-
-                return static_cast<int16_t>(x);
-        }
-
         [[nodiscard]] static inline int32_t rawToMilliRad(uint16_t rawAngle) noexcept {
                 constexpr int32_t TWO_PI_mrad = 6283;
                 constexpr int32_t EncoderResolution = 16384;

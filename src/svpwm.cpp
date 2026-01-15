@@ -28,11 +28,27 @@ DutyCycles SVPWM::compute(int32_t vAlpha, int32_t vBeta) const {
         constexpr int32_t MIN_Q15 = 0;
         constexpr int32_t MAX_Q15 = 32767;
 
-        const int32_t DutyCycleA = std::clamp(HALF_Q15 + Va * inverseVdc_Q15, MIN_Q15, MAX_Q15);
-        const int32_t DutyCycleB = std::clamp(HALF_Q15 + Vb * inverseVdc_Q15, MIN_Q15, MAX_Q15);
-        const int32_t DutyCycleC = std::clamp(HALF_Q15 + Vc * inverseVdc_Q15, MIN_Q15, MAX_Q15);
+        const uint32_t DutyCycleA = std::clamp(HALF_Q15 + Va * inverseVdc_Q15, MIN_Q15, MAX_Q15);
+        const uint32_t DutyCycleB = std::clamp(HALF_Q15 + Vb * inverseVdc_Q15, MIN_Q15, MAX_Q15);
+        const uint32_t DutyCycleC = std::clamp(HALF_Q15 + Vc * inverseVdc_Q15, MIN_Q15, MAX_Q15);
 
         return DutyCycles{DutyCycleA, DutyCycleB, DutyCycleC};
+}
+
+PWM_Periods SVPWM::compute(int32_t vAlpha, int32_t vBeta, uint32_t pwmPeriod) const {
+        const auto [dA, dB, dC] = compute(vAlpha, vBeta);
+
+        constexpr uint32_t POW_2_14 = 1 << 14; /// 2^14
+
+        const uint32_t pwmPeriodQ15_A = pwmPeriod * dA;
+        const uint32_t pwmPeriodQ15_B = pwmPeriod * dB;
+        const uint32_t pwmPeriodQ15_C = pwmPeriod * dC;
+
+        const uint32_t pwmPeriodDec_A = (pwmPeriodQ15_A + POW_2_14) >> 15;
+        const uint32_t pwmPeriodDec_B = (pwmPeriodQ15_B + POW_2_14) >> 15;
+        const uint32_t pwmPeriodDec_C = (pwmPeriodQ15_C + POW_2_14) >> 15;
+
+        return {pwmPeriodDec_A, pwmPeriodDec_B, pwmPeriodDec_C};
 }
 
 } // namespace SpaceVectorModulation
