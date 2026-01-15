@@ -69,7 +69,7 @@ private:
         int32_t inverseVdc_Q15 = 0;
 
         /**
-         * The zero sequence modulation type
+         * The zero-sequence modulation type
          */
         ZeroSequenceModulationType zeroSequenceModulation = ZeroSequenceModulationType::MIDPOINT_CLAMP;
 
@@ -90,14 +90,19 @@ private:
          */
         static inline MinMax findMinMax(int32_t a, int32_t b, int32_t c) {
                 MinMax r{a, a};
+
                 if (b < r.min)
                         r.min = b;
+
                 if (b > r.max)
                         r.max = b;
+
                 if (c < r.min)
                         r.min = c;
+
                 if (c > r.max)
                         r.max = c;
+
                 return r;
         }
 };
