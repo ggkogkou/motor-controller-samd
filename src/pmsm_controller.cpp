@@ -89,11 +89,11 @@ void PMSM_Controller::encoderOffsetCalibration(const PhaseDutyCycles& dutyCycles
         constexpr uint16_t ThetaElectricalLock = 0;
 
         const auto AlphaBetaFrame = MathUtils::performInverseParkTransform(Ud, Uq, ThetaElectricalLock);
-        const auto DutyCycles = pwm.computeQ15(clamp16Bits(AlphaBetaFrame[0]), clamp16Bits(AlphaBetaFrame[1]));
+        const auto DutyCycles = pwm.compute(clamp16Bits(AlphaBetaFrame[0]), clamp16Bits(AlphaBetaFrame[1]));
 
-        const uint32_t tmpPeriodA = duty_q15_to_period(pwmPeriod, DutyCycles.dutyA_q15);
-        const uint32_t tmpPeriodB = duty_q15_to_period(pwmPeriod, DutyCycles.dutyB_q15);
-        const uint32_t tmpPeriodC = duty_q15_to_period(pwmPeriod, DutyCycles.dutyC_q15);
+        const uint32_t tmpPeriodA = duty_q15_to_period(pwmPeriod, DutyCycles.dutyCycleA);
+        const uint32_t tmpPeriodB = duty_q15_to_period(pwmPeriod, DutyCycles.dutyCycleB);
+        const uint32_t tmpPeriodC = duty_q15_to_period(pwmPeriod, DutyCycles.dutyCycleC);
 
         dutyCycles.perA = tmpPeriodA;
         dutyCycles.perB = tmpPeriodB;
@@ -127,7 +127,7 @@ void PMSM_Controller::updateOpenLoop(const PhaseDutyCycles& dutyCycles) {
         constexpr int32_t Ud = 0; /// in mV
 
         const auto InvPark = MathUtils::performInverseParkTransform(Ud, Uq, thetaElectrical);
-        const auto [dA, dB, dC] = pwm.computeQ15(clamp16Bits(InvPark[0]), clamp16Bits(InvPark[1]));
+        const auto [dA, dB, dC] = pwm.compute(clamp16Bits(InvPark[0]), clamp16Bits(InvPark[1]));
 
         const uint32_t tmpPeriodA = duty_q15_to_period(pwmPeriod, dA);
         const uint32_t tmpPeriodB = duty_q15_to_period(pwmPeriod, dB);
@@ -178,7 +178,7 @@ void PMSM_Controller::updateVelocity(const PhaseCurrents& phaseCurrents, const P
         /// TODO: Create a limit circle function that takes also care of overmodulation etc
 
         const auto AlphaBetaFrame = MathUtils::performInverseParkTransform(Ud_mV, Uq_mV, ThetaEl);
-        const auto [dA, dB, dC] = pwm.computeQ15(clamp16Bits(AlphaBetaFrame[0]), clamp16Bits(AlphaBetaFrame[1]));
+        const auto [dA, dB, dC] = pwm.compute(clamp16Bits(AlphaBetaFrame[0]), clamp16Bits(AlphaBetaFrame[1]));
 
         const uint32_t tmpPeriodA = duty_q15_to_period(pwmPeriod, dA);
         const uint32_t tmpPeriodB = duty_q15_to_period(pwmPeriod, dB);
@@ -195,7 +195,7 @@ void PMSM_Controller::stopMotor(const PhaseDutyCycles& dutyCycles) const {
         constexpr int16_t V_Alpha = 0;
         constexpr int16_t V_Beta = 0;
 
-        const auto [dA, dB, dC] = pwm.computeQ15(V_Alpha, V_Beta);
+        const auto [dA, dB, dC] = pwm.compute(V_Alpha, V_Beta);
 
         const uint32_t tmpPeriodA = duty_q15_to_period(pwmPeriod, dA);
         const uint32_t tmpPeriodB = duty_q15_to_period(pwmPeriod, dB);

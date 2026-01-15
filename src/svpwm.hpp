@@ -21,15 +21,6 @@ struct DutyCycles {
 };
 
 /**
- * Q15 duty cycles (0..32767) where 32768 would be 1.0.
- */
-struct DutyCyclesQ15 {
-        uint16_t dutyA_q15 = 0;
-        uint16_t dutyB_q15 = 0;
-        uint16_t dutyC_q15 = 0;
-};
-
-/**
  * Class that implements the SVPWM technique
  */
 class SVPWM {
@@ -37,19 +28,14 @@ public:
         SVPWM() = default;
 
         /**
-         * @param vdc The DC link voltage (in mV)
+         * @param dcMotorVoltage_mV The DC link voltage (in mV)
          */
-        explicit SVPWM(int16_t vdc, ZeroSequenceModulationType zsm) : dcLinkVoltage(vdc), zeroSequenceModulation(zsm) {
-                assert(vdc > 0);
-        }
+        explicit SVPWM(int16_t dcMotorVoltage_mV, ZeroSequenceModulationType zsm) :
+            dcLinkVoltage(dcMotorVoltage_mV), zeroSequenceModulation(zsm) {
+                assert(dcMotorVoltage_mV > 0);
 
-        /**
-         * Fixed-point (preferred): returns duty in Q15.
-         *
-         * @param vAlpha (in mV)
-         * @param vBeta  (in mV)
-         */
-        [[nodiscard]] DutyCyclesQ15 computeQ15(int16_t vAlpha, int16_t vBeta) const;
+                inverseVdc_Q15 = ((static_cast<int32_t>(1) << 15) + dcMotorVoltage_mV / 2) / dcMotorVoltage_mV;
+        }
 
         /**
          * Function that modulates the duty cycles for the center-aligned PWM signals that will drive the three-phase inverter using
@@ -57,15 +43,20 @@ public:
          *
          * @param vAlpha The Vα component found after inverse Park transformation in mV
          * @param vBeta The Vβ component found after inverse Park transformation in mV
-         * @return The duty cycles in the the interval [0, 1'0000'000]
+         * @return The duty cycles in the Q15 fixed-point arithmetic interval [0, 32'767]
          */
-        [[nodiscard]] DutyCycles compute(int16_t vAlpha, int16_t vBeta) const;
+        [[nodiscard]] DutyCycles compute(int32_t vAlpha, int32_t vBeta) const;
 
 private:
         /**
          * The DC link voltage in mV
          */
-        int16_t dcLinkVoltage = 5000;
+        int32_t dcLinkVoltage = 5000;
+
+        /**
+         * Fixed-point inverse of the DC link voltage (1/Vdc) in Q15 format
+         */
+        int32_t inverseVdc_Q15 = 0;
 
         /**
          * The DC Link voltage in Volts

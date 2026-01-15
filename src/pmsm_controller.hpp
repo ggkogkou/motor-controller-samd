@@ -152,7 +152,7 @@ private:
         /**
          * The Space Vector PWM block
          */
-        SVPWM pwm{20'000, ZeroSequenceModulationType::MIDPOINT_CLAMP};
+        SVPWM pwm{18'000, ZeroSequenceModulationType::MIDPOINT_CLAMP};
 
         /**
          * Velocity PI: error in mrad/s, output in mA
