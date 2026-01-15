@@ -15,9 +15,9 @@ enum class ZeroSequenceModulationType {
 };
 
 struct DutyCycles {
-        float dutyCycleA = 0.0f;
-        float dutyCycleB = 0.0f;
-        float dutyCycleC = 0.0f;
+        int32_t dutyCycleA = 0;
+        int32_t dutyCycleB = 0;
+        int32_t dutyCycleC = 0;
 };
 
 /**
@@ -52,10 +52,12 @@ public:
         [[nodiscard]] DutyCyclesQ15 computeQ15(int16_t vAlpha, int16_t vBeta) const;
 
         /**
-         * Compatibility API: returns float duty (0..1). Internally uses computeQ15.
+         * Function that modulates the duty cycles for the center-aligned PWM signals that will drive the three-phase inverter using
+         * Space Vector Modulation techniques
          *
-         * @param vAlpha (in mV)
-         * @param vBeta  (in mV)
+         * @param vAlpha The Vα component found after inverse Park transformation in mV
+         * @param vBeta The Vβ component found after inverse Park transformation in mV
+         * @return The duty cycles in the the interval [0, 1'0000'000]
          */
         [[nodiscard]] DutyCycles compute(int16_t vAlpha, int16_t vBeta) const;
 
@@ -65,7 +67,30 @@ private:
          */
         int16_t dcLinkVoltage = 5000;
 
+        /**
+         * The DC Link voltage in Volts
+         */
+        int32_t DC_LinkVoltage = 5;
+
         ZeroSequenceModulationType zeroSequenceModulation = ZeroSequenceModulationType::MIDPOINT_CLAMP;
+
+        struct MinMax {
+                int32_t min;
+                int32_t max;
+        };
+
+        static inline MinMax findMinMax(int32_t a, int32_t b, int32_t c) {
+                MinMax r{a, a};
+                if (b < r.min)
+                        r.min = b;
+                if (b > r.max)
+                        r.max = b;
+                if (c < r.min)
+                        r.min = c;
+                if (c > r.max)
+                        r.max = c;
+                return r;
+        }
 };
 
 } // namespace SpaceVectorModulation

@@ -67,7 +67,7 @@ DutyCyclesQ15 SVPWM::computeQ15(int16_t vAlpha, int16_t vBeta) const {
                 Vb += v0;
                 Vc += v0;
         } else {
-                // Other ZSM modes not implemented here (kept identical to MIDPOINT_CLAMP use-case).
+                // Other ZSM modes not implemented here (kept identical to the MIDPOINT_CLAMP use-case).
         }
 
         // IMPORTANT:
@@ -90,14 +90,37 @@ DutyCyclesQ15 SVPWM::computeQ15(int16_t vAlpha, int16_t vBeta) const {
 }
 
 DutyCycles SVPWM::compute(int16_t vAlpha, int16_t vBeta) const {
-        const auto dc = computeQ15(vAlpha, vBeta);
-        constexpr float INV_Q15 = 1.0f / 32768.0f;
+        constexpr int32_t SQRT3_2_SCALED = 866; /// 0.866 * 1000
 
-        return DutyCycles{
-                static_cast<float>(dc.dutyA_q15) * INV_Q15,
-                static_cast<float>(dc.dutyB_q15) * INV_Q15,
-                static_cast<float>(dc.dutyC_q15) * INV_Q15,
+        int32_t Va = vAlpha * 1000; /// Va in μV
+        int32_t Vb = -500 * vAlpha + SQRT3_2_SCALED * vBeta; /// Vb in μV
+        int32_t Vc = -500 * vAlpha - SQRT3_2_SCALED * vBeta; /// Vc in μV
+
+        const auto [V_Min, V_Max] = findMinMax(Va, Vb, Vc);
+
+        int32_t zeroSequenceComponent = 0;
+
+        if (zeroSequenceModulation == ZeroSequenceModulationType::MIDPOINT_CLAMP)
+                zeroSequenceComponent -= (V_Min + V_Max) / 2;
+
+        Va += zeroSequenceComponent;
+        Vb += zeroSequenceComponent;
+        Vc += zeroSequenceComponent;
+
+        /// voltage is in μV
+        auto convertVoltageToDutyCycle = [&](int32_t voltage) -> int32_t {
+                constexpr int32_t MinimumDutyCycle = 0;
+                constexpr int32_t MaximumDutyCycle = 1'000'000;
+                constexpr int32_t MidDutyCycle = MaximumDutyCycle / 2;
+
+                return std::clamp(MidDutyCycle + voltage / DC_LinkVoltage, MinimumDutyCycle, MaximumDutyCycle);
         };
+
+        const auto DutyCycleA = convertVoltageToDutyCycle(Va);
+        const auto DutyCycleB = convertVoltageToDutyCycle(Vb);
+        const auto DutyCycleC = convertVoltageToDutyCycle(Vc);
+
+        return DutyCycles{DutyCycleA, DutyCycleB, DutyCycleC};
 }
 
 } // namespace SpaceVectorModulation
