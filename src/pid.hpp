@@ -13,7 +13,8 @@ public:
 
         explicit Q16_t(float x) : raw(static_cast<int32_t>(x * (1u << Q16_Factor))) {}
 
-        [[nodiscard]] int32_t getRaw() const {
+        __attribute__((always_inline))
+        [[nodiscard]] inline int32_t getRaw() const {
                 return raw;
         }
 
@@ -24,10 +25,9 @@ public:
          * @param b
          * @return
          */
+        __attribute__((always_inline))
         friend inline int32_t operator*(Q16_t k, int32_t x) {
                 int64_t p = static_cast<int64_t>(k.getRaw()) * static_cast<int64_t>(x);
-                // optional rounding:
-                p += p >= 0 ? 1 << (Q16_Factor - 1) : -(1 << (Q16_Factor - 1));
 
                 return static_cast<int32_t>(p >> Q16_Factor);
         }
@@ -41,6 +41,7 @@ public:
          * @param b
          * @return
          */
+        __attribute__((always_inline))
         friend inline int32_t operator*(int32_t x, Q16_t k) {
                 return k * x;
         }
@@ -52,9 +53,9 @@ public:
          * @param b
          * @return
          */
+        __attribute__((always_inline))
         friend inline Q16_t operator*(Q16_t a, Q16_t b) {
                 int64_t p = static_cast<int64_t>(a.getRaw()) * static_cast<int64_t>(b.getRaw());
-                p += (p >= 0) ? (1LL << (Q16_Factor - 1)) : -(1LL << (Q16_Factor - 1));
                 return Q16_t(static_cast<int32_t>(p >> Q16_Factor));
         }
 
