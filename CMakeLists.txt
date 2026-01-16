@@ -37,7 +37,7 @@ endif ()
 # Flags
 # ------------------------------------------------------------------------------
 set(COMMON_FLAGS "-mcpu=${MCU_ARCH} -mthumb -mfloat-abi=soft -ffunction-sections -fdata-sections -Wall -Wextra -g3")
-set(OPT_FLAGS "-O3 -flto")
+set(OPT_FLAGS "-O0 -flto")
 
 set(CMAKE_C_FLAGS
         "${COMMON_FLAGS} ${OPT_FLAGS} -std=gnu99"
@@ -134,6 +134,7 @@ set(SOURCES
         src/pmsm_controller.cpp
         src/spi_buffer.cpp
         src/USART_TxStream.cpp
+        src/SAMD21_FOC.cpp
 
         # System initialization and configuration
         src/config/sam_d21_xpro/initialization.c
