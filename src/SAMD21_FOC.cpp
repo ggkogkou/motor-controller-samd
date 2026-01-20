@@ -76,9 +76,16 @@ void SAMD21_FOC::ADC_Callback(ADC_STATUS status) {
 void SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_STATUS status) {
         (void)status;
 
-        if (!encoderPrimed) {
+        if (not encoderPrimed) {
                 (void)encoder.request(AS5047P::RegisterAddress::ANGLECOM);
                 encoderPrimed = true;
+                return;
+        }
+
+        if (not offsetsReady) {
+                motor.stopMotor(dutyCycles);
+                setPWM_DutyCycles();
+                adcZeroOffsetCalibration();
                 return;
         }
 
@@ -94,6 +101,18 @@ void SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_STATUS status) {
                 return;
         }
 
+        if (adcResultsReady) {
+                adcResultsReady = false;
+
+                const int32_t CurrentPhaseU = adcRawToCurrent(adcResultU, adcOffsetU);
+                const int32_t CurrentPhaseV = adcRawToCurrent(adcResultV, adcOffsetV);
+                const int32_t CurrentPhaseW = adcRawToCurrent(adcResultW, adcOffsetW);
+
+                currents.Ia = CurrentPhaseU;
+                currents.Ib = CurrentPhaseV;
+                currents.Ic = CurrentPhaseW;
+        }
+
         motor.updateVelocity(currents, dutyCycles, rotorPosition);
         setPWM_DutyCycles();
 }
@@ -102,6 +121,42 @@ void SAMD21_FOC::setPWM_DutyCycles() const {
         TCC0_PWM24bitDutySet(TCC0_CHANNEL0, TCC_PeriodU);
         TCC0_PWM24bitDutySet(TCC0_CHANNEL1, TCC_PeriodV);
         TCC0_PWM24bitDutySet(TCC0_CHANNEL2, TCC_PeriodW);
+}
+
+void SAMD21_FOC::adcZeroOffsetCalibration() {
+        // motor.stopMotor(dutyCycles);
+        // setPWM_DutyCycles();
+
+        static constexpr uint16_t ADC_ScanCount = 512;
+
+        if (!adcResultsReady)
+                return;
+
+        adcResultsReady = false;
+
+        if (offsetsReady)
+                return;
+
+        offsetAccU += adcResultU;
+        offsetAccV += adcResultV;
+        offsetAccW += adcResultW;
+        offsetCount++;
+
+        if (offsetCount >= ADC_ScanCount) {
+                adcOffsetU = static_cast<uint16_t>((offsetAccU + offsetCount / 2) / offsetCount);
+                adcOffsetV = static_cast<uint16_t>((offsetAccV + offsetCount / 2) / offsetCount);
+                adcOffsetW = static_cast<uint16_t>((offsetAccW + offsetCount / 2) / offsetCount);
+
+                // opAmpOffset_mV = rawToMilliVolts(adcOffsetV);
+
+                offsetsReady = true;
+
+                offsetAccU = 0;
+                offsetAccV = 0;
+                offsetAccW = 0;
+
+                offsetCount = 0;
+        }
 }
 
 } // namespace PermanentMagnetSynchronousMotor

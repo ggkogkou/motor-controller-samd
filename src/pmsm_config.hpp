@@ -25,7 +25,7 @@ struct PMSM_Config {
         /**, CF
          * Target velocity for the outer velocity loop
          */
-        static constexpr float TargetVelocity = 8.0f;
+        static constexpr float TargetVelocity = 10.0f;
 
         /**
          * Target velocity for the encoder calibration loop (ω = 2π rad/s)

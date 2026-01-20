@@ -89,7 +89,6 @@ void PMSM_Controller::encoderOffsetCalibration(const PhaseDutyCycles& dutyCycles
         if (timerCounter > MoveDuringCalibrationTicks) {
                 thetaMechanical = thetaEncoder;
 
-                // offset so ThetaEl14 == 0 at this locked position
                 uint16_t tmpEl14 = wrapAngle(thetaMechanical * PMSM_Config::MotorPolePairs);
 
                 if (dirSign < 0)

@@ -48,7 +48,7 @@ struct AngleVelocityEstimator {
             lastWrappedAngle(initialWrappedAngle), unwrappedAngle(initialWrappedAngle), angularVelocity(0), filterTimeConstant(tau) {}
 
         /**
-         * Update function that runs in the velocity control loop
+         * Function that must be called periodically in order to run the velocity control loop
          *
          * @param wrappedAngle The wrapped angle (in mrad)
          * @param deltaTime The change of time dT (in μsec)

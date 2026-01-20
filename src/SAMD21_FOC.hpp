@@ -39,6 +39,68 @@ private:
         void setPWM_DutyCycles() const;
 
         /**
+         * The ADC reference voltage in mV (1/1.48*Vdd)
+         */
+        static constexpr int32_t ADC_VREF_mV = 2'230;
+
+        /**
+         * The ADC resolution which is 12-bit thus 2^12
+         */
+        static constexpr int32_t ADC_Resolution = 4'096;
+
+        /**
+         * The maximum value that the ADC peripheral can read
+         */
+        static constexpr int32_t ADC_MaximumRawValue = ADC_Resolution - 1;
+
+        /**
+         * Helper function that converts the raw 12-bit ADC reading to the corresponding voltage (in mV)
+         *
+         * @param adcRawValue The 12-bit ADC raw word from REDRDY register
+         * @return The corresponding voltage in mV
+         */
+        static inline int32_t rawToMilliVolts(int32_t adcRawValue) {
+                if (adcRawValue >= 0)
+                        return (adcRawValue * ADC_VREF_mV + ADC_MaximumRawValue / 2) / ADC_MaximumRawValue;
+
+                return (adcRawValue * ADC_VREF_mV - ADC_MaximumRawValue / 2) / ADC_MaximumRawValue;
+        }
+
+        static_assert(ADC_MaximumRawValue * ADC_VREF_mV <= INT32_MAX);
+
+        /**
+         * Convert one ADC channel (raw) to phase current (mA) using the measured offset (raw)
+         *
+         * Assume bidirectional current sense centered at mid-supply
+         *
+         * @note The current equation is I_mA = (vSense_mV * 1000) / (Gain * R_shunt_mOhm)
+         */
+        static inline int32_t adcRawToCurrent(uint16_t adcRawValue, uint16_t adcOffsetRawValue) {
+                const int32_t Raw = static_cast<int32_t>(adcRawValue) - static_cast<int32_t>(adcOffsetRawValue);
+                const int32_t ShuntVoltage_mV = rawToMilliVolts(Raw);
+
+                if (ShuntVoltage_mV >= 0)
+                        return (ShuntVoltage_mV * 1000 + SenseGain * R_Shunt_mOhm / 2) / (SenseGain * R_Shunt_mOhm);
+
+                return (ShuntVoltage_mV * 1000 - SenseGain * R_Shunt_mOhm / 2) / (SenseGain * R_Shunt_mOhm);
+        }
+
+        /**
+         * Function that performs the initial zero-input offset calibration
+         *
+         * When motor is inactive and windings are de-energized, the positive input node of the op-amp is pulled down to GND through
+         * the shunt resistor
+         *
+         * This is a typical process when using op-amps and MCU ADCs
+         *
+         * @note Make sure to stop the motor before running this function
+         *
+         * @see
+         * https://onlinedocs.microchip.com/oxy/GUID-087A9847-6B26-452A-ABE4-5742B6A74CAF-en-US-1/GUID-F04AB974-02FC-49FB-B736-47235A36AE7B.html
+         */
+        void adcZeroOffsetCalibration();
+
+        /**
          * The Brushless-DC motor object that contains the math of the FOC
          */
         PMSM_Controller motor;
@@ -74,6 +136,22 @@ private:
 
         bool adcResultsReady = false;
         uint8_t adcScanIndex = 0;
+
+        uint16_t adcOffsetU = 0;
+        uint16_t adcOffsetV = 0;
+        uint16_t adcOffsetW = 0;
+
+        uint32_t offsetAccU = 0;
+        uint32_t offsetAccV = 0;
+        uint32_t offsetAccW = 0;
+        uint16_t offsetCount = 0;
+        bool offsetsReady = false;
+
+        static constexpr int32_t R_Shunt_mOhm = 100;
+
+        static constexpr int32_t SenseGain = 4;
+
+        int32_t opAmpOffset_mV = 1'650;
 
         bool switchToCloseLoop = false;
 
