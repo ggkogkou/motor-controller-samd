@@ -134,9 +134,9 @@ void SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_STATUS status) {
                 const int32_t CurrentPhaseV = adcRawToCurrent(adcResultV, adcOffsetV);
                 const int32_t CurrentPhaseW = adcRawToCurrent(adcResultW, adcOffsetW);
 
-                currents.Ia = CurrentPhaseU;
-                currents.Ib = CurrentPhaseV;
-                currents.Ic = CurrentPhaseW;
+                currents.Ia_mA = CurrentPhaseU;
+                currents.Ib_mA = CurrentPhaseV;
+                currents.Ic_mA = CurrentPhaseW;
         }
 
         motor.updateVelocity(currents, dutyCycles, rotorPosition);

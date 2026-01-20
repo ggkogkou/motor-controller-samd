@@ -25,7 +25,6 @@
 #include <cstdlib>
 #include "definitions.h"
 #include "USART_TxStream.hpp"
-#include "logger.hpp"
 #include "spi_buffer.hpp"
 #include "SAMD21_FOC.hpp"
 

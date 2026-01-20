@@ -130,7 +130,6 @@ set(SOURCES
         src/main.cpp
         src/svpwm.cpp
         src/pid.cpp
-        src/logger.cpp
         src/pmsm_controller.cpp
         src/spi_buffer.cpp
         src/USART_TxStream.cpp

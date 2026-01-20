@@ -31,7 +31,6 @@
 #include <limits>
 #include <type_traits>
 #include "definitions.h"
-#include "logger.hpp"
 #include "spi_buffer.hpp"
 
 using namespace ATSAMD21_GGKOGKOU;
