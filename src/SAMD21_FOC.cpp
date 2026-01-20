@@ -113,7 +113,9 @@ void SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_STATUS status) {
                 return;
         }
 
-        const auto rotorPosition = static_cast<uint16_t>(encoder.measureAngleCompensatedRaw() & 0x3FFFu);
+        static constexpr uint16_t EncoderMask =  0x3FFF;
+
+        const auto rotorPosition = static_cast<uint16_t>(encoder.measureAngleCompensatedRaw() & EncoderMask);
 
         if (not AS5047P::sensorBusy()) {
                 (void)encoder.request(AS5047P::RegisterAddress::ANGLECOM);
