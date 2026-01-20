@@ -166,10 +166,7 @@ void PMSM_Controller::updateVelocity(const PhaseCurrents& phaseCurrents, const P
 
         const int32_t Iq_Ref = pidVelocity.compute(VelocityError); /// output is Iq,ref in mA
 
-        const auto Ia_mA = static_cast<int32_t>(phaseCurrents.Ia * 1000.0f); /// in mA
-        const auto Ib_mA = static_cast<int32_t>(phaseCurrents.Ib * 1000.0f); /// in mA
-
-        const auto dqFrame = MathUtils::performClarkeParkTransforms(Ia_mA, Ib_mA, ThetaEl);
+        const auto dqFrame = MathUtils::performClarkeParkTransforms(phaseCurrents.Ia_mA, phaseCurrents.Ib_mA, ThetaEl);
 
         constexpr int32_t Id_Ref = 0; /// in mA
 

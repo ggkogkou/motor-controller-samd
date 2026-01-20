@@ -36,12 +36,22 @@ namespace PermanentMagnetSynchronousMotor {
 
 using namespace SpaceVectorModulation;
 
+/**
+ * @struct PhaseCurrents
+ *
+ * The phase currents of the 3-phase system in mA
+ */
 struct PhaseCurrents {
-        float Ia = 0.0f;
-        float Ib = 0.0f;
-        float Ic = 0.0f;
+        int32_t Ia_mA = 0;
+        int32_t Ib_mA = 0;
+        int32_t Ic_mA = 0;
 };
 
+/**
+ * @struct PhaseDutyCycles
+ *
+ * The duty cycles that will be applied to drive the 3-phase system
+ */
 struct PhaseDutyCycles {
         uint32_t& perA;
         uint32_t& perB;
@@ -50,6 +60,11 @@ struct PhaseDutyCycles {
         PhaseDutyCycles(uint32_t& a, uint32_t& b, uint32_t& c) : perA(a), perB(b), perC(c) {}
 };
 
+/**
+ * @struct AngleVelocityEstimator
+ *
+ * Implementation of a velocity estimator to be used in the velocity control loop
+ */
 struct AngleVelocityEstimator {
         int32_t lastWrappedAngle; // mrad
         int32_t unwrappedAngle; // mrad
