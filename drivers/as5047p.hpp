@@ -1,3 +1,27 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Georgios Gkogkou <ggkogkou125@gmail.com>
+
+/*
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
+ * @file   as5047p.hpp
+ * @brief  Device driver for the AS5047P magnetic encoder (implements only SPI mode)
+ * @author Georgios Gkogkou <ggkogkou125@gmail.com>
+ */
+
 #pragma once
 
 #include <array>
@@ -7,7 +31,6 @@
 #include <limits>
 #include <type_traits>
 #include "definitions.h"
-#include "logger.hpp"
 #include "spi_buffer.hpp"
 
 using namespace ATSAMD21_GGKOGKOU;
@@ -138,10 +161,7 @@ public:
          *
          * Meant to be used when default configurations are OK or device OTP is programmed
          */
-        AS5047P() {
-                AS5047_CS_Set();
-                spiRequest.chipSelectPin = AS5047_CS_PIN;
-        }
+        AS5047P();
 
         /**
          * Constructor that initializes the device with the user-defined configurations
@@ -214,6 +234,13 @@ public:
         [[nodiscard]] Angle_t measureAngleCompensated() const;
 
         /**
+         * Function that reads the compensated angle (DAEC output)
+         *
+         * @return The 14-bit raw register value for angle compensated
+         */
+        [[nodiscard]] uint16_t measureAngleCompensatedRaw() const;
+
+        /**
          * Function that reads the CORDIC magnetic field magnitude
          *
          * @return The 14-bit measured magnetic field magnitude
@@ -232,8 +259,12 @@ public:
          */
         void readAndClearErrorFlags() const;
 
+        static bool sensorBusy();
+
 private:
         uint16_t latestRegisterRequested = 0;
+
+        inline static bool isSensorBusy = false;
 
         /**
          * @enum ERRFL_RegisterMask

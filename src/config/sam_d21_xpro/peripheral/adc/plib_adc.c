@@ -103,8 +103,15 @@ void ADC_Initialize(void) {
     ADC_REGS->ADC_REFCTRL = ADC_REFCTRL_REFSEL_INTVCC0;
 
     /* positive and negative input pins */
-    ADC_REGS->ADC_INPUTCTRL = (uint32_t) ADC_POSINPUT_PIN2 | (uint32_t) ADC_NEGINPUT_GND | ADC_INPUTCTRL_INPUTSCAN(2U) |
-                              ADC_INPUTCTRL_INPUTOFFSET(0U) | ADC_INPUTCTRL_GAIN_1X;
+    // ADC_REGS->ADC_INPUTCTRL = (uint32_t) ADC_POSINPUT_PIN2 | (uint32_t) ADC_NEGINPUT_GND | ADC_INPUTCTRL_INPUTSCAN(2U) |
+    //                           ADC_INPUTCTRL_INPUTOFFSET(0U) | ADC_INPUTCTRL_GAIN_1X;
+
+        ADC_REGS->ADC_INPUTCTRL = (uint32_t) ADC_POSINPUT_PIN3
+                         | (uint32_t) ADC_NEGINPUT_GND
+                         | ADC_INPUTCTRL_INPUTSCAN(8U)   // 8 -> 9 channels: 3..11
+                         | ADC_INPUTCTRL_INPUTOFFSET(0U)
+                         | ADC_INPUTCTRL_GAIN_1X;
+
 
     while ((ADC_REGS->ADC_STATUS & ADC_STATUS_SYNCBUSY_Msk) != 0U) {
         /* Wait for Synchronization */

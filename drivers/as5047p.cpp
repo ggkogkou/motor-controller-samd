@@ -1,4 +1,34 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Georgios Gkogkou <ggkogkou125@gmail.com>
+
+/*
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
+ * @file   as5047p.cpp
+ * @brief  Device driver for the AS5047P magnetic encoder (implements only SPI mode)
+ * @author Georgios Gkogkou <ggkogkou125@gmail.com>
+ */
+
 #include "as5047p.hpp"
+
+AS5047P::AS5047P() {
+        ENCODER_CS_Set();
+        spiRequest.chipSelectPin = ENCODER_CS_PIN;
+        isSensorBusy = false;
+}
 
 bool AS5047P::readDeviceRegister(RegisterAddress registerAddress) {
         uint16_t commandFrame = ReadWriteCommandMask::READ | registerAddress;
@@ -13,12 +43,16 @@ bool AS5047P::readDeviceRegister(RegisterAddress registerAddress) {
         const auto CommandFrameLSB = static_cast<uint8_t>(commandFrame & 0b1111'1111);
 
         spiRequest.txBuffer = {CommandFrameMSB, CommandFrameLSB};
-        spiRequest.chipSelectPin = AS5047_CS_PIN;
+        spiRequest.chipSelectPin = ENCODER_CS_PIN;
         spiRequest.callback = &AS5047P::spiTransferCallback;
         spiRequest.context = this;
 
-        if (SPI_Buffer::submit(spiRequest) != SPI_Buffer::TransactionState::PLACED)
+        isSensorBusy = true;
+
+        if (SPI_Buffer::submit(spiRequest) != SPI_Buffer::TransactionState::PLACED) {
+                isSensorBusy = false;
                 return false;
+        }
 
         return true;
 }
@@ -33,22 +67,6 @@ void AS5047P::writeDeviceRegister(RegisterAddress registerAddress, RegisterData_
 
         std::array<uint8_t, CommandFrameSize> addressBuffer{CommandFrameMSB, CommandFrameLSB};
         std::array<uint8_t, DataFrameSize> dataBuffer{DataFrameMSB, DataFrameLSB};
-
-        // AS5047_CS_Clear();
-
-        // if (SERCOM4_SPI_Write(&addressBuffer[0], 2))
-        //         Logger_Info("SPI sent data\r\n");
-        // else
-        //         Logger_Error("SPI failed to send data\r\n");
-        //
-        // AS5047_CS_Set();
-        // SYSTICK_DelayMs(1);
-        // AS5047_CS_Clear();
-        //
-        // if (SERCOM4_SPI_Write(&dataBuffer[0], 2))
-        //         Logger_Info("SPI sent data\r\n");
-        // else
-        //         Logger_Error("SPI failed to send data\r\n");
 }
 
 bool AS5047P::request(RegisterAddress registerAddress) {
@@ -65,23 +83,25 @@ void AS5047P::spiTransferCallback(void* context) {
         // const auto& rxBuffer = self->spiJob.rxBuffer;
         const auto rxBuffer = self->spiRequest.rxBuffer;
 
-        const auto PARD_Bit = static_cast<uint8_t>(rxBuffer[0] & 0b0111'1111);
+        const auto PARD_Bit = static_cast<uint8_t>(rxBuffer[0] & 0b1000'0000);
         const auto ParityCount = std::popcount(rxBuffer[0]) + std::popcount(rxBuffer[1]);
 
-        if (ParityCount % 2 == 1 && PARD_Bit == 0) {
+        if (ParityCount % 2 == 1) {
                 self->latestRegisterRequested = 0;
                 return;
         }
 
-        const auto EF_Bit = static_cast<uint8_t>(rxBuffer[0] & 0b1011'1111);
+        const auto EF_Bit = static_cast<uint8_t>(rxBuffer[0] & 0b0100'0000);
 
-        if (EF_Bit == 1) {
+        if (EF_Bit == 0b0100'0000) {
                 self->latestRegisterRequested = 0;
                 return;
         }
 
         self->latestRegisterRequested = static_cast<RegisterData_t>(
                 static_cast<RegisterData_t>(rxBuffer[0] & 0b0011'1111) << 8 | static_cast<RegisterData_t>(rxBuffer[1]));
+
+        isSensorBusy = false;
 }
 
 AS5047P::Angle_t AS5047P::measureAngleUncompensated() const {
@@ -97,6 +117,8 @@ AS5047P::Angle_t AS5047P::measureAngleCompensated() const {
 
         return static_cast<Angle_t>(AngleComData) / static_cast<Angle_t>(AngleResolutionSPI) * FullRotationDegrees;
 }
+
+uint16_t AS5047P::measureAngleCompensatedRaw() const { return latestRegisterRequested; }
 
 AS5047P::FieldMagnitude_t AS5047P::measureFieldMagnitude() const {
         // return readDeviceRegister(RegisterAddress::MAG);
@@ -131,3 +153,5 @@ void AS5047P::readAndClearErrorFlags() const {
         // if (ERRFL_Data & static_cast<RegisterData_t>(ERRFL_RegisterMask::FRAMING_ERROR))
         //         // Logger_Info("Error flag: Framing error\r\n");
 }
+
+bool AS5047P::sensorBusy() { return isSensorBusy; }

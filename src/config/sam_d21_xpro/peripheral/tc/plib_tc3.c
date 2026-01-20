@@ -56,7 +56,6 @@
 #include "plib_tc3.h"
 #include "interrupts.h"
 
-
 // *****************************************************************************
 // *****************************************************************************
 // Section: Global Data
@@ -85,7 +84,7 @@ void TC3_TimerInitialize(void) {
         TC3_REGS->COUNT16.TC_CTRLA = TC_CTRLA_MODE_COUNT16 | TC_CTRLA_PRESCALER_DIV64 | TC_CTRLA_WAVEGEN_MPWM;
 
         /* Configure timer period */
-        TC3_REGS->COUNT16.TC_CC[0U] = 749U;
+        TC3_REGS->COUNT16.TC_CC[0U] = 500U;
 
         /* Clear all interrupt flags */
         TC3_REGS->COUNT16.TC_INTFLAG = TC_INTFLAG_Msk;
@@ -93,7 +92,6 @@ void TC3_TimerInitialize(void) {
         TC3_CallbackObject.callback = NULL;
         /* Enable interrupt*/
         TC3_REGS->COUNT16.TC_INTENSET = TC_INTENSET_OVF_Msk;
-
 
         while ((TC3_REGS->COUNT16.TC_STATUS & TC_STATUS_SYNCBUSY_Msk) != 0U) {
                 /* Wait for Write Synchronization */
@@ -165,7 +163,6 @@ uint16_t TC3_Timer16bitPeriodGet(void) {
         }
         return (uint16_t)TC3_REGS->COUNT16.TC_CC[0];
 }
-
 
 /* Register callback function */
 void TC3_TimerCallbackRegister(TC_TIMER_CALLBACK callback, uintptr_t context) {

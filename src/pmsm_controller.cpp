@@ -1,63 +1,45 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Georgios Gkogkou <ggkogkou125@gmail.com>
+
+/*
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
+ * @file   pmsm_controller.cpp
+ * @brief  Hardware-independent Field-Oriented Control algorithm implementation
+ * @author Georgios Gkogkou <ggkogkou125@gmail.com>
+ */
+
 #include "pmsm_controller.hpp"
 
 namespace PermanentMagnetSynchronousMotor {
 
-void PMSM_Controller::directionCalibration(const PhaseDutyCycles& dutyCycles, float thetaEncoder) {
-        updateOpenLoop(dutyCycles);
+PMSM_Controller::PMSM_Controller() {
+        targetVelocity_mrad_s = std::lroundf(PMSM_Config::TargetVelocity * 1000.0f);
 
-        timerCounter++;
+        const float step_counts = PMSM_Config::TargetCalibrationVelocity * dT * (static_cast<float>(16384) / (2.0f * PI));
 
-        if (timerCounter > neededTicks) {
-                if (thetaEncoder > HALF_PI && thetaEncoder < 3.0f * HALF_PI)
-                        dirSign = 1.0f;
-                else if (thetaEncoder > 3.0f * HALF_PI || thetaEncoder < HALF_PI)
-                        dirSign = -1.0f;
-
-                timerCounter = 0;
-                calibrationDirection = Direction::COUNTERCLOCKWISE;
-                calibrationState = CalibrationState::OFFSET_CALIBRATION;
-                directionCalibrationState = DirectionCalibrationState::DONE;
-        }
-
+        const int32_t step_i32 = std::lroundf(step_counts);
+        openLoopStepCounts14 = (step_i32 <= 0) ? 1u : static_cast<uint16_t>(step_i32);
 }
 
-void PMSM_Controller::encoderOffsetCalibration(const PhaseDutyCycles& dutyCycles, float thetaEncoder) {
-        constexpr float Vq = 0.0f;
-        constexpr float Vd = PMSM_Config::InitialCalibrationVoltageLimit;
-        constexpr float ThetaElectricalLock = 0.0f;
-
-        const auto AlphaBetaFrame = performInverseParkTransform(Vd, Vq, ThetaElectricalLock);
-        const auto DutyCycles = pwm.compute(AlphaBetaFrame[0], AlphaBetaFrame[1]);
-        const auto [dA, dB, dC] = DutyCycles;
-
-        const auto tmpPeriodA = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dA);
-        const auto tmpPeriodB = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dB);
-        const auto tmpPeriodC = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dC);
-
-        __disable_irq();
-        dutyCycles.perA = tmpPeriodA;
-        dutyCycles.perB = tmpPeriodB;
-        dutyCycles.perC = tmpPeriodC;
-        __enable_irq();
-
-        timerCounter++;
-
-        if (timerCounter > neededTicks) {
-                __disable_irq();
-                thetaMechanical = thetaEncoder;
-                ZeroOffsetElectricalAngle = wrapAngle(dirSign * PMSM_Config::MotorPolePairs * thetaMechanical);
-                __enable_irq();
-                timerCounter = 0;
-                calibrationState = CalibrationState::DONE;
-        }
-}
-
-bool PMSM_Controller::startupCalibration(const PhaseDutyCycles& dutyCycles, float thetaEncoder) {
-
+bool PMSM_Controller::startupCalibration(const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder) {
         if (calibrationState == CalibrationState::PREPARING) {
                 updateOpenLoop(dutyCycles);
 
-                if (thetaEncoder > 0.0f && thetaEncoder < HALF_PI / 2.0f)
+                if (thetaEncoder > 0 && thetaEncoder < 2048)
                         calibrationState = CalibrationState::DIRECTION_CALIBRATION;
                 else
                         return false;
@@ -65,10 +47,9 @@ bool PMSM_Controller::startupCalibration(const PhaseDutyCycles& dutyCycles, floa
 
         if (calibrationState == CalibrationState::DONE) {
                 if (!velocityEstimator) {
-                        const float thetaEncWrapped = std::remainderf(thetaEncoder, TWO_PI);
-                        velocityEstimator.emplace(thetaEncWrapped, 0.010f);
+                        const int32_t wrapped_mrad = rawToMilliRad(thetaEncoder);
+                        velocityEstimator.emplace(wrapped_mrad, 10'000u); // tau = 10ms
                 }
-
                 return true;
         }
 
@@ -78,119 +59,144 @@ bool PMSM_Controller::startupCalibration(const PhaseDutyCycles& dutyCycles, floa
                 encoderOffsetCalibration(dutyCycles, thetaEncoder);
         else
                 return true;
-        // else if (controlType == ControlType::OPEN_LOOP)
-        //         updateOpenLoop(perA, perB, perC);
-        // else if (controlType == ControlType::CLOSED_LOOP)
-        //         update(perA, perB, perC);
 
         return false;
-        /// Statistically the CLOSED_LOOP will run most; branching should be the opposite to reduce if-else-if checks
+}
+
+void PMSM_Controller::directionCalibration(const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder) {
+        updateOpenLoop(dutyCycles);
+
+        static uint16_t thetaStart = 0;
+        static bool ongoingCalibration = false;
+
+        if (not ongoingCalibration) {
+                thetaStart = wrapAngle(thetaEncoder);
+                ongoingCalibration = true;
+                timerCounter = 0;
+                return;
+        }
+
+        timerCounter++;
+
+        if (timerCounter > MoveDuringCalibrationTicks) {
+                const uint16_t thetaFinal = wrapAngle(thetaEncoder);
+
+                int32_t d = static_cast<int32_t>(thetaFinal) - static_cast<int32_t>(thetaStart);
+
+                if (d > 8192)
+                        d -= 16384;
+                if (d < -8192)
+                        d += 16384;
+
+                dirSign = d >= 0 ? +1 : -1;
+
+                ongoingCalibration = false;
+                timerCounter = 0;
+                calibrationState = CalibrationState::OFFSET_CALIBRATION;
+        }
+}
+
+void PMSM_Controller::encoderOffsetCalibration(const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder) {
+        constexpr int32_t Uq = 0; /// in mV
+        const int32_t Ud = std::lroundf(PMSM_Config::InitialCalibrationVoltageLimit * 1000.0f); /// in mV
+        constexpr uint16_t ThetaElectricalLock = 0;
+
+        const auto InvPark = MathUtils::performInverseParkTransform(Ud, Uq, ThetaElectricalLock);
+        const auto [perA, perB, perC] = pwm.compute(InvPark[0], InvPark[1], pwmPeriod);
+
+        dutyCycles.perA = pwmPeriod - perA;
+        dutyCycles.perB = pwmPeriod - perB;
+        dutyCycles.perC = pwmPeriod - perC;
+
+        timerCounter++;
+
+        if (timerCounter > MoveDuringCalibrationTicks) {
+                thetaMechanical = thetaEncoder;
+
+                uint16_t tmpEl14 = wrapAngle(thetaMechanical * PMSM_Config::MotorPolePairs);
+
+                if (dirSign < 0)
+                        tmpEl14 = wrapAngle(16384u - tmpEl14);
+
+                ZeroOffsetElectricalAngle = tmpEl14;
+
+                timerCounter = 0;
+                calibrationState = CalibrationState::DONE;
+        }
 }
 
 void PMSM_Controller::updateOpenLoop(const PhaseDutyCycles& dutyCycles) {
-        thetaMechanical = wrapAngle(thetaMechanical + 0.001f * PMSM_Config::TargetCalibrationVelocity);
+        thetaMechanical = wrapAngle(thetaMechanical + static_cast<uint32_t>(openLoopStepCounts14));
+        // thetaMechanical = wrapAngle(thetaMechanical + ConvertRadToRaw(PMSM_Config::TargetCalibrationVelocity));
 
-        const auto thetaElectrical = wrapAngle(thetaMechanical * PMSM_Config::MotorPolePairs);
+        const uint16_t thetaElectrical = wrapAngle(thetaMechanical * PMSM_Config::MotorPolePairs);
 
-        constexpr float Vd = 0.0f;
-        constexpr float Vq = PMSM_Config::OpenLoopVoltageLimit;
+        const int32_t Uq = std::lroundf(PMSM_Config::OpenLoopVoltLimit_mV); /// in mV
+        constexpr int32_t Ud = 0; /// in mV
 
-        const auto InvPark = performInverseParkTransform(Vd, Vq, thetaElectrical);
-        const auto [dA, dB, dC] = pwm.compute(InvPark[0], InvPark[1]);
+        const auto InvPark = MathUtils::performInverseParkTransform(Ud, Uq, thetaElectrical);
+        const auto [perA, perB, perC] = pwm.compute(InvPark[0], InvPark[1], pwmPeriod);
 
-        const auto tmpPeriodA = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dA);
-        const auto tmpPeriodB = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dB);
-        const auto tmpPeriodC = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dC);
-
-        __disable_irq();
-        dutyCycles.perA = tmpPeriodA;
-        dutyCycles.perB = tmpPeriodB;
-        dutyCycles.perC = tmpPeriodC;
-        __enable_irq();
+        dutyCycles.perA = pwmPeriod - perA;
+        dutyCycles.perB = pwmPeriod - perB;
+        dutyCycles.perC = pwmPeriod - perC;
 }
 
-void PMSM_Controller::update(const PhaseCurrents& phaseCurrents, const PhaseDutyCycles& dutyCycles, float thetaEncoder) {
-        const auto ThetaEl =
-                wrapAngle(dirSign * PMSM_Config::MotorPolePairs * thetaEncoder - ZeroOffsetElectricalAngle);
-
-        const auto dqFrameCurrents = performClarkeParkTransforms(phaseCurrents.Ia, phaseCurrents.Ib, ThetaEl);
-
-        constexpr float id_ref = 0.0f;
-        constexpr float iq_ref = 0.5f;
-
-        const float id_err = id_ref - dqFrameCurrents[0];
-        const float iq_err = iq_ref - dqFrameCurrents[1];
-
-        float Vd = pidId.compute(id_err);
-        float Vq = pidIq.compute(iq_err);
-        limitCircle(Vd, Vq, PMSM_Config::CloseLoopVoltageLimit);
-
-        const auto AlphaBetaFrame = performInverseParkTransform(Vd, Vq, ThetaEl);
-        const auto [dA, dB, dC] = pwm.compute(AlphaBetaFrame[0], AlphaBetaFrame[1]);
-
-        const auto tmpPeriodA = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dA);
-        const auto tmpPeriodB = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dB);
-        const auto tmpPeriodC = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dC);
-
-        __disable_irq();
-        dutyCycles.perA = tmpPeriodA;
-        dutyCycles.perB = tmpPeriodB;
-        dutyCycles.perC = tmpPeriodC;
-        __enable_irq();
-}
-
-void PMSM_Controller::updateVelocity(const PhaseCurrents& phaseCurrents, const PhaseDutyCycles& dutyCycles, float thetaEncoder) {
-        if (!velocityEstimator)
+void PMSM_Controller::updateVelocity(const PhaseCurrents& phaseCurrents, const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder) {
+        if (not velocityEstimator)
                 return;
 
-        velocityEstimator->update(std::remainderf(thetaEncoder, TWO_PI), dT);
+        BENCHMARK_IO_Set();
 
-        const auto ThetaEl =
-                wrapAngle(dirSign * PMSM_Config::MotorPolePairs * thetaEncoder - ZeroOffsetElectricalAngle);
-        const auto dqFrameCurrents = performClarkeParkTransforms(phaseCurrents.Ia, phaseCurrents.Ib, ThetaEl);
+        const int32_t wrapped_mrad = rawToMilliRad(thetaEncoder);
 
-        const float VelocityError = PMSM_Config::TargetVelocity - std::fabs(velocityEstimator->angularVelocity);
-        const float IqRef = pidVelocity.compute(VelocityError);
+        constexpr uint32_t deltaTime = 1000; // us
+        velocityEstimator->update(wrapped_mrad, deltaTime);
 
-        constexpr float IdRef = 0.0f;
+        const auto VelocityAbsoluteValue = [](int32_t x) -> int32_t {
+                if (x < 0)
+                        return -x;
 
-        const float IdError = IdRef - dqFrameCurrents[0];
-        const float IqError = IqRef - dqFrameCurrents[1];
+                return x;
+        }(velocityEstimator->angularVelocity);
 
-        float Vd = pidId.compute(IdError);
-        float Vq = pidIq.compute(IqError);
+        const int32_t VelocityError = targetVelocity_mrad_s - VelocityAbsoluteValue; /// in mrad/s
 
-        limitCircle(Vd, Vq, PMSM_Config::CloseLoopVoltageLimit);
+        const uint16_t ThetaEl = calculateElectricalAngle(thetaEncoder);
 
-        const auto AlphaBetaFrame = performInverseParkTransform(Vd, Vq, ThetaEl);
-        const auto [dA, dB, dC] = pwm.compute(AlphaBetaFrame[0], AlphaBetaFrame[1]);
+        const int32_t Iq_Ref = pidVelocity.compute(VelocityError); /// output is Iq,ref in mA
 
-        const auto tmpPeriodA = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dA);
-        const auto tmpPeriodB = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dB);
-        const auto tmpPeriodC = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dC);
+        const auto dqFrame = MathUtils::performClarkeParkTransforms(phaseCurrents.Ia_mA, phaseCurrents.Ib_mA, ThetaEl);
 
-        __disable_irq();
-        dutyCycles.perA = tmpPeriodA;
-        dutyCycles.perB = tmpPeriodB;
-        dutyCycles.perC = tmpPeriodC;
-        __enable_irq();
+        constexpr int32_t Id_Ref = 0; /// in mA
+
+        const int32_t Id_Error = Id_Ref - dqFrame[0]; /// in mA
+        const int32_t Iq_Error = Iq_Ref - dqFrame[1]; /// in mA
+
+        const int32_t Uq_mV = pidIq.compute(Iq_Error); /// in mV
+        const int32_t Ud_mV = pidId.compute(Id_Error); /// in mV
+
+        /// TODO: Create a limit circle function that takes also care of overmodulation etc
+
+        const auto InvPark = MathUtils::performInverseParkTransform(Ud_mV, Uq_mV, ThetaEl);
+        const auto [perA, perB, perC] = pwm.compute(InvPark[0], InvPark[1], pwmPeriod);
+
+        dutyCycles.perA = pwmPeriod - perA;
+        dutyCycles.perB = pwmPeriod - perB;
+        dutyCycles.perC = pwmPeriod - perC;
+
+        BENCHMARK_IO_Clear();
 }
 
 void PMSM_Controller::stopMotor(const PhaseDutyCycles& dutyCycles) const {
-        constexpr float Vd = 0.0f;
-        constexpr float Vq = 0.0f;
+        constexpr int16_t V_Alpha = 0;
+        constexpr int16_t V_Beta = 0;
 
-        const auto [dA, dB, dC] = pwm.compute(Vd, Vq);
+        const auto [perA, perB, perC] = pwm.compute(V_Alpha, V_Beta, pwmPeriod);
 
-        const auto tmpPeriodA = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dA);
-        const auto tmpPeriodB = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dB);
-        const auto tmpPeriodC = pwmPeriod - static_cast<uint32_t>(static_cast<float>(pwmPeriod) * dC);
-
-        __disable_irq();
-        dutyCycles.perA = tmpPeriodA;
-        dutyCycles.perB = tmpPeriodB;
-        dutyCycles.perC = tmpPeriodC;
-        __enable_irq();
+        dutyCycles.perA = pwmPeriod - perA;
+        dutyCycles.perB = pwmPeriod - perB;
+        dutyCycles.perC = pwmPeriod - perC;
 }
 
 } // namespace PermanentMagnetSynchronousMotor

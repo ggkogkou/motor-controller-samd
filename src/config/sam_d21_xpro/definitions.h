@@ -12,30 +12,30 @@
 
  *******************************************************************************/
 
-// DOM-IGNORE-BEGIN
+//DOM-IGNORE-BEGIN
 /*******************************************************************************
- * Copyright (C) 2025 Microchip Technology Inc. and its subsidiaries.
- *
- * Subject to your compliance with these terms, you may use Microchip software
- * and any derivatives exclusively with Microchip products. It is your
- * responsibility to comply with third party license terms applicable to your
- * use of third party software (including open source software) that may
- * accompany Microchip software.
- *
- * THIS SOFTWARE IS SUPPLIED BY MICROCHIP "AS IS". NO WARRANTIES, WHETHER
- * EXPRESS, IMPLIED OR STATUTORY, APPLY TO THIS SOFTWARE, INCLUDING ANY IMPLIED
- * WARRANTIES OF NON-INFRINGEMENT, MERCHANTABILITY, AND FITNESS FOR A
- * PARTICULAR PURPOSE.
- *
- * IN NO EVENT WILL MICROCHIP BE LIABLE FOR ANY INDIRECT, SPECIAL, PUNITIVE,
- * INCIDENTAL OR CONSEQUENTIAL LOSS, DAMAGE, COST OR EXPENSE OF ANY KIND
- * WHATSOEVER RELATED TO THE SOFTWARE, HOWEVER CAUSED, EVEN IF MICROCHIP HAS
- * BEEN ADVISED OF THE POSSIBILITY OR THE DAMAGES ARE FORESEEABLE. TO THE
- * FULLEST EXTENT ALLOWED BY LAW, MICROCHIP'S TOTAL LIABILITY ON ALL CLAIMS IN
- * ANY WAY RELATED TO THIS SOFTWARE WILL NOT EXCEED THE AMOUNT OF FEES, IF ANY,
- * THAT YOU HAVE PAID DIRECTLY TO MICROCHIP FOR THIS SOFTWARE.
+* Copyright (C) 2025 Microchip Technology Inc. and its subsidiaries.
+*
+* Subject to your compliance with these terms, you may use Microchip software
+* and any derivatives exclusively with Microchip products. It is your
+* responsibility to comply with third party license terms applicable to your
+* use of third party software (including open source software) that may
+* accompany Microchip software.
+*
+* THIS SOFTWARE IS SUPPLIED BY MICROCHIP "AS IS". NO WARRANTIES, WHETHER
+* EXPRESS, IMPLIED OR STATUTORY, APPLY TO THIS SOFTWARE, INCLUDING ANY IMPLIED
+* WARRANTIES OF NON-INFRINGEMENT, MERCHANTABILITY, AND FITNESS FOR A
+* PARTICULAR PURPOSE.
+*
+* IN NO EVENT WILL MICROCHIP BE LIABLE FOR ANY INDIRECT, SPECIAL, PUNITIVE,
+* INCIDENTAL OR CONSEQUENTIAL LOSS, DAMAGE, COST OR EXPENSE OF ANY KIND
+* WHATSOEVER RELATED TO THE SOFTWARE, HOWEVER CAUSED, EVEN IF MICROCHIP HAS
+* BEEN ADVISED OF THE POSSIBILITY OR THE DAMAGES ARE FORESEEABLE. TO THE
+* FULLEST EXTENT ALLOWED BY LAW, MICROCHIP'S TOTAL LIABILITY ON ALL CLAIMS IN
+* ANY WAY RELATED TO THIS SOFTWARE WILL NOT EXCEED THE AMOUNT OF FEES, IF ANY,
+* THAT YOU HAVE PAID DIRECTLY TO MICROCHIP FOR THIS SOFTWARE.
  *******************************************************************************/
-// DOM-IGNORE-END
+//DOM-IGNORE-END
 
 #ifndef DEFINITIONS_H
 #define DEFINITIONS_H
@@ -45,28 +45,24 @@
 // Section: Included Files
 // *****************************************************************************
 // *****************************************************************************
-#include <stdbool.h>
-#include <stddef.h>
 #include <stdint.h>
-#include "peripheral/adc/plib_adc.h"
-#include "peripheral/clock/plib_clock.h"
-#include "peripheral/eic/plib_eic.h"
-#include "peripheral/evsys/plib_evsys.h"
-#include "peripheral/nvic/plib_nvic.h"
-#include "peripheral/nvmctrl/plib_nvmctrl.h"
-#include "peripheral/port/plib_port.h"
-#include "peripheral/sercom/spi_master/plib_sercom4_spi_master.h"
+#include <stddef.h>
+#include <stdbool.h>
 #include "peripheral/sercom/usart/plib_sercom3_usart.h"
-#include "peripheral/sercom/usart/plib_sercom5_usart.h"
-#include "peripheral/systick/plib_systick.h"
-#include "peripheral/tc/plib_tc3.h"
-#include "peripheral/tc/plib_tc4.h"
+#include "peripheral/nvmctrl/plib_nvmctrl.h"
 #include "peripheral/tcc/plib_tcc0.h"
-#include "peripheral/tcc/plib_tcc1.h"
-#include "peripheral/tcc/plib_tcc2.h"
+#include "peripheral/evsys/plib_evsys.h"
+#include "peripheral/port/plib_port.h"
+#include "peripheral/clock/plib_clock.h"
+#include "peripheral/nvic/plib_nvic.h"
+#include "peripheral/systick/plib_systick.h"
+#include "peripheral/sercom/spi_master/plib_sercom5_spi_master.h"
+#include "peripheral/adc/plib_adc.h"
+#include "peripheral/eic/plib_eic.h"
+#include "peripheral/tc/plib_tc3.h"
 
 // DOM-IGNORE-BEGIN
-#ifdef __cplusplus // Provide C++ Compatibility
+#ifdef __cplusplus  // Provide C++ Compatibility
 
 extern "C" {
 
@@ -74,10 +70,10 @@ extern "C" {
 // DOM-IGNORE-END
 
 /* Device Information */
-#define DEVICE_NAME "ATSAMD21J18A"
-#define DEVICE_ARCH "CORTEX-M0PLUS"
-#define DEVICE_FAMILY "SAMD"
-#define DEVICE_SERIES "SAMD21"
+#define DEVICE_NAME          "ATSAMD21J18A"
+#define DEVICE_ARCH          "CORTEX-M0PLUS"
+#define DEVICE_FAMILY        "SAMD"
+#define DEVICE_SERIES        "SAMD21"
 
 /* CPU clock frequency */
 #define CPU_CLOCK_FREQUENCY 48000000U
@@ -127,10 +123,10 @@ extern "C" {
     This function will only be called once, after system reset.
 */
 
-void SYS_Initialize(void* data);
+void SYS_Initialize( void *data );
 
 /* Nullify SYS_Tasks() if only PLIBs are used. */
-#define SYS_Tasks()
+#define     SYS_Tasks()
 
 // *****************************************************************************
 // *****************************************************************************
@@ -139,13 +135,16 @@ void SYS_Initialize(void* data);
 // *****************************************************************************
 
 
-// DOM-IGNORE-BEGIN
+
+
+//DOM-IGNORE-BEGIN
 #ifdef __cplusplus
 }
 #endif
-// DOM-IGNORE-END
+//DOM-IGNORE-END
 
 #endif /* DEFINITIONS_H */
 /*******************************************************************************
  End of File
 */
+

@@ -1,9 +1,37 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Georgios Gkogkou <ggkogkou125@gmail.com>
+
+/*
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
+ * @file   math_utils.hpp
+ * @brief  Clarke/Park transformations and sin/cos compile-time LUT construction using floating-point arithmetic
+ * @author Georgios Gkogkou <ggkogkou125@gmail.com>
+ */
+
 #pragma once
 
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstdint>
+#include <numbers>
 #include <span>
+#include "sin_cos_lut_q15.hpp"
+#include "clarke_park_q31.hpp"
 
 namespace MathUtilities {
 
@@ -260,6 +288,17 @@ using AlphaBetaFrame = std::array<float, 2>;
 [[nodiscard]] inline float degreesToRadians(float angleDegrees) { return angleDegrees * PI / 180.0f; }
 
 /**
+ * Function that converts an angle from degrees to milli-radians (mrad); useful for fixed-point implementation
+ *
+ * @param angleDegrees The angle in degrees
+ * @return The angle in mrad
+ */
+[[nodiscard]] inline int32_t degreesToMilliRad(float angleDegrees) noexcept {
+        constexpr auto ConversionFactor = std::numbers::pi_v<float> / 180.0f * 1000.0f;
+        return static_cast<int32_t>(angleDegrees * ConversionFactor);
+}
+
+/**
  * Wrap an angle into [0, 2π)
  */
 [[nodiscard]] inline float wrapAngle(float x) noexcept {
@@ -276,7 +315,7 @@ using AlphaBetaFrame = std::array<float, 2>;
  * @param Vq The q-axis voltage
  * @param VLim The maximum/limiting voltage that marks the threshold of overmodulation
  */
-inline void limitCircle(float &Vd, float &Vq, float VLim) {
+inline void limitCircle(float& Vd, float& Vq, float VLim) {
         const float MagnitudeSquare = Vd * Vd + Vq * Vq;
 
         if (const float VLimSquare = VLim * VLim; MagnitudeSquare > VLimSquare) {

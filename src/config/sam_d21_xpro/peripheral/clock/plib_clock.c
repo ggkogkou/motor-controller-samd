@@ -129,21 +129,17 @@ void CLOCK_Initialize (void)
     GCLK_REGS->GCLK_CLKCTRL = GCLK_CLKCTRL_ID(7U) | GCLK_CLKCTRL_GEN(0x0U)  | GCLK_CLKCTRL_CLKEN_Msk;
     /* Selection of the Generator and write Lock for SERCOM3_CORE */
     GCLK_REGS->GCLK_CLKCTRL = GCLK_CLKCTRL_ID(23U) | GCLK_CLKCTRL_GEN(0x0U)  | GCLK_CLKCTRL_CLKEN_Msk;
-    /* Selection of the Generator and write Lock for SERCOM4_CORE */
-    GCLK_REGS->GCLK_CLKCTRL = GCLK_CLKCTRL_ID(24U) | GCLK_CLKCTRL_GEN(0x0U)  | GCLK_CLKCTRL_CLKEN_Msk;
     /* Selection of the Generator and write Lock for SERCOM5_CORE */
     GCLK_REGS->GCLK_CLKCTRL = GCLK_CLKCTRL_ID(25U) | GCLK_CLKCTRL_GEN(0x0U)  | GCLK_CLKCTRL_CLKEN_Msk;
     /* Selection of the Generator and write Lock for TCC0 TCC1 */
     GCLK_REGS->GCLK_CLKCTRL = GCLK_CLKCTRL_ID(26U) | GCLK_CLKCTRL_GEN(0x0U)  | GCLK_CLKCTRL_CLKEN_Msk;
     /* Selection of the Generator and write Lock for TC3 TCC2 */
     GCLK_REGS->GCLK_CLKCTRL = GCLK_CLKCTRL_ID(27U) | GCLK_CLKCTRL_GEN(0x0U)  | GCLK_CLKCTRL_CLKEN_Msk;
-    /* Selection of the Generator and write Lock for TC4 TC5 */
-    GCLK_REGS->GCLK_CLKCTRL = GCLK_CLKCTRL_ID(28U) | GCLK_CLKCTRL_GEN(0x0U)  | GCLK_CLKCTRL_CLKEN_Msk;
     /* Selection of the Generator and write Lock for ADC */
     GCLK_REGS->GCLK_CLKCTRL = GCLK_CLKCTRL_ID(30U) | GCLK_CLKCTRL_GEN(0x0U)  | GCLK_CLKCTRL_CLKEN_Msk;
 
     /* Configure the APBC Bridge Clocks */
-    PM_REGS->PM_APBCMASK = 0x11fe2U;
+    PM_REGS->PM_APBCMASK = 0x109a2U;
 
 
     /*Disable RC oscillator*/

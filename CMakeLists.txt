@@ -21,28 +21,48 @@ set(MCU "" CACHE STRING "Device variant: G18A or J18A")
 
 string(TOUPPER "${MCU}" MCU_U)
 
-if(MCU_U STREQUAL "G18A")
+if (MCU_U STREQUAL "G18A")
     set(MCU_MODEL "ATSAMD21G18A")
     set(DEVICE_DEFINE "__SAMD21G18A__")
-    set(LD_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/src/config/sam_d21_xpro/ATSAMD21J18A.ld")
-elseif(MCU_U STREQUAL "J18A")
+    set(LD_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/src/config/sam_d21_xpro/ATSAMD21G18A.ld")
+elseif (MCU_U STREQUAL "J18A")
     set(MCU_MODEL "ATSAMD21J18A")
     set(DEVICE_DEFINE "__SAMD21J18A__")
     set(LD_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/src/config/sam_d21_xpro/ATSAMD21J18A.ld")
-else()
+else ()
     message(FATAL_ERROR "Set -DMCU=G18A or -DMCU=J18A (or use presets).")
-endif()
+endif ()
 
+# ------------------------------------------------------------------------------
+# Flags
+# ------------------------------------------------------------------------------
 set(COMMON_FLAGS "-mcpu=${MCU_ARCH} -mthumb -mfloat-abi=soft -ffunction-sections -fdata-sections -Wall -Wextra -g3")
-set(CMAKE_C_FLAGS "${COMMON_FLAGS} -std=gnu99" CACHE INTERNAL "C compiler flags")
-set(CMAKE_CXX_FLAGS "${COMMON_FLAGS} -std=c++20 -fno-exceptions -fno-rtti -fno-threadsafe-statics" CACHE INTERNAL "C++ compiler flags")
-set(CMAKE_ASM_FLAGS "${COMMON_FLAGS} -x assembler-with-cpp" CACHE INTERNAL "ASM compiler flags")
+set(OPT_FLAGS "-O3 -flto")
 
-set(CMAKE_EXE_LINKER_FLAGS
-        "-mcpu=${MCU_ARCH} -mthumb -mfloat-abi=soft -specs=nano.specs -specs=nosys.specs -lstdc++ -T${CMAKE_CURRENT_SOURCE_DIR}/src/config/sam_d21_xpro/ATSAMD21J18A.ld -Wl,--gc-sections -Wl,-Map=${PROJECT_NAME}.map,--cref -Wl,--no-warn-mismatch"
-        CACHE INTERNAL "Linker flags"
+set(CMAKE_C_FLAGS
+        "${COMMON_FLAGS} ${OPT_FLAGS} -std=gnu99"
+        CACHE INTERNAL "C compiler flags" FORCE
 )
 
+set(CMAKE_CXX_FLAGS
+        "${COMMON_FLAGS} ${OPT_FLAGS} -std=c++20 -fno-exceptions -fno-rtti -fno-threadsafe-statics"
+        CACHE INTERNAL "C++ compiler flags" FORCE
+)
+
+set(CMAKE_ASM_FLAGS
+        "${COMMON_FLAGS} ${OPT_FLAGS} -x assembler-with-cpp"
+        CACHE INTERNAL "ASM compiler flags" FORCE
+)
+
+set(CMAKE_EXE_LINKER_FLAGS
+        "-mcpu=${MCU_ARCH} -mthumb -mfloat-abi=soft -specs=nano.specs -specs=nosys.specs -T${LD_SCRIPT} -flto \
+     -Wl,--gc-sections -Wl,-Map=${PROJECT_NAME}.map,--cref -Wl,--no-warn-mismatch"
+        CACHE INTERNAL "Linker flags" FORCE
+)
+
+# ------------------------------------------------------------------------------
+# Defines
+# ------------------------------------------------------------------------------
 add_compile_definitions(
         ${DEVICE_DEFINE}
         DONT_USE_PREDEFINED_CORE_HANDLERS
@@ -53,21 +73,27 @@ add_compile_definitions(
         ETL_CPP20_SUPPORTED
 )
 
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/lib/etl")
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/lib/etl/CMakeLists.txt")
+# ------------------------------------------------------------------------------
+# ETL (optional)
+# ------------------------------------------------------------------------------
+if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/lib/etl")
+    if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/lib/etl/CMakeLists.txt")
         add_subdirectory(lib/etl)
-    endif()
+    endif ()
 
     set(ETL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib/etl/include")
-    if(EXISTS "${ETL_INCLUDE_DIR}")
+    if (EXISTS "${ETL_INCLUDE_DIR}")
         message(STATUS "Found ETL at: ${ETL_INCLUDE_DIR}")
-    else()
+    else ()
         message(WARNING "ETL include directory not found at: ${ETL_INCLUDE_DIR}")
-    endif()
-else()
+    endif ()
+else ()
     message(WARNING "ETL directory not found at: ${CMAKE_CURRENT_SOURCE_DIR}/lib/etl")
-endif()
+endif ()
 
+# ------------------------------------------------------------------------------
+# Includes
+# ------------------------------------------------------------------------------
 include_directories(
         src/
         src/config/sam_d21_xpro
@@ -96,14 +122,18 @@ include_directories(
         ${ETL_INCLUDE_DIR}
 )
 
+# ------------------------------------------------------------------------------
+# Sources
+# ------------------------------------------------------------------------------
 set(SOURCES
         # Main application
         src/main.cpp
         src/svpwm.cpp
         src/pid.cpp
-        src/logger.cpp
         src/pmsm_controller.cpp
         src/spi_buffer.cpp
+        src/USART_TxStream.cpp
+        src/SAMD21_FOC.cpp
 
         # System initialization and configuration
         src/config/sam_d21_xpro/initialization.c
@@ -122,25 +152,23 @@ set(SOURCES
         src/config/sam_d21_xpro/peripheral/port/plib_port.c
         src/config/sam_d21_xpro/peripheral/systick/plib_systick.c
         src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom3_usart.c
-        src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom5_usart.c
-#        src/config/sam_d21_xpro/peripheral/sercom/spi_master/plib_sercom1_spi_master.c
-        src/config/sam_d21_xpro/peripheral/sercom/spi_master/plib_sercom4_spi_master.c
+        src/config/sam_d21_xpro/peripheral/sercom/spi_master/plib_sercom5_spi_master.c
         src/config/sam_d21_xpro/peripheral/tc/plib_tc3.c
-        src/config/sam_d21_xpro/peripheral/tc/plib_tc4.c
         src/config/sam_d21_xpro/peripheral/tcc/plib_tcc0.c
-        src/config/sam_d21_xpro/peripheral/tcc/plib_tcc1.c
-        src/config/sam_d21_xpro/peripheral/tcc/plib_tcc2.c
 
         drivers/as5047p.cpp
         drivers/drv8316.cpp
 )
 
+# ------------------------------------------------------------------------------
+# Targets
+# ------------------------------------------------------------------------------
 add_executable(${PROJECT_NAME}.elf ${SOURCES})
 
-if(TARGET etl)
+if (TARGET etl)
     target_link_libraries(${PROJECT_NAME}.elf PRIVATE etl)
     message(STATUS "Linking with ETL target")
-endif()
+endif ()
 
 find_program(CMAKE_OBJCOPY arm-none-eabi-objcopy REQUIRED)
 find_program(CMAKE_SIZE arm-none-eabi-size REQUIRED)
@@ -169,4 +197,4 @@ message(STATUS "Target architecture: ${MCU_ARCH}")
 message(STATUS "C Compiler: ${CMAKE_C_COMPILER}")
 message(STATUS "CXX Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "ASM Compiler: ${CMAKE_ASM_COMPILER}")
-message(STATUS "Linker script: ${CMAKE_CURRENT_SOURCE_DIR}/src/config/sam_d21_xpro/ATSAMD21J18A.ld")
+message(STATUS "Linker script: ${LD_SCRIPT}")
