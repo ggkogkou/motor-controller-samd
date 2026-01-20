@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Georgios Gkogkou <ggkogkou125@gmail.com>
+
 /*
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,8 +20,6 @@
  * @file   SAMD21_FOC.cpp
  * @brief  SAMD21-specific FOC for BLDC
  * @author Georgios Gkogkou <ggkogkou125@gmail.com>
- * @copyright (c) 2026 Georgios Gkogkou
- * @licence SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include "SAMD21_FOC.hpp"
