@@ -171,7 +171,7 @@ public:
         explicit AS5047P(AS5047P_Config config);
 
         /**
-         * Default destrcutor of the class
+         * Default destructor of the class
          */
         ~AS5047P() = default;
 

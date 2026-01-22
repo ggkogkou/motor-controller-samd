@@ -72,11 +72,8 @@ bool PMSM_Controller::startupCalibration(const PhaseDutyCycles& dutyCycles, uint
 void PMSM_Controller::directionCalibration(const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder) {
         updateOpenLoop(dutyCycles);
 
-        static uint16_t thetaStart = 0;
-        static bool ongoingCalibration = false;
-
         if (not ongoingCalibration) {
-                thetaStart = wrapAngle(thetaEncoder);
+                directionCalibrationThetaStart = wrapAngle(thetaEncoder);
                 ongoingCalibration = true;
                 timerCounter = 0;
                 return;
@@ -87,7 +84,7 @@ void PMSM_Controller::directionCalibration(const PhaseDutyCycles& dutyCycles, ui
         if (timerCounter > MoveDuringCalibrationTicks) {
                 const uint16_t thetaFinal = wrapAngle(thetaEncoder);
 
-                int32_t d = static_cast<int32_t>(thetaFinal) - static_cast<int32_t>(thetaStart);
+                int32_t d = static_cast<int32_t>(thetaFinal) - static_cast<int32_t>(directionCalibrationThetaStart);
 
                 if (d > 8192)
                         d -= 16384;

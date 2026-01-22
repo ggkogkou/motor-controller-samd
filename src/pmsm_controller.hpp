@@ -196,7 +196,7 @@ private:
         /**
          * Velocity PI: error in mrad/s, output in mA
          */
-        PID pidVelocity{0.5f, 10.0f, 0.0f, 6000.0f, 0.001f};
+        PID pidVelocity;
 
         /**
          * Current loop PI controllers (for Iq and Id)
@@ -204,8 +204,8 @@ private:
          *
          * TODO: Tune the P, I parameters
          */
-        PID pidId{0.25f, 20.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit * 1000.0f, 0.001f};
-        PID pidIq{0.35f, 50.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit * 1000.0f, 0.001f};
+        PID pidId;
+        PID pidIq;
 
         /**
          * @enum CalibrationState
@@ -227,7 +227,9 @@ private:
          */
         CalibrationState calibrationState = CalibrationState::PREPARING;
 
-        // open-loop step in encoder counts per tick (computed once in ctor)
+        /**
+         * Open-loop step in encoder counts per tick (computed once in ctor)
+         */
         uint16_t openLoopStepCounts14 = 1u;
 
         /**
@@ -290,6 +292,16 @@ private:
          * CCW = -1
          */
         int8_t dirSign = 1;
+
+        /**
+         * Encoder angle at the moment we start the direction check
+         */
+        uint16_t directionCalibrationThetaStart = 0;
+
+        /**
+         * Point out whether direction calibration is an ongoing task
+         */
+        bool ongoingCalibration = false;
 
         /**
          * Function that performs the direction calibration. The logic followed to achieve this is:
