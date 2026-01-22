@@ -26,7 +26,13 @@
 
 namespace PermanentMagnetSynchronousMotor {
 
-PMSM_Controller::PMSM_Controller() {
+PMSM_Controller::PMSM_Controller(uint32_t pwmPeriod) : PMSM_Controller(pwmPeriod, 1'000) {}
+
+PMSM_Controller::PMSM_Controller(uint32_t pwmPeriod, uint32_t velocityLoopPeriod) :
+    pidVelocity(0.5f, 10.0f, 0.0f, 6000.0f, static_cast<float>(velocityLoopPeriod) * 1e-6f),
+    pidId(0.25f, 20.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit * 1000.0f, static_cast<float>(velocityLoopPeriod) * 1e-6f),
+    pidIq(0.35f, 50.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit * 1000.0f, static_cast<float>(velocityLoopPeriod) * 1e-6f),
+    velocityLoopPeriod_us(velocityLoopPeriod), pwmPeriod(pwmPeriod), dT(static_cast<float>(velocityLoopPeriod) * 1e-6f) {
         targetVelocity_mrad_s = std::lroundf(PMSM_Config::TargetVelocity * 1000.0f);
 
         const float step_counts = PMSM_Config::TargetCalibrationVelocity * dT * (static_cast<float>(16384) / (2.0f * PI));
@@ -150,8 +156,9 @@ void PMSM_Controller::updateVelocity(const PhaseCurrents& phaseCurrents, const P
 
         const int32_t wrapped_mrad = rawToMilliRad(thetaEncoder);
 
-        constexpr uint32_t deltaTime = 1000; // us
-        velocityEstimator->update(wrapped_mrad, deltaTime);
+        const uint32_t DeltaTime = velocityLoopPeriod_us == 0 ? 1 : velocityLoopPeriod_us;
+
+        velocityEstimator->update(wrapped_mrad, DeltaTime);
 
         const auto VelocityAbsoluteValue = [](int32_t x) -> int32_t {
                 if (x < 0)

@@ -26,13 +26,17 @@
 
 namespace PermanentMagnetSynchronousMotor {
 
-SAMD21_FOC::SAMD21_FOC() {
+SAMD21_FOC::SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz) :
+    motor(calculatePWM_PeriodFromFrequency(pwmFrequencyKHz), VelocityLoopPeriod_us),
+    tccPeriod_PER(calculatePWM_PeriodFromFrequency(pwmFrequencyKHz)) {
         __disable_irq();
 
-        const uint32_t f_tc = TC3_TimerFrequencyGet();
-        const uint32_t top = TC3_Timer16bitPeriodGet();
-        dT = (1.0f + static_cast<float>(top)) / static_cast<float>(f_tc);
-        pwmPeriodDuration = TCC0_PWM24bitPeriodGet();
+        TC3_TimerFrequencyHz = TC3_TimerFrequencyGet();
+
+        TC3_TOP_RegisterValue = TC3_TimerFrequencyHz / VelocityLoopFrequencyHz - 1;
+        TC3_Timer16bitPeriodSet(TC3_TOP_RegisterValue);
+
+        TCC0_PWM24bitPeriodSet(tccPeriod_PER);
 
         ADC_CallbackRegister(&SAMD21_FOC::ADC_Callback, reinterpret_cast<uintptr_t>(this));
         TC3_TimerCallbackRegister(&SAMD21_FOC::TC3_Callback, reinterpret_cast<uintptr_t>(this));
@@ -113,7 +117,7 @@ void SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_STATUS status) {
                 return;
         }
 
-        static constexpr uint16_t EncoderMask =  0x3FFF;
+        static constexpr uint16_t EncoderMask = 0x3FFF;
 
         const auto rotorPosition = static_cast<uint16_t>(encoder.measureAngleCompensatedRaw() & EncoderMask);
 
@@ -127,17 +131,17 @@ void SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_STATUS status) {
                 return;
         }
 
-        if (adcResultsReady) {
-                adcResultsReady = false;
-
-                const int32_t CurrentPhaseU = adcRawToCurrent(adcResultU, adcOffsetU);
-                const int32_t CurrentPhaseV = adcRawToCurrent(adcResultV, adcOffsetV);
-                const int32_t CurrentPhaseW = adcRawToCurrent(adcResultW, adcOffsetW);
-
-                currents.Ia_mA = CurrentPhaseU;
-                currents.Ib_mA = CurrentPhaseV;
-                currents.Ic_mA = CurrentPhaseW;
-        }
+        // if (adcResultsReady) {
+        //         adcResultsReady = false;
+        //
+        //         const int32_t CurrentPhaseU = adcRawToCurrent(adcResultU, adcOffsetU);
+        //         const int32_t CurrentPhaseV = adcRawToCurrent(adcResultV, adcOffsetV);
+        //         const int32_t CurrentPhaseW = adcRawToCurrent(adcResultW, adcOffsetW);
+        //
+        //         currents.Ia_mA = CurrentPhaseU;
+        //         currents.Ib_mA = CurrentPhaseV;
+        //         currents.Ic_mA = CurrentPhaseW;
+        // }
 
         motor.updateVelocity(currents, dutyCycles, rotorPosition);
         setPWM_DutyCycles();
