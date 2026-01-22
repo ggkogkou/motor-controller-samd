@@ -87,7 +87,7 @@ private:
         /**
          * Helper function that converts the raw 12-bit ADC reading to the corresponding voltage (in mV)
          *
-         * @param adcRawValue The 12-bit ADC raw word from REDRDY register
+         * @param adcRawValue The 12-bit ADC raw word from RESRDY register
          * @return The corresponding voltage in mV
          */
         static inline int32_t rawToMilliVolts(int32_t adcRawValue) {
