@@ -142,9 +142,9 @@ public:
         /**
          * Class constructor
          */
-        PMSM_Controller();
+        explicit PMSM_Controller(uint32_t pwmPeriod);
 
-        explicit PMSM_Controller(const PMSM_Config) {}
+        explicit PMSM_Controller(uint32_t pwmPeriod, uint32_t velocityLoopPeriod);
 
         /**
          * Function that runs the velocity and current loops
@@ -236,11 +236,14 @@ private:
         int32_t targetVelocity_mrad_s = 0;
 
         /**
-         * The PWM period -- ATSAMD21 specific
-         *
-         * @note Replace this and make the calculations outside this class
+         * Velocity loop period (ISR period) in microseconds
          */
-        uint32_t pwmPeriod = 1000;
+        const uint32_t velocityLoopPeriod_us = 1'000;
+
+        /**
+         * The PWM period, either in counter-ticks or μs
+         */
+        const uint32_t pwmPeriod = 1'000;
 
         /**
          * Helper variable to count the number of ISRs that have been executed.
@@ -256,9 +259,19 @@ private:
          */
         static constexpr uint32_t MoveDuringCalibrationTicks = 250;
 
+        /**
+         * @var velocityEstimator
+         *
+         * Represents an optional AngleVelocityEstimator instance used to estimate the angular velocity
+         *
+         * This variable may contain a valid estimator or no value if the estimator is not initialized
+         */
         std::optional<AngleVelocityEstimator> velocityEstimator;
 
-        float dT = 0.0007f;
+        /**
+         * Loop time step in seconds (derived from velocityLoopPeriod_us)
+         */
+        float dT = static_cast<float>(velocityLoopPeriod_us) * 1e-6f;
 
         /**
          * Zero-offset electrical angle in raw 14-bit format

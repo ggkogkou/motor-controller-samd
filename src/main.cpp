@@ -39,7 +39,9 @@ using namespace PermanentMagnetSynchronousMotor;
         USART_TxStream logging;
         logging.init();
 
-        SAMD21_FOC foc;
+        static constexpr frequency_kHz_t PWM_Frequency = 24.0f;
+
+        SAMD21_FOC foc {PWM_Frequency};
 
         while (true) {
                 static uint8_t c = 'A';

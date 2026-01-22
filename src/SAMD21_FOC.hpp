@@ -31,6 +31,10 @@
 
 namespace PermanentMagnetSynchronousMotor {
 
+using microseconds_t = uint32_t;
+using frequency_kHz_t = float;
+using counter_ticks_t = uint32_t;
+
 /**
  * Hardware-specific Field-Oriented Control implementation for brushless DC motors
  */
@@ -41,7 +45,7 @@ public:
          *
          * Initializes the motor control peripherals, registers the callback functions and primes encoder
          */
-        SAMD21_FOC();
+        SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz);
 
         /**
          * Compiler generated default destructor
@@ -187,10 +191,116 @@ private:
          */
         float dT = 0.0f;
         bool encoderPrimed = false;
+
         /**
-         * Cached PWM period duration in ticks (?) (according to SAMD21 TCC peripheral datasheet)
+         * @enum TC_InputClockPrescaler
+         *
+         * A list of available prescalers for the TC peripheral input clock
          */
-        uint32_t pwmPeriodDuration = 0;
+        enum class TC_InputClockPrescaler : uint16_t {
+                DIV_1 = 1,
+                DIV_2 = 2,
+                DIV_4 = 4,
+                DIV_16 = 16,
+                DIV_64 = 64,
+        };
+
+        /**
+         * The input clock of the TC3 peripheral
+         */
+        static constexpr float TC3_InputClockPrescaler = static_cast<float>(TC_InputClockPrescaler::DIV_64);
+
+        /**
+         * The input clock of the TC3 peripheral in KHz
+         */
+        static constexpr float TC3_InputClock_KHz = 48'000;
+
+        /**
+         * The Timer count frequency
+         */
+        static constexpr float TC3_TimerFrequency_KHz = TC3_InputClock_KHz / TC3_InputClockPrescaler;
+
+        static constexpr uint16_t TC3_TimerFrequency = static_cast<uint16_t>(TC3_TimerFrequency_KHz);
+
+        static constexpr float VelocityLoopFrequencyKHz = 5;
+
+        static constexpr uint32_t VelocityLoopFrequencyHz = static_cast<uint32_t>(VelocityLoopFrequencyKHz * 1000.0f);
+
+        uint32_t TC3_TimerFrequencyHz = 0;
+
+        uint32_t TC3_TOP_RegisterValue = 0;
+
+        static constexpr uint32_t VelocityLoopPeriod_us = 1'000'000 / VelocityLoopFrequencyHz;
+
+        /**
+         * The period of the PWM driving the 3-phase inverters. just a default value
+         */
+        static constexpr uint32_t PWM_Period_us = 1000;
+
+        /**
+         * The prescaler for the clock of the TCC peripheral; used to calculate the period
+         */
+        static constexpr uint16_t TCC_ClockPrescaler_N = 1;
+
+        /**
+         * The input clock of the TCC0 peripheral
+         */
+        static constexpr uint16_t TCC_InputClock_MHz = 48;
+
+        /**
+         * Cached PWM period duration in timer counts
+         *
+         * The PWM period for dual-slope PWM generation is given by the formula:
+         * f(pwm_ds) = f(gclk_tcc) / (2*N*PER), where PER is the * value to write in the corresponding register TCC0_REGS->TCC_PER
+         *
+         * Assuming that the TCC0 is clocked by the main 48MHz clock and the prescaler is N, then if Tpwm is the period in μs, the
+         * value written in PER is PER = 48 / (2 * N) * Tpwm
+         */
+        uint32_t tccPeriod_PER = 1'000;
+
+        /**
+         * Helper function that converts the period (μs) to a value appropriate for the PER register of the TCC peripheral
+         *
+         * @param pwmPeriod_us The PWM period in μs
+         */
+        [[nodiscard]] static __attribute__((always_inline)) counter_ticks_t microsecondsToTimerTicks(microseconds_t pwmPeriod_us) {
+                return TCC_InputClock_MHz / (2 * TCC_ClockPrescaler_N) * pwmPeriod_us;
+        }
+
+        /**
+         * Calculate the period to the PER register of the TCC peripheral * * @param pwmPeriod_us The PWM period in μs
+         */
+        __attribute__((always_inline)) void setPWM_Period_us(microseconds_t pwmPeriod_us) {
+                tccPeriod_PER = microsecondsToTimerTicks(pwmPeriod_us);
+                TCC0_PWM24bitPeriodSet(tccPeriod_PER);
+        }
+
+        /**
+         * Calculate the period to the PER register of the TCC peripheral
+         *
+         * @note Floating-point calculations are not a problem here, it's an operation performed at startup, not part of the hot-path
+         *
+         * @param pwmFrequency_khz The PWM frequency in kHz
+         */
+        [[nodiscard]] static __attribute__((always_inline)) counter_ticks_t
+        calculatePWM_PeriodFromFrequency(frequency_kHz_t pwmFrequency_khz) {
+                const auto PER_Value = std::lroundf(static_cast<float>(TCC_InputClock_MHz) /
+                                                    (2.0f * static_cast<float>(TCC_ClockPrescaler_N)) / pwmFrequency_khz * 1000.0f);
+
+                static_assert(sizeof(long) <= sizeof(PER_Value), "PER_Value is too big to fit in a long");
+
+                return static_cast<counter_ticks_t>(PER_Value);
+        }
+
+        /**
+         * Set the period to the PER register of the TCC peripheral
+         *
+         * @param pwmFrequency_khz The PWM frequency in kHz
+         */
+        __attribute__((always_inline)) void setPWM_Frequency(float pwmFrequency_khz) {
+                tccPeriod_PER = calculatePWM_PeriodFromFrequency(pwmFrequency_khz);
+                TCC0_PWM24bitPeriodSet(tccPeriod_PER);
+        }
 };
 
 } // namespace PermanentMagnetSynchronousMotor
