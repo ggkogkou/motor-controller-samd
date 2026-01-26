@@ -145,7 +145,8 @@ void PMSM_Controller::updateOpenLoop(const PhaseDutyCycles& dutyCycles) {
         dutyCycles.perC = pwmPeriod - perC;
 }
 
-void PMSM_Controller::updateVelocity(const PhaseCurrents& phaseCurrents, const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder) {
+void PMSM_Controller::updateVelocity(const PhaseCurrents& phaseCurrents, const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder,
+                                     TelemetryLogger* telemetry) {
         if (not velocityEstimator)
                 return;
 
@@ -188,6 +189,29 @@ void PMSM_Controller::updateVelocity(const PhaseCurrents& phaseCurrents, const P
         dutyCycles.perA = pwmPeriod - perA;
         dutyCycles.perB = pwmPeriod - perB;
         dutyCycles.perC = pwmPeriod - perC;
+
+        if (telemetry) {
+                telemetrySeq++;
+
+                TelemetryParameters tp;
+                tp.seq = telemetrySeq;
+                tp.t_us = SYSTICK_TimerCounterGet();
+
+                tp.ia_mA = phaseCurrents.Ia_mA;
+                tp.ib_mA = phaseCurrents.Ib_mA;
+                tp.ic_mA = phaseCurrents.Ic_mA;
+
+                tp.vd_mV = Ud_mV;
+                tp.vq_mV = Uq_mV;
+
+                tp.id_mA = dqFrame[0];
+                tp.iq_mA = dqFrame[1];
+
+                tp.angle_mrad = wrapped_mrad;
+                tp.omega_mrad_s = velocityEstimator->angularVelocity;
+
+                telemetry->updateLatest(tp);
+        }
 
         BENCHMARK_IO_Clear();
 }

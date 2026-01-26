@@ -24,63 +24,66 @@
 
 #include "USART_TxStream.hpp"
 
-size_t USART_TxStream::write(std::span<uint8_t> data) {
-        size_t written = 0;
+void USART_TxStream::init() {
+        DMAC_ChannelCallbackRegister(TxDmaChannel, &USART_TxStream::dmacDoneThunk, reinterpret_cast<uintptr_t>(this));
+}
 
-        enterCritical_();
+size_t USART_TxStream::write(std::span<const uint8_t> data) {
+        const size_t written = ring.write(data);
 
-        while (written < data.size()) {
-                const size_t nextHead = (txHead + 1) % BufferSize;
-
-                if (nextHead == txTail)
-                        break;
-
-                buffer[txHead] = data[written++];
-                txHead = nextHead;
-        }
-
-        exitCritical_();
-
-        beginTransaction();
+        if (written)
+                beginTransaction();
 
         return written;
 }
 
+void USART_TxStream::poll() {
+        if (kickPending) {
+                kickPending = false;
+                beginTransaction();
+        }
+}
+
 void USART_TxStream::beginTransaction() {
-        if (inFlight || SERCOM3_USART_WriteIsBusy())
+        if (inFlight || DMAC_ChannelIsBusy(TxDmaChannel)) {
                 return;
+        }
 
-        size_t head, tail;
-        enterCritical_();
-        head = txHead;
-        tail = txTail;
-        exitCritical_();
-
-        const size_t available = (head >= tail) ? (head - tail) : (BufferSize - (tail - head));
-
-        if (available == 0)
+        const auto span = ring.peekContiguous();
+        if (span.empty()) {
                 return;
+        }
 
-        size_t chunk = (head >= tail) ? (head - tail) : (BufferSize - tail);
-
-        if (chunk > MaxChunkSize)
+        size_t chunk = span.size();
+        if (chunk > MaxChunkSize) {
                 chunk = MaxChunkSize;
+        }
 
         inFlight = true;
         inFlightLen = chunk;
 
-        if (not SERCOM3_USART_Write(&buffer[tail], chunk)) {
+        const void* src = static_cast<const void*>(span.data());
+        const void* dst = const_cast<const void*>(static_cast<const volatile void*>(&SERCOM3_REGS->USART_INT.SERCOM_DATA));
+
+        if (!DMAC_ChannelTransfer(TxDmaChannel, src, dst, chunk)) {
                 inFlight = false;
                 inFlightLen = 0;
         }
 }
 
-void USART_TxStream::onTxCompletion() {
-        if (inFlight) {
-                txTail = (txTail + inFlightLen) % BufferSize;
-                inFlight = false;
-                inFlightLen = 0;
+void USART_TxStream::dmacDoneThunk(DMAC_TRANSFER_EVENT event, uintptr_t ctx) {
+        auto* self = reinterpret_cast<USART_TxStream*>(ctx);
+        self->onDmaCompletion(event);
+}
+
+void USART_TxStream::onDmaCompletion(DMAC_TRANSFER_EVENT event) {
+        if (event == DMAC_TRANSFER_EVENT_COMPLETE && inFlight) {
+                ring.consume(inFlightLen);
         }
 
-        beginTransaction();
+        inFlight = false;
+        inFlightLen = 0;
+
+        // Option A: let main loop start next chunk
+        kickPending = true;
 }

@@ -28,43 +28,42 @@
 #include <cstddef>
 #include <cstdint>
 #include <span>
+#include "RingBuffer.hpp"
 #include "definitions.h"
 
 class USART_TxStream {
 public:
         static constexpr size_t BufferSize = 1024;
         static constexpr size_t MaxChunkSize = 64;
+        static constexpr DMAC_CHANNEL TxDmaChannel = DMAC_CHANNEL_0;
 
-        void init() {
-                SERCOM3_USART_WriteCallbackRegister(&USART_TxStream::txDoneThunk, reinterpret_cast<uintptr_t>(this));
+        USART_TxStream() : ring(std::span<uint8_t>(storage.data(), storage.size())) {}
+
+        void init();
+
+        size_t write(std::span<const uint8_t> data);
+        size_t write(std::span<uint8_t> data) {
+                return write(std::span<const uint8_t>(data.data(), data.size()));
         }
 
-        size_t write(std::span<uint8_t> data);
+        void poll();
 
-        void beginTransaction();
+        [[nodiscard]] uint32_t getDroppedBytes() const {
+                return ring.getDroppedBytes();
+        }
 
 private:
-        volatile size_t txHead = 0;
-        volatile size_t txTail = 0;
-        std::array<uint8_t, BufferSize> buffer{};
+        std::array<uint8_t, BufferSize> storage{};
+
+        RingBuffer ring;
 
         volatile bool inFlight = false;
         volatile size_t inFlightLen = 0;
 
-        static void txDoneThunk(uintptr_t ctx) {
-                auto* self = reinterpret_cast<USART_TxStream*>(ctx);
-                self->onTxCompletion();
-        }
+        volatile bool kickPending = false;
 
-        void onTxCompletion();
+        void beginTransaction();
 
-        uint32_t primask_ = 0;
-        void enterCritical_() {
-                primask_ = __get_PRIMASK();
-                __disable_irq();
-        }
-        void exitCritical_() {
-                if (primask_ == 0)
-                        __enable_irq();
-        }
+        static void dmacDoneThunk(DMAC_TRANSFER_EVENT event, uintptr_t ctx);
+        void onDmaCompletion(DMAC_TRANSFER_EVENT event);
 };
