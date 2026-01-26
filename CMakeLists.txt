@@ -99,6 +99,7 @@ include_directories(
         src/config/sam_d21_xpro
         src/config/sam_d21_xpro/peripheral/adc
         src/config/sam_d21_xpro/peripheral/clock
+        src/config/sam_d21_xpro/peripheral/dmac
         src/config/sam_d21_xpro/peripheral/eic
         src/config/sam_d21_xpro/peripheral/evsys
         src/config/sam_d21_xpro/peripheral/nvic
@@ -134,6 +135,7 @@ set(SOURCES
         src/spi_buffer.cpp
         src/USART_TxStream.cpp
         src/SAMD21_FOC.cpp
+        src/Telemetry.cpp
 
         # System initialization and configuration
         src/config/sam_d21_xpro/initialization.c
@@ -145,6 +147,7 @@ set(SOURCES
         # Peripheral libraries
         src/config/sam_d21_xpro/peripheral/adc/plib_adc.c
         src/config/sam_d21_xpro/peripheral/clock/plib_clock.c
+        src/config/sam_d21_xpro/peripheral/dmac/plib_dmac.c
         src/config/sam_d21_xpro/peripheral/eic/plib_eic.c
         src/config/sam_d21_xpro/peripheral/evsys/plib_evsys.c
         src/config/sam_d21_xpro/peripheral/nvic/plib_nvic.c

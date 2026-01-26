@@ -45,7 +45,9 @@ public:
          *
          * Initializes the motor control peripherals, registers the callback functions and primes encoder
          */
-        SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz);
+        explicit SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz);
+
+        explicit SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz, TelemetryLogger* telemetry = nullptr);
 
         /**
          * Compiler generated default destructor
@@ -68,6 +70,8 @@ private:
          * Function that writes the cached PWM periods to the TCC0 registers
          */
         void setPWM_DutyCycles() const;
+
+        TelemetryLogger* telemetryLogger = nullptr;
 
         /**
          * The ADC reference voltage in mV (1/1.48*Vdd)

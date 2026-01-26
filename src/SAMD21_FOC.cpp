@@ -26,8 +26,10 @@
 
 namespace PermanentMagnetSynchronousMotor {
 
-SAMD21_FOC::SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz) :
-    motor(calculatePWM_PeriodFromFrequency(pwmFrequencyKHz), VelocityLoopPeriod_us),
+SAMD21_FOC::SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz) : SAMD21_FOC(pwmFrequencyKHz, nullptr) {}
+
+SAMD21_FOC::SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz, TelemetryLogger* telemetry) :
+    telemetryLogger(telemetry), motor(calculatePWM_PeriodFromFrequency(pwmFrequencyKHz), VelocityLoopPeriod_us),
     tccPeriod_PER(calculatePWM_PeriodFromFrequency(pwmFrequencyKHz)) {
         __disable_irq();
 
@@ -125,7 +127,7 @@ void SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_STATUS status) {
                 (void)encoder.request(AS5047P::RegisterAddress::ANGLECOM);
         }
 
-        if (!switchToCloseLoop) {
+        if (not switchToCloseLoop) {
                 switchToCloseLoop = motor.startupCalibration(dutyCycles, rotorPosition);
                 setPWM_DutyCycles();
                 return;
@@ -143,7 +145,19 @@ void SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_STATUS status) {
         //         currents.Ic_mA = CurrentPhaseW;
         // }
 
-        motor.updateVelocity(currents, dutyCycles, rotorPosition);
+        TelemetryLogger *t = nullptr;
+
+        static uint32_t telemetryDivider = 0;
+
+        if (telemetryLogger) {
+                telemetryDivider++;
+                if (telemetryDivider >= 50) {
+                        telemetryDivider = 0;
+                        t = telemetryLogger;
+                }
+        }
+
+        motor.updateVelocity(currents, dutyCycles, rotorPosition, t);
         setPWM_DutyCycles();
 }
 

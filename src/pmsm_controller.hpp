@@ -26,6 +26,7 @@
 
 #include <cstdint>
 #include <optional>
+#include "Telemetry.hpp"
 #include "definitions.h"
 #include "math_utils.hpp"
 #include "pid.hpp"
@@ -35,6 +36,7 @@
 namespace PermanentMagnetSynchronousMotor {
 
 using namespace SpaceVectorModulation;
+using namespace Telemetry;
 
 /**
  * @struct PhaseCurrents
@@ -152,8 +154,10 @@ public:
          * @param phaseCurrents
          * @param dutyCycles
          * @param thetaEncoder
+         * @param telemetry
          */
-        void updateVelocity(const PhaseCurrents& phaseCurrents, const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder);
+        void updateVelocity(const PhaseCurrents& phaseCurrents, const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder,
+                            TelemetryLogger* telemetry = nullptr);
 
         /**
          * Function that moves the rotor in open-loop. It is used during startup calibration procedures.
@@ -292,6 +296,8 @@ private:
          * CCW = -1
          */
         int8_t dirSign = 1;
+
+        uint32_t telemetrySeq = 0;
 
         /**
          * Encoder angle at the moment we start the direction check
