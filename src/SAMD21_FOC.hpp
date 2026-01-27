@@ -165,12 +165,12 @@ private:
         /**
          * The ADC readings (raw values)
          */
-        uint16_t adcResultU = 0;
-        uint16_t adcResultV = 0;
-        uint16_t adcResultW = 0;
+        volatile uint16_t adcResultU = 0;
+        volatile uint16_t adcResultV = 0;
+        volatile uint16_t adcResultW = 0;
 
-        bool adcResultsReady = false;
-        uint8_t adcScanIndex = 0;
+        volatile bool adcResultsReady = false;
+        volatile uint8_t adcScanIndex = 0;
 
         uint16_t adcOffsetU = 0;
         uint16_t adcOffsetV = 0;
@@ -184,7 +184,7 @@ private:
 
         static constexpr int32_t R_Shunt_mOhm = 100;
 
-        static constexpr int32_t SenseGain = 4;
+        static constexpr int32_t SenseGain = 20;
 
         int32_t opAmpOffset_mV = 1'650;
 

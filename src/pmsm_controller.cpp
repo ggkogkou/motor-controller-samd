@@ -29,7 +29,7 @@ namespace PermanentMagnetSynchronousMotor {
 PMSM_Controller::PMSM_Controller(uint32_t pwmPeriod) : PMSM_Controller(pwmPeriod, 1'000) {}
 
 PMSM_Controller::PMSM_Controller(uint32_t pwmPeriod, uint32_t velocityLoopPeriod) :
-    pidVelocity(0.5f, 10.0f, 0.0f, 6000.0f, static_cast<float>(velocityLoopPeriod) * 1e-6f),
+    pidVelocity(0.5f, 10.0f, 0.0f, 4000.0f, static_cast<float>(velocityLoopPeriod) * 1e-6f),
     pidId(0.25f, 20.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit * 1000.0f, static_cast<float>(velocityLoopPeriod) * 1e-6f),
     pidIq(0.35f, 50.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit * 1000.0f, static_cast<float>(velocityLoopPeriod) * 1e-6f),
     velocityLoopPeriod_us(velocityLoopPeriod), pwmPeriod(pwmPeriod), dT(static_cast<float>(velocityLoopPeriod) * 1e-6f) {

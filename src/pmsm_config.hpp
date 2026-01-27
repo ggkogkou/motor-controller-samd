@@ -39,7 +39,7 @@ struct PMSM_Config {
         /**
          * The voltage limit -- DC bus utilization
          */
-        static constexpr float CloseLoopVoltageLimit = 8.0f;
+        static constexpr float CloseLoopVoltageLimit = 6.0f;
 
         /**
          * Encoder electrical offset and direction calibration voltage limit
