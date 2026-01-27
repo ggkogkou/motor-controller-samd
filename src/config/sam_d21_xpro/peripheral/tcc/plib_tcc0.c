@@ -83,7 +83,7 @@ void TCC0_PWMInitialize(void) {
 
         /* Event output configuration (restored) */
         // TCC0_REGS->TCC_EVCTRL = TCC_EVCTRL_OVFEO_Msk;
-        TCC0_REGS->TCC_EVCTRL = TCC_EVCTRL_CNTEO_Msk | TCC_EVCTRL_CNTSEL_BETWEEN;
+        TCC0_REGS->TCC_EVCTRL = TCC_EVCTRL_CNTEO_Msk | TCC_EVCTRL_CNTSEL_START;
 
         while (TCC0_REGS->TCC_SYNCBUSY != 0U) {
                 /* Wait for sync */

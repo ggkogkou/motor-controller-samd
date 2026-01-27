@@ -42,6 +42,6 @@ using namespace PermanentMagnetSynchronousMotor;
         while (true) {
                 telemetry.writeFrame(logging);
                 logging.poll();
-                SYSTICK_DelayMs(5);
+                SYSTICK_DelayMs(1);
         }
 }

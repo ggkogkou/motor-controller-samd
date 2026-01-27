@@ -84,14 +84,12 @@ void SAMD21_FOC::ADC_Callback(ADC_STATUS status) {
                 const uint16_t sample = ADC_ConversionResultGet();
 
                 if (adcScanIndex == 0u) {
-                        adcResultU = sample;
-                } else if (adcScanIndex == 7u) {
-                        adcResultV = sample;
-                } else if (adcScanIndex == 8u) {
-                        adcResultW = sample;
+                        adcResultU = sample; // AIN10
+                } else { // adcScanIndex == 1
+                        adcResultV = sample; // AIN11
                 }
 
-                adcScanIndex = (adcScanIndex + 1u) % 9u;
+                adcScanIndex = (adcScanIndex + 1u) % 2u;
 
                 if (adcScanIndex == 0u) {
                         adcResultsReady = true;
@@ -99,6 +97,8 @@ void SAMD21_FOC::ADC_Callback(ADC_STATUS status) {
         }
 
         if (status & ADC_INTFLAG_OVERRUN_Msk) {
+                adcResultU = 0;
+                adcResultV = 0;
                 ADC_InterruptsClear(ADC_INTFLAG_OVERRUN_Msk);
         }
 }
@@ -133,19 +133,19 @@ void SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_STATUS status) {
                 return;
         }
 
-        // if (adcResultsReady) {
-        //         adcResultsReady = false;
-        //
-        //         const int32_t CurrentPhaseU = adcRawToCurrent(adcResultU, adcOffsetU);
-        //         const int32_t CurrentPhaseV = adcRawToCurrent(adcResultV, adcOffsetV);
-        //         const int32_t CurrentPhaseW = adcRawToCurrent(adcResultW, adcOffsetW);
-        //
-        //         currents.Ia_mA = CurrentPhaseU;
-        //         currents.Ib_mA = CurrentPhaseV;
-        //         currents.Ic_mA = CurrentPhaseW;
-        // }
+        if (adcResultsReady) {
+                NVIC_DisableIRQ(ADC_IRQn);
+                const uint16_t U = adcResultU;
+                const uint16_t V = adcResultV;
+                adcResultsReady = false;
+                NVIC_EnableIRQ(ADC_IRQn);
 
-        TelemetryLogger *t = nullptr;
+                currents.Ia_mA = adcRawToCurrent(U, adcOffsetU);
+                currents.Ib_mA = adcRawToCurrent(V, adcOffsetV);
+                currents.Ic_mA = -(currents.Ia_mA + currents.Ib_mA);
+        }
+
+        TelemetryLogger* t = nullptr;
 
         static uint32_t telemetryDivider = 0;
 
@@ -159,6 +159,7 @@ void SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_STATUS status) {
 
         motor.updateVelocity(currents, dutyCycles, rotorPosition, t);
         setPWM_DutyCycles();
+        // stop();
 }
 
 void SAMD21_FOC::setPWM_DutyCycles() const {
@@ -168,37 +169,32 @@ void SAMD21_FOC::setPWM_DutyCycles() const {
 }
 
 void SAMD21_FOC::adcZeroOffsetCalibration() {
-        // motor.stopMotor(dutyCycles);
-        // setPWM_DutyCycles();
-
         static constexpr uint16_t ADC_ScanCount = 512;
 
         if (!adcResultsReady)
                 return;
 
+        NVIC_DisableIRQ(ADC_IRQn);
+        const uint16_t U = adcResultU;
+        const uint16_t V = adcResultV;
         adcResultsReady = false;
+        NVIC_EnableIRQ(ADC_IRQn);
 
         if (offsetsReady)
                 return;
 
-        offsetAccU += adcResultU;
-        offsetAccV += adcResultV;
-        offsetAccW += adcResultW;
+        offsetAccU += U;
+        offsetAccV += V;
         offsetCount++;
 
         if (offsetCount >= ADC_ScanCount) {
                 adcOffsetU = static_cast<uint16_t>((offsetAccU + offsetCount / 2) / offsetCount);
                 adcOffsetV = static_cast<uint16_t>((offsetAccV + offsetCount / 2) / offsetCount);
-                adcOffsetW = static_cast<uint16_t>((offsetAccW + offsetCount / 2) / offsetCount);
-
-                // opAmpOffset_mV = rawToMilliVolts(adcOffsetV);
 
                 offsetsReady = true;
 
                 offsetAccU = 0;
                 offsetAccV = 0;
-                offsetAccW = 0;
-
                 offsetCount = 0;
         }
 }
