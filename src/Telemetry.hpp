@@ -100,6 +100,8 @@ public:
 
                 const uint32_t SampleIndex = latestBufferIndex;
 
+                __DMB();
+
                 encodedFrame = buffers[SampleIndex];
 
                 availableSnapshot = false;

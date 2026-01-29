@@ -62,9 +62,11 @@ public:
 private:
         static void ADC_Callback(ADC_STATUS status, uintptr_t context);
         static void TC3_Callback(TC_TIMER_STATUS status, uintptr_t context);
+        static void TC4_Callback(TC_TIMER_STATUS status, uintptr_t context);
 
         void ADC_Callback(ADC_STATUS status);
         void TC3_FOC_Handler(TC_TIMER_STATUS status);
+        void TC4_FOC_Handler(TC_TIMER_STATUS status);
 
         /**
          * Function that writes the cached PWM periods to the TCC0 registers
@@ -226,7 +228,7 @@ private:
 
         static constexpr uint16_t TC3_TimerFrequency = static_cast<uint16_t>(TC3_TimerFrequency_KHz);
 
-        static constexpr float VelocityLoopFrequencyKHz = 5;
+        static constexpr float VelocityLoopFrequencyKHz = 3.0f;
 
         static constexpr uint32_t VelocityLoopFrequencyHz = static_cast<uint32_t>(VelocityLoopFrequencyKHz * 1000.0f);
 
@@ -235,6 +237,27 @@ private:
         uint32_t TC3_TOP_RegisterValue = 0;
 
         static constexpr uint32_t VelocityLoopPeriod_us = 1'000'000 / VelocityLoopFrequencyHz;
+
+        /**
+         * TC4 (Current loop) timings
+         */
+        static constexpr float CurrentLoopFrequencyKHz = 18.0f;
+        static constexpr uint32_t CurrentLoopFrequencyHz = static_cast<uint32_t>(CurrentLoopFrequencyKHz * 1000.0f);
+        static constexpr uint32_t CurrentLoopPeriod_us = 1'000'000u / CurrentLoopFrequencyHz;
+
+        uint32_t TC4_TimerFrequencyHz = 0;
+        uint32_t TC4_TOP_RegisterValue = 0;
+
+        /**
+         * Cache rotor position for the current loop
+         */
+        volatile uint16_t rotorPositionCached = 0;
+        volatile bool rotorPositionValid = false;
+
+        volatile uint16_t adcU_latest = 0;
+        volatile uint16_t adcV_latest = 0;
+        volatile uint32_t adcPairSeq = 0;
+        uint32_t lastUsedAdcPairSeq = 0;
 
         /**
          * The period of the PWM driving the 3-phase inverters. just a default value

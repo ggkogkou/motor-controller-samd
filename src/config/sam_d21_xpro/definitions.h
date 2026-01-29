@@ -61,6 +61,7 @@
 #include "peripheral/adc/plib_adc.h"
 #include "peripheral/eic/plib_eic.h"
 #include "peripheral/tc/plib_tc3.h"
+#include "peripheral/tc/plib_tc4.h"
 
 // DOM-IGNORE-BEGIN
 #ifdef __cplusplus  // Provide C++ Compatibility
