@@ -31,21 +31,17 @@ void USART_TxStream::init() {
 size_t USART_TxStream::write(std::span<const uint8_t> data) {
         const size_t written = ring.write(data);
 
-        if (written)
+        if (written) {
+                NVIC_DisableIRQ(DMAC_IRQn);
                 beginTransaction();
+                NVIC_EnableIRQ(DMAC_IRQn);
+        }
 
         return written;
 }
 
-void USART_TxStream::poll() {
-        if (kickPending) {
-                kickPending = false;
-                beginTransaction();
-        }
-}
-
 void USART_TxStream::beginTransaction() {
-        if (inFlight || DMAC_ChannelIsBusy(TxDmaChannel)) {
+        if (inFlight) {
                 return;
         }
 
@@ -63,7 +59,8 @@ void USART_TxStream::beginTransaction() {
         inFlightLen = chunk;
 
         const void* src = static_cast<const void*>(span.data());
-        const void* dst = const_cast<const void*>(static_cast<const volatile void*>(&SERCOM3_REGS->USART_INT.SERCOM_DATA));
+        const void* dst = const_cast<const void*>(
+            static_cast<const volatile void*>(&SERCOM3_REGS->USART_INT.SERCOM_DATA));
 
         if (!DMAC_ChannelTransfer(TxDmaChannel, src, dst, chunk)) {
                 inFlight = false;
@@ -72,8 +69,8 @@ void USART_TxStream::beginTransaction() {
 }
 
 void USART_TxStream::dmacDoneThunk(DMAC_TRANSFER_EVENT event, uintptr_t ctx) {
-        auto* self = reinterpret_cast<USART_TxStream*>(ctx);
-        self->onDmaCompletion(event);
+        if (auto* self = reinterpret_cast<USART_TxStream*>(ctx))
+                self->onDmaCompletion(event);
 }
 
 void USART_TxStream::onDmaCompletion(DMAC_TRANSFER_EVENT event) {
@@ -84,6 +81,5 @@ void USART_TxStream::onDmaCompletion(DMAC_TRANSFER_EVENT event) {
         inFlight = false;
         inFlightLen = 0;
 
-        // Option A: let main loop start next chunk
-        kickPending = true;
+        beginTransaction();
 }

@@ -187,6 +187,9 @@ void PMSM_Controller::runCurrentLoop(const PhaseCurrents& phaseCurrents, PhaseDu
         const int32_t Uq_mV = pidIq.compute(Iq_Error); /// in mV
         const int32_t Ud_mV = pidId.compute(Id_Error); /// in mV
 
+        const int32_t Ud_i_mV = pidId.lastIntegralTerm();
+        const int32_t Uq_i_mV = pidIq.lastIntegralTerm();
+
         /// TODO: Create a limit circle function that takes also care of overmodulation etc
 
         const auto InvPark = MathUtils::performInverseParkTransform(Ud_mV, Uq_mV, ThetaEl);
@@ -196,13 +199,7 @@ void PMSM_Controller::runCurrentLoop(const PhaseCurrents& phaseCurrents, PhaseDu
         dutyCycles.perB = pwmPeriod - perB;
         dutyCycles.perC = pwmPeriod - perC;
 
-        TelemetryLogger* tpub = nullptr;
-        if (telemetry && (++telemetryDivider >= 50)) {
-                telemetryDivider = 0;
-                tpub = telemetry;
-        }
-
-        if (tpub) {
+        if (telemetry) {
                 TelemetryParameters tp;
                 tp.seq = ++telemetrySeq;
                 tp.t_us = SYSTICK_TimerCounterGet();
@@ -214,13 +211,22 @@ void PMSM_Controller::runCurrentLoop(const PhaseCurrents& phaseCurrents, PhaseDu
                 tp.vd_mV = Ud_mV;
                 tp.vq_mV = Uq_mV;
 
+                tp.vd_i_mV = Ud_i_mV;
+                tp.vq_i_mV = Uq_i_mV;
+
                 tp.id_mA = dqFrame[0];
                 tp.iq_mA = dqFrame[1];
+
+                tp.id_ref_mA = Iref.Id_mA;
+                tp.iq_ref_mA = Iref.Iq_mA;
+
+                tp.id_err_mA = Id_Error;
+                tp.iq_err_mA = Iq_Error;
 
                 tp.angle_mrad = rawToMilliRad(thetaEncoder);
                 tp.omega_mrad_s = tlm_omega_mrad_s;
 
-                tpub->updateLatest(tp);
+                telemetry->updateLatest(tp);
         }
 
         // BENCHMARK_IO_Clear();

@@ -173,9 +173,6 @@ void SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_STATUS status) {
 void SAMD21_FOC::TC4_FOC_Handler(TC_TIMER_STATUS status) {
         (void)status;
 
-        BENCHMARK_IO_Set();
-        BENCHMARK_IO_Clear();
-
         if (not switchToCloseLoop || !offsetsReady || !rotorPositionValid)
                 return;
 
@@ -184,10 +181,13 @@ void SAMD21_FOC::TC4_FOC_Handler(TC_TIMER_STATUS status) {
 
         NVIC_DisableIRQ(ADC_IRQn);
         seq = adcPairSeq;
+
         if (seq == lastUsedAdcPairSeq) {
+                missedPairs++;
                 NVIC_EnableIRQ(ADC_IRQn);
-                return; // no new currents => skip this tick
+                return;
         }
+
         U = adcU_latest;
         V = adcV_latest;
         lastUsedAdcPairSeq = seq;
@@ -202,9 +202,8 @@ void SAMD21_FOC::TC4_FOC_Handler(TC_TIMER_STATUS status) {
         TelemetryLogger* t = nullptr;
 
         if (telemetryLogger) {
-                static uint32_t div = 0;
-                if (++div >= 50u) {
-                        div = 0;
+                if (++telemetryDividerCounter >= TelemetryDivider) {
+                        telemetryDividerCounter = 0;
                         t = telemetryLogger;
                 }
         }
@@ -224,7 +223,7 @@ void SAMD21_FOC::setPWM_DutyCycles() const {
 void SAMD21_FOC::adcZeroOffsetCalibration() {
         static constexpr uint16_t ADC_ScanCount = 512;
 
-        if (!adcResultsReady)
+        if (not adcResultsReady)
                 return;
 
         NVIC_DisableIRQ(ADC_IRQn);

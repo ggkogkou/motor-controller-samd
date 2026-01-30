@@ -241,12 +241,19 @@ private:
         /**
          * TC4 (Current loop) timings
          */
-        static constexpr float CurrentLoopFrequencyKHz = 18.0f;
+        static constexpr float CurrentLoopFrequencyKHz = 14.0f;
         static constexpr uint32_t CurrentLoopFrequencyHz = static_cast<uint32_t>(CurrentLoopFrequencyKHz * 1000.0f);
         static constexpr uint32_t CurrentLoopPeriod_us = 1'000'000u / CurrentLoopFrequencyHz;
 
         uint32_t TC4_TimerFrequencyHz = 0;
         uint32_t TC4_TOP_RegisterValue = 0;
+
+        static constexpr uint32_t TelemetryHz = 200;
+        static constexpr uint32_t TelemetryDivider = (CurrentLoopFrequencyHz + TelemetryHz / 2) / TelemetryHz;
+
+        static_assert(TelemetryDivider >= 1);
+
+        uint32_t telemetryDividerCounter = 0;
 
         /**
          * Cache rotor position for the current loop
@@ -258,6 +265,8 @@ private:
         volatile uint16_t adcV_latest = 0;
         volatile uint32_t adcPairSeq = 0;
         uint32_t lastUsedAdcPairSeq = 0;
+
+        uint32_t missedPairs = 0;
 
         /**
          * The period of the PWM driving the 3-phase inverters. just a default value

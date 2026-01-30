@@ -255,8 +255,6 @@ private:
         volatile int32_t tlm_angle_mrad = 0;
         volatile int32_t tlm_omega_mrad_s = 0;
 
-        uint32_t telemetryDivider = 0;
-
         /**
          * Velocity loop period (ISR period) in microseconds
          */

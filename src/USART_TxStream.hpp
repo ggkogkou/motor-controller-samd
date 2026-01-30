@@ -34,7 +34,7 @@
 class USART_TxStream {
 public:
         static constexpr size_t BufferSize = 1024;
-        static constexpr size_t MaxChunkSize = 64;
+        static constexpr size_t MaxChunkSize = 256;
         static constexpr DMAC_CHANNEL TxDmaChannel = DMAC_CHANNEL_0;
 
         USART_TxStream() : ring(std::span<uint8_t>(storage.data(), storage.size())) {}
