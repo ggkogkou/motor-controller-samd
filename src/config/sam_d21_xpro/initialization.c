@@ -159,6 +159,8 @@ void SYS_Initialize ( void* data )
 
     TC3_TimerInitialize();
 
+    TC4_TimerInitialize();
+
 
     NVIC_Initialize();
 

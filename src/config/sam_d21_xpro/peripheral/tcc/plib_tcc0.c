@@ -66,11 +66,10 @@ void TCC0_PWMInitialize(void) {
         TCC0_REGS->TCC_WEXCTRL = TCC_WEXCTRL_OTMX(0UL);
 
         /* Dead time configurations */
-        TCC0_REGS->TCC_WEXCTRL |= TCC_WEXCTRL_DTIEN0_Msk | TCC_WEXCTRL_DTIEN1_Msk | TCC_WEXCTRL_DTIEN2_Msk |
-                TCC_WEXCTRL_DTIEN3_Msk | TCC_WEXCTRL_DTLS(64UL) | TCC_WEXCTRL_DTHS(64UL);
+        TCC0_REGS->TCC_WEXCTRL |= TCC_WEXCTRL_DTIEN0_Msk | TCC_WEXCTRL_DTIEN1_Msk | TCC_WEXCTRL_DTIEN2_Msk | TCC_WEXCTRL_DTIEN3_Msk |
+                TCC_WEXCTRL_DTLS(64UL) | TCC_WEXCTRL_DTHS(64UL);
 
-        TCC0_REGS->TCC_WAVE =
-                TCC_WAVE_WAVEGEN_DSBOTH | TCC_WAVE_POL0_Msk | TCC_WAVE_POL1_Msk | TCC_WAVE_POL2_Msk | TCC_WAVE_POL3_Msk;
+        TCC0_REGS->TCC_WAVE = TCC_WAVE_WAVEGEN_DSBOTH | TCC_WAVE_POL0_Msk | TCC_WAVE_POL1_Msk | TCC_WAVE_POL2_Msk | TCC_WAVE_POL3_Msk;
 
         /* Configure duty cycle values */
         TCC0_REGS->TCC_CC[0] = 0U;
@@ -83,7 +82,8 @@ void TCC0_PWMInitialize(void) {
 
         /* Event output configuration (restored) */
         // TCC0_REGS->TCC_EVCTRL = TCC_EVCTRL_OVFEO_Msk;
-        TCC0_REGS->TCC_EVCTRL = TCC_EVCTRL_CNTEO_Msk | TCC_EVCTRL_CNTSEL_START;
+        // TCC0_REGS->TCC_EVCTRL = TCC_EVCTRL_CNTEO_Msk | TCC_EVCTRL_CNTSEL_START;
+        TCC0_REGS->TCC_EVCTRL = TCC_EVCTRL_MCEO3_Msk;
 
         while (TCC0_REGS->TCC_SYNCBUSY != 0U) {
                 /* Wait for sync */
@@ -173,10 +173,14 @@ void TCC0_PWMForceUpdate(void) {
 }
 
 /* Enable the period interrupt - overflow or underflow interrupt */
-void TCC0_PWMPeriodInterruptEnable(void) { TCC0_REGS->TCC_INTENSET = TCC_INTENSET_OVF_Msk; }
+void TCC0_PWMPeriodInterruptEnable(void) {
+        TCC0_REGS->TCC_INTENSET = TCC_INTENSET_OVF_Msk;
+}
 
 /* Disable the period interrupt - overflow or underflow interrupt */
-void TCC0_PWMPeriodInterruptDisable(void) { TCC0_REGS->TCC_INTENCLR = TCC_INTENCLR_OVF_Msk; }
+void TCC0_PWMPeriodInterruptDisable(void) {
+        TCC0_REGS->TCC_INTENCLR = TCC_INTENCLR_OVF_Msk;
+}
 
 /* Read interrupt flags */
 uint32_t TCC0_PWMInterruptStatusGet(void) {

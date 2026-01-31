@@ -134,6 +134,19 @@ public:
          */
         void reset();
 
+        [[nodiscard]] int32_t lastIntegralTerm() const {
+                return previousIntegralTerm;
+        }
+
+        [[nodiscard]] int32_t lastOutput() const {
+                return previousControllerOutput;
+        }
+
+        [[nodiscard]] int32_t outputLimit() const {
+                return limit;
+        }
+
+
 private:
         /**
          * Proportional, integral, derivative gains

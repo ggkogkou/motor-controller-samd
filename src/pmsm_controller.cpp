@@ -26,13 +26,14 @@
 
 namespace PermanentMagnetSynchronousMotor {
 
-PMSM_Controller::PMSM_Controller(uint32_t pwmPeriod) : PMSM_Controller(pwmPeriod, 1'000) {}
+PMSM_Controller::PMSM_Controller(uint32_t pwmPeriod) : PMSM_Controller(pwmPeriod, 1'000, 1'000) {}
 
-PMSM_Controller::PMSM_Controller(uint32_t pwmPeriod, uint32_t velocityLoopPeriod) :
+PMSM_Controller::PMSM_Controller(uint32_t pwmPeriod, uint32_t velocityLoopPeriod, uint32_t currentLoopPeriod) :
     pidVelocity(0.5f, 10.0f, 0.0f, 4000.0f, static_cast<float>(velocityLoopPeriod) * 1e-6f),
-    pidId(0.25f, 20.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit * 1000.0f, static_cast<float>(velocityLoopPeriod) * 1e-6f),
-    pidIq(0.35f, 50.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit * 1000.0f, static_cast<float>(velocityLoopPeriod) * 1e-6f),
-    velocityLoopPeriod_us(velocityLoopPeriod), pwmPeriod(pwmPeriod), dT(static_cast<float>(velocityLoopPeriod) * 1e-6f) {
+    pidId(0.25f, 20.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit * 1000.0f, static_cast<float>(currentLoopPeriod) * 1e-6f),
+    pidIq(0.35f, 50.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit * 1000.0f, static_cast<float>(currentLoopPeriod) * 1e-6f),
+    velocityLoopPeriod_us(velocityLoopPeriod), CurrentLoopPeriod_us(currentLoopPeriod), pwmPeriod(pwmPeriod),
+    dT(static_cast<float>(velocityLoopPeriod) * 1e-6f) {
         targetVelocity_mrad_s = std::lroundf(PMSM_Config::TargetVelocity * 1000.0f);
 
         const float step_counts = PMSM_Config::TargetCalibrationVelocity * dT * (static_cast<float>(16384) / (2.0f * PI));
@@ -145,12 +146,10 @@ void PMSM_Controller::updateOpenLoop(const PhaseDutyCycles& dutyCycles) {
         dutyCycles.perC = pwmPeriod - perC;
 }
 
-void PMSM_Controller::updateVelocity(const PhaseCurrents& phaseCurrents, const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder,
-                                     TelemetryLogger* telemetry) {
+void PMSM_Controller::runVelocityLoop(uint16_t thetaEncoder) {
+        // BENCHMARK_IO_Set();
         if (not velocityEstimator)
                 return;
-
-        BENCHMARK_IO_Set();
 
         const int32_t wrapped_mrad = rawToMilliRad(thetaEncoder);
 
@@ -167,19 +166,29 @@ void PMSM_Controller::updateVelocity(const PhaseCurrents& phaseCurrents, const P
 
         const int32_t VelocityError = targetVelocity_mrad_s - VelocityAbsoluteValue; /// in mrad/s
 
-        const uint16_t ThetaEl = calculateElectricalAngle(thetaEncoder);
+        Iref.Iq_mA = pidVelocity.compute(VelocityError); /// output is Iq,ref in mA
 
-        const int32_t Iq_Ref = pidVelocity.compute(VelocityError); /// output is Iq,ref in mA
+        tlm_angle_mrad = wrapped_mrad;
+        tlm_omega_mrad_s = velocityEstimator->angularVelocity;
+        // BENCHMARK_IO_Clear();
+}
+
+void PMSM_Controller::runCurrentLoop(const PhaseCurrents& phaseCurrents, PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder,
+                                     TelemetryLogger* telemetry) {
+        // BENCHMARK_IO_Set();
+
+        const uint16_t ThetaEl = calculateElectricalAngle(thetaEncoder);
 
         const auto dqFrame = MathUtils::performClarkeParkTransforms(phaseCurrents.Ia_mA, phaseCurrents.Ib_mA, ThetaEl);
 
-        constexpr int32_t Id_Ref = 0; /// in mA
-
-        const int32_t Id_Error = Id_Ref - dqFrame[0]; /// in mA
-        const int32_t Iq_Error = Iq_Ref - dqFrame[1]; /// in mA
+        const int32_t Id_Error = Iref.Id_mA - dqFrame[0]; /// in mA
+        const int32_t Iq_Error = Iref.Iq_mA - dqFrame[1]; /// in mA
 
         const int32_t Uq_mV = pidIq.compute(Iq_Error); /// in mV
         const int32_t Ud_mV = pidId.compute(Id_Error); /// in mV
+
+        const int32_t Ud_i_mV = pidId.lastIntegralTerm();
+        const int32_t Uq_i_mV = pidIq.lastIntegralTerm();
 
         /// TODO: Create a limit circle function that takes also care of overmodulation etc
 
@@ -191,10 +200,8 @@ void PMSM_Controller::updateVelocity(const PhaseCurrents& phaseCurrents, const P
         dutyCycles.perC = pwmPeriod - perC;
 
         if (telemetry) {
-                telemetrySeq++;
-
                 TelemetryParameters tp;
-                tp.seq = telemetrySeq;
+                tp.seq = ++telemetrySeq;
                 tp.t_us = SYSTICK_TimerCounterGet();
 
                 tp.ia_mA = phaseCurrents.Ia_mA;
@@ -204,16 +211,25 @@ void PMSM_Controller::updateVelocity(const PhaseCurrents& phaseCurrents, const P
                 tp.vd_mV = Ud_mV;
                 tp.vq_mV = Uq_mV;
 
+                tp.vd_i_mV = Ud_i_mV;
+                tp.vq_i_mV = Uq_i_mV;
+
                 tp.id_mA = dqFrame[0];
                 tp.iq_mA = dqFrame[1];
 
-                tp.angle_mrad = wrapped_mrad;
-                tp.omega_mrad_s = velocityEstimator->angularVelocity;
+                tp.id_ref_mA = Iref.Id_mA;
+                tp.iq_ref_mA = Iref.Iq_mA;
+
+                tp.id_err_mA = Id_Error;
+                tp.iq_err_mA = Iq_Error;
+
+                tp.angle_mrad = rawToMilliRad(thetaEncoder);
+                tp.omega_mrad_s = tlm_omega_mrad_s;
 
                 telemetry->updateLatest(tp);
         }
 
-        BENCHMARK_IO_Clear();
+        // BENCHMARK_IO_Clear();
 }
 
 void PMSM_Controller::stopMotor(const PhaseDutyCycles& dutyCycles) const {
