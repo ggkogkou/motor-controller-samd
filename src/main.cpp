@@ -40,6 +40,14 @@ using namespace PermanentMagnetSynchronousMotor;
         logging.init();
 
         uint32_t lastDropped = 0;
+        uint32_t loopCounter = 0;
+
+        bool targetToggle = false;
+
+        static constexpr int32_t TargetAngleA_mrad = 0;
+        static constexpr int32_t TargetAngleB_mrad = 3141; // ~π mrad
+
+        foc.moveToAngle(TargetAngleA_mrad);
 
         while (true) {
                 telemetry.writeFrame(logging);
@@ -50,7 +58,11 @@ using namespace PermanentMagnetSynchronousMotor;
                         // BENCHMARK_IO_Clear();
                 }
 
+                if (loopCounter++ % 60u == 0) { // move every 60 * 50ms = 3sec
+                        targetToggle = !targetToggle;
+                        foc.moveToAngle(targetToggle ? TargetAngleB_mrad : TargetAngleA_mrad);
+                }
+
                 SYSTICK_DelayMs(50);
         }
-
 }

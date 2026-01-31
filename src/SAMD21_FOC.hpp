@@ -59,6 +59,13 @@ public:
          */
         void stop() const;
 
+        /**
+         * Command a target position in milliradians [0, 2π)
+         *
+         * @param targetAngle_mrad Target angle in milliradians
+         */
+        void moveToAngle(int32_t targetAngle_mrad);
+
 private:
         static void ADC_Callback(ADC_STATUS status, uintptr_t context);
         static void TC3_Callback(TC_TIMER_STATUS status, uintptr_t context);
@@ -269,7 +276,18 @@ private:
         uint32_t missedPairs = 0;
 
         /**
-         * The period of the PWM driving the 3-phase inverters. just a default value
+         * Position loop
+         */
+        static constexpr uint32_t PositionLoopFrequencyHz = 1'000;
+        static constexpr uint32_t PositionLoopDivider =
+                (VelocityLoopFrequencyHz + PositionLoopFrequencyHz / 2) / PositionLoopFrequencyHz;
+
+        static_assert(PositionLoopDivider >= 1);
+
+        uint32_t positionLoopDividerCounter = 0;
+
+        /**
+         * The period of the PWM driving the 3-phase inverters, just a default value
          */
         static constexpr uint32_t PWM_Period_us = 1000;
 
