@@ -39,17 +39,17 @@ struct PMSM_Config {
         /**
          * The voltage limit -- DC bus utilization
          */
-        static constexpr float CloseLoopVoltageLimit = 6.0f;
+        static constexpr float CloseLoopVoltageLimit = 12.0f;
 
         /**
          * Encoder electrical offset and direction calibration voltage limit
          */
-        static constexpr float InitialCalibrationVoltageLimit = 3.0f;
+        static constexpr float InitialCalibrationVoltageLimit = 4.0f;
 
         /**
          * Target velocity for the outer velocity loop
          */
-        static constexpr float TargetVelocity = 10.0f;
+        static constexpr float TargetVelocity = 12.0f;
 
         /**
          * Target velocity for the encoder calibration loop (ω = 2π rad/s)

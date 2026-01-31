@@ -29,23 +29,38 @@ namespace PermanentMagnetSynchronousMotor {
 SAMD21_FOC::SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz) : SAMD21_FOC(pwmFrequencyKHz, nullptr) {}
 
 SAMD21_FOC::SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz, TelemetryLogger* telemetry) :
-    telemetryLogger(telemetry), motor(calculatePWM_PeriodFromFrequency(pwmFrequencyKHz), VelocityLoopPeriod_us),
+    telemetryLogger(telemetry), motor(calculatePWM_PeriodFromFrequency(pwmFrequencyKHz), VelocityLoopPeriod_us, CurrentLoopPeriod_us),
     tccPeriod_PER(calculatePWM_PeriodFromFrequency(pwmFrequencyKHz)) {
         __disable_irq();
 
         TC3_TimerFrequencyHz = TC3_TimerFrequencyGet();
-
         TC3_TOP_RegisterValue = TC3_TimerFrequencyHz / VelocityLoopFrequencyHz - 1;
         TC3_Timer16bitPeriodSet(TC3_TOP_RegisterValue);
 
+        TC4_TimerFrequencyHz = TC4_TimerFrequencyGet();
+        TC4_TOP_RegisterValue = TC4_TimerFrequencyHz / CurrentLoopFrequencyHz - 1u;
+        TC4_Timer16bitPeriodSet(TC4_TOP_RegisterValue);
+
         TCC0_PWM24bitPeriodSet(tccPeriod_PER);
+
+        uint32_t per = tccPeriod_PER & 0xFFFFFFu;
+        uint32_t sample = per / 2;
+        const uint32_t RAMP_FALLING = (1u << 23);
+
+        TCC0_REGS->TCC_CC[3] = (sample & 0x7FFFFFu) | RAMP_FALLING;
+
+        while (TCC0_REGS->TCC_SYNCBUSY != 0U) {
+                /* Wait for sync */
+        }
 
         ADC_CallbackRegister(&SAMD21_FOC::ADC_Callback, reinterpret_cast<uintptr_t>(this));
         TC3_TimerCallbackRegister(&SAMD21_FOC::TC3_Callback, reinterpret_cast<uintptr_t>(this));
+        TC4_TimerCallbackRegister(&SAMD21_FOC::TC4_Callback, reinterpret_cast<uintptr_t>(this));
 
         ADC_Enable();
         TCC0_PWMStart();
         TC3_TimerStart();
+        TC4_TimerStart();
 
         setPWM_DutyCycles();
 
@@ -79,26 +94,43 @@ void SAMD21_FOC::TC3_Callback(TC_TIMER_STATUS status, uintptr_t context) {
                 self->TC3_FOC_Handler(status);
 }
 
+void SAMD21_FOC::TC4_Callback(TC_TIMER_STATUS status, uintptr_t context) {
+        auto* self = reinterpret_cast<SAMD21_FOC*>(context);
+
+        if (self)
+                self->TC4_FOC_Handler(status);
+}
+
 void SAMD21_FOC::ADC_Callback(ADC_STATUS status) {
         if (status & ADC_INTFLAG_RESRDY_Msk) {
+                // BENCHMARK_IO_Set();
+                // BENCHMARK_IO_Clear();
+
                 const uint16_t sample = ADC_ConversionResultGet();
 
-                if (adcScanIndex == 0u) {
-                        adcResultU = sample; // AIN10
-                } else { // adcScanIndex == 1
-                        adcResultV = sample; // AIN11
-                }
+                if (adcScanIndex == 0u)
+                        adcResultU = sample;
+                else
+                        adcResultV = sample;
 
-                adcScanIndex = (adcScanIndex + 1u) % 2u;
+                adcScanIndex = (adcScanIndex + 1u) & 1u;
 
                 if (adcScanIndex == 0u) {
+                        adcU_latest = adcResultU;
+                        adcV_latest = adcResultV;
+                        adcPairSeq++;
+
                         adcResultsReady = true;
+
+                        // BENCHMARK_IO_Set();
+                        // BENCHMARK_IO_Clear();
                 }
         }
 
         if (status & ADC_INTFLAG_OVERRUN_Msk) {
-                adcResultU = 0;
-                adcResultV = 0;
+                // BENCHMARK_IO_Set();
+                // BENCHMARK_IO_Clear();
+
                 ADC_InterruptsClear(ADC_INTFLAG_OVERRUN_Msk);
         }
 }
@@ -120,8 +152,7 @@ void SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_STATUS status) {
         }
 
         static constexpr uint16_t EncoderMask = 0x3FFF;
-
-        const auto rotorPosition = static_cast<uint16_t>(encoder.measureAngleCompensatedRaw() & EncoderMask);
+        const uint16_t rotorPosition = static_cast<uint16_t>(encoder.measureAngleCompensatedRaw() & EncoderMask);
 
         if (not AS5047P::sensorBusy()) {
                 (void)encoder.request(AS5047P::RegisterAddress::ANGLECOM);
@@ -133,33 +164,54 @@ void SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_STATUS status) {
                 return;
         }
 
-        if (adcResultsReady) {
-                NVIC_DisableIRQ(ADC_IRQn);
-                const uint16_t U = adcResultU;
-                const uint16_t V = adcResultV;
-                adcResultsReady = false;
-                NVIC_EnableIRQ(ADC_IRQn);
+        rotorPositionCached = rotorPosition;
+        rotorPositionValid = true;
 
-                currents.Ia_mA = adcRawToCurrent(U, adcOffsetU);
-                currents.Ib_mA = adcRawToCurrent(V, adcOffsetV);
-                currents.Ic_mA = -(currents.Ia_mA + currents.Ib_mA);
+        motor.runVelocityLoop(rotorPosition);
+}
+
+void SAMD21_FOC::TC4_FOC_Handler(TC_TIMER_STATUS status) {
+        (void)status;
+
+        if (not switchToCloseLoop || !offsetsReady || !rotorPositionValid)
+                return;
+
+        uint32_t seq;
+        uint16_t U, V;
+
+        NVIC_DisableIRQ(ADC_IRQn);
+        seq = adcPairSeq;
+
+        if (seq == lastUsedAdcPairSeq) {
+                missedPairs++;
+                NVIC_EnableIRQ(ADC_IRQn);
+                return;
         }
+
+        U = adcU_latest;
+        V = adcV_latest;
+        lastUsedAdcPairSeq = seq;
+        NVIC_EnableIRQ(ADC_IRQn);
+
+        const uint16_t rotorPosition = rotorPositionCached;
+
+        currents.Ia_mA = adcRawToCurrent(U, adcOffsetU);
+        currents.Ib_mA = adcRawToCurrent(V, adcOffsetV);
+        currents.Ic_mA = -(currents.Ia_mA + currents.Ib_mA);
 
         TelemetryLogger* t = nullptr;
 
-        static uint32_t telemetryDivider = 0;
-
         if (telemetryLogger) {
-                telemetryDivider++;
-                if (telemetryDivider >= 50) {
-                        telemetryDivider = 0;
+                if (++telemetryDividerCounter >= TelemetryDivider) {
+                        telemetryDividerCounter = 0;
                         t = telemetryLogger;
                 }
         }
 
-        motor.updateVelocity(currents, dutyCycles, rotorPosition, t);
+        motor.runCurrentLoop(currents, dutyCycles, rotorPosition, t);
         setPWM_DutyCycles();
-        // stop();
+
+        // BENCHMARK_IO_Clear();
 }
 
 void SAMD21_FOC::setPWM_DutyCycles() const {
@@ -171,7 +223,7 @@ void SAMD21_FOC::setPWM_DutyCycles() const {
 void SAMD21_FOC::adcZeroOffsetCalibration() {
         static constexpr uint16_t ADC_ScanCount = 512;
 
-        if (!adcResultsReady)
+        if (not adcResultsReady)
                 return;
 
         NVIC_DisableIRQ(ADC_IRQn);

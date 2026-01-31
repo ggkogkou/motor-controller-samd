@@ -146,17 +146,24 @@ public:
          */
         explicit PMSM_Controller(uint32_t pwmPeriod);
 
-        explicit PMSM_Controller(uint32_t pwmPeriod, uint32_t velocityLoopPeriod);
+        explicit PMSM_Controller(uint32_t pwmPeriod, uint32_t velocityLoopPeriod, uint32_t currentLoopPeriod);
 
         /**
          * Function that runs the velocity and current loops
+         *
+         * @param thetaEncoder
+         */
+        void runVelocityLoop(uint16_t thetaEncoder);
+
+        /**
+         * Function that runs the inner current control loop (Iq, Id)
          *
          * @param phaseCurrents
          * @param dutyCycles
          * @param thetaEncoder
          * @param telemetry
          */
-        void updateVelocity(const PhaseCurrents& phaseCurrents, const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder,
+        void runCurrentLoop(const PhaseCurrents& phaseCurrents, PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder,
                             TelemetryLogger* telemetry = nullptr);
 
         /**
@@ -176,7 +183,7 @@ public:
          * these angles correspond to raw θ∈[0, 16383], so 0 rad is 0 raw, and π/4 rad is 2048 raw
          *
          * 2. Secondly, the calibration concerning the direction of the movement is performed. The direction is stored
-         * and represented as a signed integer value with >0 meaning CW and <0 meaning CCW
+         * and represented as a signed integer value with > 0 meaning CW and < 0 meaning CCW
          *
          * 3. Lastly, the encoder offset calibration is performed. The zero-offset electrical angle is calculated
          */
@@ -242,9 +249,21 @@ private:
         int32_t targetVelocity_mrad_s = 0;
 
         /**
+         * Cache variables for telemetry usage
+         * @note Supposed to be updated in velocity loop only
+         */
+        volatile int32_t tlm_angle_mrad = 0;
+        volatile int32_t tlm_omega_mrad_s = 0;
+
+        /**
          * Velocity loop period (ISR period) in microseconds
          */
         const uint32_t velocityLoopPeriod_us = 1'000;
+
+        /**
+         * Current (Iq, Id) loop period (ISR period) in microseconds
+         */
+        const uint32_t CurrentLoopPeriod_us = 1'000;
 
         /**
          * The PWM period, either in counter-ticks or μs
@@ -298,6 +317,23 @@ private:
         int8_t dirSign = 1;
 
         uint32_t telemetrySeq = 0;
+
+        /**
+         * @struct ReferenceCurrents
+         *
+         * A collection of the Iq,ref and Id,ref that are being used by the controller
+         *
+         * @note Typically, only the Iq,ref should be updated
+         */
+        struct ReferenceCurrents {
+                int32_t Iq_mA = 0;
+                int32_t Id_mA = 0;
+        };
+
+        /**
+         * The ReferenceCurrents object that is used to communicate data between control loops
+         */
+        ReferenceCurrents Iref{};
 
         /**
          * Encoder angle at the moment we start the direction check

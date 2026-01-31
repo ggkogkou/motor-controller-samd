@@ -39,9 +39,18 @@ using namespace PermanentMagnetSynchronousMotor;
 
         logging.init();
 
+        uint32_t lastDropped = 0;
+
         while (true) {
                 telemetry.writeFrame(logging);
-                logging.poll();
-                SYSTICK_DelayMs(1);
+
+                if (const uint32_t dropped = logging.getDroppedBytes(); dropped != lastDropped) {
+                        lastDropped = dropped;
+                        // BENCHMARK_IO_Set();
+                        // BENCHMARK_IO_Clear();
+                }
+
+                SYSTICK_DelayMs(50);
         }
+
 }
