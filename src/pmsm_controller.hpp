@@ -198,11 +198,30 @@ public:
          */
         void stopMotor(const PhaseDutyCycles& dutyCycles) const;
 
+        /**
+         * Set a target position for the outer position control loop
+         *
+         * @param targetAngle_mrad Target angle in milliradians [0, 2π)
+         */
+        void setTargetPosition(int32_t targetAngle_mrad);
+
+        /**
+         * Run the position loop (outer loop) and update the target velocity
+         *
+         * @param thetaEncoder Current encoder angle (14-bit raw)
+         */
+        void runPositionLoop(uint16_t thetaEncoder);
+
 private:
         /**
          * The Space Vector PWM block
          */
         SVPWM pwm{18'000, ZeroSequenceModulationType::MIDPOINT_CLAMP};
+
+        /**
+         * Position PI: error in mrad, output in mrad/s
+         */
+        PID pidPosition;
 
         /**
          * Velocity PI: error in mrad/s, output in mA
@@ -247,6 +266,11 @@ private:
          * The target angular velocity in mrad/s
          */
         int32_t targetVelocity_mrad_s = 0;
+
+        /**
+         * The target position in mrad [0, 2π)
+         */
+        int32_t targetPosition_mrad = 0;
 
         /**
          * Cache variables for telemetry usage

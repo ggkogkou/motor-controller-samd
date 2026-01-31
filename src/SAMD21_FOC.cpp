@@ -80,6 +80,10 @@ void SAMD21_FOC::stop() const {
         __enable_irq();
 }
 
+void SAMD21_FOC::moveToAngle(int32_t targetAngle_mrad) {
+        motor.setTargetPosition(targetAngle_mrad);
+}
+
 void SAMD21_FOC::ADC_Callback(ADC_STATUS status, uintptr_t context) {
         auto* self = reinterpret_cast<SAMD21_FOC*>(context);
 
@@ -166,6 +170,13 @@ void SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_STATUS status) {
 
         rotorPositionCached = rotorPosition;
         rotorPositionValid = true;
+
+        if (++positionLoopDividerCounter >= PositionLoopDivider) {
+                BENCHMARK_IO_Set();
+                BENCHMARK_IO_Clear();
+                positionLoopDividerCounter = 0;
+                motor.runPositionLoop(rotorPosition);
+        }
 
         motor.runVelocityLoop(rotorPosition);
 }

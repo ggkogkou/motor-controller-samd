@@ -29,6 +29,7 @@ namespace PermanentMagnetSynchronousMotor {
 PMSM_Controller::PMSM_Controller(uint32_t pwmPeriod) : PMSM_Controller(pwmPeriod, 1'000, 1'000) {}
 
 PMSM_Controller::PMSM_Controller(uint32_t pwmPeriod, uint32_t velocityLoopPeriod, uint32_t currentLoopPeriod) :
+    pidPosition(3.0f, 0.0f, 0.0f, 50'000.0f, static_cast<float>(velocityLoopPeriod) * 1e-6f),
     pidVelocity(0.5f, 10.0f, 0.0f, 4000.0f, static_cast<float>(velocityLoopPeriod) * 1e-6f),
     pidId(0.25f, 20.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit * 1000.0f, static_cast<float>(currentLoopPeriod) * 1e-6f),
     pidIq(0.35f, 50.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit * 1000.0f, static_cast<float>(currentLoopPeriod) * 1e-6f),
@@ -146,6 +147,34 @@ void PMSM_Controller::updateOpenLoop(const PhaseDutyCycles& dutyCycles) {
         dutyCycles.perC = pwmPeriod - perC;
 }
 
+void PMSM_Controller::setTargetPosition(int32_t targetAngle_mrad) {
+        constexpr int32_t TWO_PI_MRAD = 6283;
+        if (targetAngle_mrad < 0) {
+                targetAngle_mrad %= TWO_PI_MRAD;
+                if (targetAngle_mrad < 0)
+                        targetAngle_mrad += TWO_PI_MRAD;
+        } else if (targetAngle_mrad >= TWO_PI_MRAD) {
+                targetAngle_mrad %= TWO_PI_MRAD;
+        }
+
+        targetPosition_mrad = targetAngle_mrad;
+}
+
+void PMSM_Controller::runPositionLoop(uint16_t thetaEncoder) {
+        constexpr int32_t TWO_PI_MRAD = 6283;
+        constexpr int32_t PI_MRAD = TWO_PI_MRAD / 2;
+
+        const int32_t current_mrad = rawToMilliRad(thetaEncoder);
+        int32_t error = targetPosition_mrad - current_mrad;
+
+        if (error > PI_MRAD)
+                error -= TWO_PI_MRAD;
+        else if (error < -PI_MRAD)
+                error += TWO_PI_MRAD;
+
+        targetVelocity_mrad_s = pidPosition.compute(error);
+}
+
 void PMSM_Controller::runVelocityLoop(uint16_t thetaEncoder) {
         // BENCHMARK_IO_Set();
         if (not velocityEstimator)
@@ -157,14 +186,16 @@ void PMSM_Controller::runVelocityLoop(uint16_t thetaEncoder) {
 
         velocityEstimator->update(wrapped_mrad, DeltaTime);
 
-        const auto VelocityAbsoluteValue = [](int32_t x) -> int32_t {
-                if (x < 0)
-                        return -x;
+        // const auto VelocityAbsoluteValue = [](int32_t x) -> int32_t {
+        //         if (x < 0)
+        //                 return -x;
+        //
+        //         return x;
+        // }(velocityEstimator->angularVelocity);
+        //
+        // const int32_t VelocityError = targetVelocity_mrad_s - VelocityAbsoluteValue; /// in mrad/s
 
-                return x;
-        }(velocityEstimator->angularVelocity);
-
-        const int32_t VelocityError = targetVelocity_mrad_s - VelocityAbsoluteValue; /// in mrad/s
+        const int32_t VelocityError = targetVelocity_mrad_s - velocityEstimator->angularVelocity; /// in mrad/s
 
         Iref.Iq_mA = pidVelocity.compute(VelocityError); /// output is Iq,ref in mA
 
