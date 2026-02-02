@@ -67,7 +67,7 @@ public:
          * Function that fires an SPI transaction
          *
          * @param job The SPI specifics defined by the caller
-         * @return false if a transfer is already happening
+         * @return False if a transfer is already happening
          */
         static TransactionState submit(const SPI_Request& job);
 
@@ -79,17 +79,28 @@ public:
 
 private:
         /**
+         * DMAC channel assignment for SPI
+         */
+        static constexpr DMAC_CHANNEL DMA_RxChannel = DMAC_CHANNEL_1;
+        static constexpr DMAC_CHANNEL DMA_TxChannel = DMAC_CHANNEL_2;
+
+        /**
          * Callback on SPI transaction completion
          *
-         * @brief Calls the user's provided callback function
+         * @brief Calls the provided callback functions
          * @param context
          */
-        static void onTransferCompletion(uintptr_t context);
+        static void onDMA_RxCompletion(DMAC_TRANSFER_EVENT event, uintptr_t context);
+        static void onDMA_TxCompletion(DMAC_TRANSFER_EVENT event, uintptr_t context);
+        static void finalizeTransfer();
 
         /**
          * Keeping a copy of the SPI in order to be callable from the onTransferCompletion callback
          */
-        static inline SPI_Request cachedRequest{};
+        static inline SPI_Request* cachedRequest = nullptr;
+
+        static inline bool rxComplete = false;
+        static inline bool txComplete = false;
 
         /**
          * If SPI transaction is done and caller's callback is over, mark buffer as ready
