@@ -270,7 +270,7 @@ private:
 
         volatile uint16_t adcU_latest = 0;
         volatile uint16_t adcV_latest = 0;
-        volatile uint32_t adcPairSeq = 0;
+        uint32_t adcPairSeq = 0;
         uint32_t lastUsedAdcPairSeq = 0;
 
         uint32_t missedPairs = 0;

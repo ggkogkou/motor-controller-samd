@@ -128,15 +128,10 @@ void SAMD21_FOC::ADC_Callback(ADC_STATUS status) {
                         adcPairSeq++;
 
                         adcResultsReady = true;
-
-                        // BENCHMARK_IO_Set();
-                        // BENCHMARK_IO_Clear();
                 }
         }
 
         if (status & ADC_INTFLAG_OVERRUN_Msk) {
-                // BENCHMARK_IO_Set();
-                // BENCHMARK_IO_Clear();
 
                 ADC_InterruptsClear(ADC_INTFLAG_OVERRUN_Msk);
         }
@@ -175,8 +170,6 @@ void SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_STATUS status) {
         rotorPositionValid = true;
 
         if (++positionLoopDividerCounter >= PositionLoopDivider) {
-                BENCHMARK_IO_Set();
-                BENCHMARK_IO_Clear();
                 positionLoopDividerCounter = 0;
                 motor.runPositionLoop(rotorPosition);
         }
@@ -187,7 +180,7 @@ void SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_STATUS status) {
 void SAMD21_FOC::TC4_FOC_Handler(TC_TIMER_STATUS status) {
         (void)status;
 
-        if (not switchToCloseLoop || !offsetsReady || !rotorPositionValid)
+        if (not switchToCloseLoop || !offsetsReady || not rotorPositionValid)
                 return;
 
         uint32_t seq;
