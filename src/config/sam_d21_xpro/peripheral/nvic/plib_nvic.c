@@ -61,7 +61,7 @@ void NVIC_Initialize(void) {
         NVIC_EnableIRQ(TC4_IRQn);
         NVIC_EnableIRQ(TC3_IRQn);
         NVIC_EnableIRQ(ADC_IRQn);
-        NVIC_EnableIRQ(SERCOM5_IRQn);
+        NVIC_DisableIRQ(SERCOM5_IRQn);
         NVIC_DisableIRQ(SERCOM3_IRQn);
         NVIC_EnableIRQ(DMAC_IRQn);
 

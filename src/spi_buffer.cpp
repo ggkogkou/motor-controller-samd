@@ -26,41 +26,90 @@
 
 namespace ATSAMD21_GGKOGKOU {
 
-void SPI_Buffer::init() { SERCOM5_SPI_CallbackRegister(&onTransferCompletion, reinterpret_cast<uintptr_t>(nullptr)); }
-
+void SPI_Buffer::init() {
+        DMAC_ChannelCallbackRegister(DMA_RxChannel, &onDMA_RxCompletion, reinterpret_cast<uintptr_t>(nullptr));
+        DMAC_ChannelCallbackRegister(DMA_TxChannel, &onDMA_TxCompletion, reinterpret_cast<uintptr_t>(nullptr));
+}
 SPI_Buffer::TransactionState SPI_Buffer::submit(const SPI_Request& job) {
-        if (SERCOM5_SPI_IsBusy() || not finished)
+        if (SERCOM5_SPI_IsBusy() || DMAC_ChannelIsBusy(DMA_RxChannel) || DMAC_ChannelIsBusy(DMA_TxChannel) || not finished)
                 return TransactionState::FAILED;
 
         finished = false;
-        cachedRequest = job;
+        rxComplete = false;
+        txComplete = false;
+        cachedRequest = const_cast<SPI_Request*>(&job);
 
         PORT_PinClear(job.chipSelectPin);
 
-        const auto Success = SERCOM5_SPI_WriteRead(&cachedRequest.txBuffer[0], cachedRequest.txBuffer.size(),
-                                                   &job.rxBuffer[0], job.rxBuffer.size());
+        const auto SPI_DataRegister = const_cast<const void*>(static_cast<const volatile void*>(&SERCOM5_REGS->SPIM.SERCOM_DATA));
 
-        if (not Success) {
-                PORT_PinSet(cachedRequest.chipSelectPin);
+        const auto RX_Buffer = static_cast<const void*>(job.rxBuffer.data());
+        const auto TX_Buffer = static_cast<const void*>(job.txBuffer.data());
+
+        const auto RX_Started = DMAC_ChannelTransfer(DMA_RxChannel, SPI_DataRegister, RX_Buffer, job.rxBuffer.size());
+        const auto TX_Started = DMAC_ChannelTransfer(DMA_TxChannel, TX_Buffer, SPI_DataRegister, job.txBuffer.size());
+
+        if (not RX_Started || not TX_Started) {
+                PORT_PinSet(job.chipSelectPin);
+                DMAC_ChannelDisable(DMA_RxChannel);
+                DMAC_ChannelDisable(DMA_TxChannel);
+                cachedRequest = nullptr;
+
                 return TransactionState::FAILED;
         }
 
         return TransactionState::PLACED;
 }
 
-void SPI_Buffer::onTransferCompletion(uintptr_t context) {
+void SPI_Buffer::onDMA_RxCompletion(DMAC_TRANSFER_EVENT event, uintptr_t context) {
         (void)context;
 
-        PORT_PinSet(cachedRequest.chipSelectPin);
+        if (event == DMAC_TRANSFER_EVENT_ERROR) {
+                DMAC_ChannelDisable(DMA_TxChannel);
+                DMAC_ChannelDisable(DMA_RxChannel);
+                finished = true;
+                cachedRequest = nullptr;
+                return;
+        }
 
-        auto* callback = cachedRequest.callback;
-        void* userContext = cachedRequest.context;
+        rxComplete = true;
+        finalizeTransfer();
+}
+
+void SPI_Buffer::onDMA_TxCompletion(DMAC_TRANSFER_EVENT event, uintptr_t context) {
+        (void)context;
+
+        if (event == DMAC_TRANSFER_EVENT_ERROR) {
+                DMAC_ChannelDisable(DMA_TxChannel);
+                DMAC_ChannelDisable(DMA_RxChannel);
+                finished = true;
+                cachedRequest = nullptr;
+                return;
+        }
+
+        txComplete = true;
+        finalizeTransfer();
+}
+
+void SPI_Buffer::finalizeTransfer() {
+        if (not rxComplete || !txComplete || cachedRequest == nullptr)
+                return;
+
+        while (SERCOM5_SPI_IsTransmitterBusy()) {
+                // wait for the SPI shifter to finish before releasing CS
+        }
+
+        PORT_PinSet(cachedRequest->chipSelectPin);
+
+        auto* callback = cachedRequest->callback;
+        void* userContext = cachedRequest->context;
+
+        cachedRequest = nullptr;
+        finished = true;
 
         if (callback) {
                 callback(userContext);
         }
-
-        finished = true;
 }
 
 } // namespace ATSAMD21_GGKOGKOU

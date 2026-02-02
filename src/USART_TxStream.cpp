@@ -58,9 +58,8 @@ void USART_TxStream::beginTransaction() {
         inFlight = true;
         inFlightLen = chunk;
 
-        const void* src = static_cast<const void*>(span.data());
-        const void* dst = const_cast<const void*>(
-            static_cast<const volatile void*>(&SERCOM3_REGS->USART_INT.SERCOM_DATA));
+        const auto src = static_cast<const void*>(span.data());
+        const auto dst = const_cast<const void*>(static_cast<const volatile void*>(&SERCOM3_REGS->USART_INT.SERCOM_DATA));
 
         if (!DMAC_ChannelTransfer(TxDmaChannel, src, dst, chunk)) {
                 inFlight = false;

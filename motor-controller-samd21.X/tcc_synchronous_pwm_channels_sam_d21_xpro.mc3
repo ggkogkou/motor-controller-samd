@@ -13185,7 +13185,7 @@
       &lt;/Boolean&gt;
     &lt;/Attributes&gt;
     &lt;Values dnOrder=&quot;1&quot;&gt;
-      &lt;User dnOrder=&quot;0&quot; value=&quot;500000&quot;/&gt;
+      &lt;User dnOrder=&quot;0&quot; value=&quot;8000000&quot;/&gt;
     &lt;/Values&gt;
   &lt;/sercom5&gt;
 &lt;/sercom5&gt;
@@ -13196,7 +13196,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;sercom5&gt;
   &lt;sercom5 dnOrder=&quot;0&quot; id=&quot;SPI_BAUD_REG_VALUE&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;sercom5&quot; value=&quot;47&quot;/&gt;
+      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;sercom5&quot; value=&quot;2&quot;/&gt;
     &lt;/Values&gt;
   &lt;/sercom5&gt;
 &lt;/sercom5&gt;
@@ -15416,7 +15416,7 @@
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/peripheral/sercom/spi_master/plib_sercom5_spi_master.c</file>
-         <hash>eb3d152a00fd6d4459229a237570d602c7e5fb9a1ecd0c02cb1cf9d540a12b47</hash>
+         <hash>0f19567635ee70147c9a5a16c8006205c59436c24eec815a213ec6ea583e7e10</hash>
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/peripheral/sercom/spi_master/plib_sercom5_spi_master.h</file>
