@@ -24,7 +24,10 @@
 
 #include "pid.hpp"
 
-int32_t PID::compute(int32_t error) {
+RAMFUNC int32_t PID::compute(int32_t error) {
+        if (K_Derivative.getRaw() == 0) {
+                return computePI(error);
+        }
         const int32_t ProportionalTerm = K_Proportional * error;
         const int32_t DerivativeTerm = K_Derivative * (error - previousError);
 
@@ -45,6 +48,28 @@ int32_t PID::compute(int32_t error) {
         previousControllerOutput = PID_Output;
 
         return PID_Output;
+}
+
+RAMFUNC int32_t PID::computePI(int32_t error) {
+        const int32_t ProportionalTerm = K_Proportional * error;
+
+        const auto IntegralTerm = [&]() -> int32_t {
+                const int32_t sumErr = error + previousError;
+                const int32_t incI = K_Integral * sumErr;
+                const int32_t IntegralTermUnclamped = previousIntegralTerm + incI;
+                return std::clamp(IntegralTermUnclamped, -limit, static_cast<int32_t>(limit));
+        }();
+
+        const auto PI_Output = [&]() -> int32_t {
+                const int32_t PI_OutputUnclamped = ProportionalTerm + IntegralTerm;
+                return std::clamp(PI_OutputUnclamped, -limit, static_cast<int32_t>(limit));
+        }();
+
+        previousError = error;
+        previousIntegralTerm = IntegralTerm;
+        previousControllerOutput = PI_Output;
+
+        return PI_Output;
 }
 
 void PID::setGainsFloat(float Kp, float Ki, float Kd, float clampLimit, float Ts) {

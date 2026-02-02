@@ -41,6 +41,11 @@ extern uint32_t __data_end__; /* End of .data section in RAM */
 extern uint32_t __bss_start__; /* Start of .bss section in RAM */
 extern uint32_t __bss_end__; /* End of .bss section in RAM */
 
+extern uint32_t __etext2; /* End of .text/.data load, start of .ramfunc load in FLASH */
+extern uint32_t __ramfunc_start__; /* Start of .ramfunc section in RAM */
+extern uint32_t __ramfunc_end__; /* End of .ramfunc section in RAM */
+
+
 /* Legacy Harmony symbols for compatibility */
 extern uint32_t _sfixed;
 
@@ -74,6 +79,13 @@ void __attribute__((optimize("-O1"), section(".text.Reset_Handler"), long_call, 
         uint32_t* src = &__etext;
         uint32_t* dst = &__data_start__;
         while (dst < &__data_end__) {
+                *dst++ = *src++;
+        }
+
+        /* Initialize .ramfunc section (copy from flash to RAM) */
+        src = &__etext2;
+        dst = &__ramfunc_start__;
+        while (dst < &__ramfunc_end__) {
                 *dst++ = *src++;
         }
 

@@ -63,6 +63,6 @@ using namespace PermanentMagnetSynchronousMotor;
                         foc.moveToAngle(targetToggle ? TargetAngleB_mrad : TargetAngleA_mrad);
                 }
 
-                SYSTICK_DelayMs(50);
+                SYSTICK_DelayMs(10);
         }
 }
