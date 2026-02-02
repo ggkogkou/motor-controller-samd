@@ -26,6 +26,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include "attributes.hpp"
 #include <type_traits>
 
 class Q16_t {
@@ -127,8 +128,15 @@ public:
          * @param error Setpoint minus measurement
          * @return Clamped controller output in ±limit
          */
-        int32_t compute(int32_t error);
+        RAMFUNC int32_t compute(int32_t error);
 
+        /**
+         * @brief Compute PI output for a given error (fixed dt implied in gains).
+         *
+         * @param error Setpoint minus measurement
+         * @return Clamped controller output in ±limit
+         */
+        RAMFUNC int32_t computePI(int32_t error);
         /**
          * @brief Reset the controller
          */
