@@ -53,7 +53,7 @@
 // *****************************************************************************
 // *****************************************************************************
 
-#define DMAC_CHANNELS_NUMBER        1U
+#define DMAC_CHANNELS_NUMBER        3U
 
 #define DMAC_CRC_CHANNEL_OFFSET     0x20U
 
@@ -121,6 +121,28 @@ void DMAC_Initialize( void )
     descriptor_section[0].DMAC_BTCTRL = (uint16_t)(DMAC_BTCTRL_BLOCKACT_INT | DMAC_BTCTRL_BEATSIZE_BYTE | DMAC_BTCTRL_VALID_Msk | DMAC_BTCTRL_SRCINC_Msk );
 
     dmacChannelObj[0].inUse = 1U;
+    DMAC_REGS->DMAC_CHINTENSET = (uint8_t)(DMAC_CHINTENSET_TERR_Msk | DMAC_CHINTENSET_TCMPL_Msk);
+
+    /***************** Configure DMA channel 1 ********************/
+
+    DMAC_REGS->DMAC_CHID = 1U;
+
+    DMAC_REGS->DMAC_CHCTRLB = DMAC_CHCTRLB_TRIGACT(2UL) | DMAC_CHCTRLB_TRIGSRC(11UL) | DMAC_CHCTRLB_LVL(0UL) ;
+
+    descriptor_section[1].DMAC_BTCTRL = (uint16_t)(DMAC_BTCTRL_BLOCKACT_INT | DMAC_BTCTRL_BEATSIZE_BYTE | DMAC_BTCTRL_VALID_Msk | DMAC_BTCTRL_DSTINC_Msk );
+
+    dmacChannelObj[1].inUse = 1U;
+    DMAC_REGS->DMAC_CHINTENSET = (uint8_t)(DMAC_CHINTENSET_TERR_Msk | DMAC_CHINTENSET_TCMPL_Msk);
+
+    /***************** Configure DMA channel 2 ********************/
+
+    DMAC_REGS->DMAC_CHID = 2U;
+
+    DMAC_REGS->DMAC_CHCTRLB = DMAC_CHCTRLB_TRIGACT(2UL) | DMAC_CHCTRLB_TRIGSRC(12UL) | DMAC_CHCTRLB_LVL(0UL) ;
+
+    descriptor_section[2].DMAC_BTCTRL = (uint16_t)(DMAC_BTCTRL_BLOCKACT_INT | DMAC_BTCTRL_BEATSIZE_BYTE | DMAC_BTCTRL_VALID_Msk | DMAC_BTCTRL_SRCINC_Msk );
+
+    dmacChannelObj[2].inUse = 1U;
     DMAC_REGS->DMAC_CHINTENSET = (uint8_t)(DMAC_CHINTENSET_TERR_Msk | DMAC_CHINTENSET_TCMPL_Msk);
 
     /* Enable the DMAC module & Priority Level x Enable */

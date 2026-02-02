@@ -46,7 +46,7 @@ void ADC_Initialize(void) {
         }
 
         /* Prescaler, Resolution & Operation Mode */
-        ADC_REGS->ADC_CTRLB = ADC_CTRLB_PRESCALER_DIV32 | ADC_CTRLB_RESSEL_16BIT;
+        ADC_REGS->ADC_CTRLB = ADC_CTRLB_PRESCALER_DIV128 | ADC_CTRLB_RESSEL_16BIT;
 
         while ((ADC_REGS->ADC_STATUS & ADC_STATUS_SYNCBUSY_Msk) != 0U) {
         }

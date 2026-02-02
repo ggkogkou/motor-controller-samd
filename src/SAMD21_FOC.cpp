@@ -43,11 +43,14 @@ SAMD21_FOC::SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz, TelemetryLogger* telemet
 
         TCC0_PWM24bitPeriodSet(tccPeriod_PER);
 
-        uint32_t per = tccPeriod_PER & 0xFFFFFFu;
-        uint32_t sample = per / 2;
-        const uint32_t RAMP_FALLING = (1u << 23);
+        static constexpr uint32_t SampleOffsetTicks = 1;
+        static constexpr bool SampleOnFallingRamp = false;
+        uint32_t ccValue = SampleOffsetTicks & 0x7FFFFF;
 
-        TCC0_REGS->TCC_CC[3] = (sample & 0x7FFFFFu) | RAMP_FALLING;
+        if (SampleOnFallingRamp)
+                ccValue |= (1u << 23);
+
+        TCC0_REGS->TCC_CC[3] = ccValue;
 
         while (TCC0_REGS->TCC_SYNCBUSY != 0U) {
                 /* Wait for sync */
@@ -156,7 +159,7 @@ void SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_STATUS status) {
         }
 
         static constexpr uint16_t EncoderMask = 0x3FFF;
-        const uint16_t rotorPosition = static_cast<uint16_t>(encoder.measureAngleCompensatedRaw() & EncoderMask);
+        const auto rotorPosition = static_cast<uint16_t>(encoder.measureAngleCompensatedRaw() & EncoderMask);
 
         if (not AS5047P::sensorBusy()) {
                 (void)encoder.request(AS5047P::RegisterAddress::ANGLECOM);
