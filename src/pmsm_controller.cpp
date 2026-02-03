@@ -204,9 +204,10 @@ void PMSM_Controller::runVelocityLoop(uint16_t thetaEncoder) {
         // BENCHMARK_IO_Clear();
 }
 
-void PMSM_Controller::runCurrentLoop(const PhaseCurrents& phaseCurrents, PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder,
-                                     TelemetryLogger* telemetry) {
-        // BENCHMARK_IO_Set();
+void __attribute__((section(".ramfunc")))
+PMSM_Controller::runCurrentLoop(const PhaseCurrents& phaseCurrents, PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder,
+                                TelemetryLogger* telemetry) {
+        BENCHMARK_IO_Set();
 
         const uint16_t ThetaEl = calculateElectricalAngle(thetaEncoder);
 
@@ -260,7 +261,7 @@ void PMSM_Controller::runCurrentLoop(const PhaseCurrents& phaseCurrents, PhaseDu
                 telemetry->updateLatest(tp);
         }
 
-        // BENCHMARK_IO_Clear();
+        BENCHMARK_IO_Clear();
 }
 
 void PMSM_Controller::stopMotor(const PhaseDutyCycles& dutyCycles) const {

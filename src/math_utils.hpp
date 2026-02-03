@@ -30,7 +30,7 @@
 #include <cstdint>
 #include <numbers>
 #include <span>
-#include "sin_cos_lut_q15.hpp"
+#include "TrigonometricLUT.hpp"
 #include "clarke_park_q31.hpp"
 
 namespace MathUtilities {

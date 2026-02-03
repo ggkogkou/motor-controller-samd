@@ -40,6 +40,12 @@ extern uint32_t __data_start__; /* Start of .data section in RAM */
 extern uint32_t __data_end__; /* End of .data section in RAM */
 extern uint32_t __bss_start__; /* Start of .bss section in RAM */
 extern uint32_t __bss_end__; /* End of .bss section in RAM */
+extern uint32_t __ramfunc_load__; /* Start of .ramfunc load image in FLASH */
+extern uint32_t __ramfunc_start__; /* Start of .ramfunc section in RAM */
+extern uint32_t __ramfunc_end__; /* End of .ramfunc section in RAM */
+extern uint32_t __ram_lut_load__; /* Start of .ram_lut load image in FLASH */
+extern uint32_t __ram_lut_start__; /* Start of .ram_lut section in RAM */
+extern uint32_t __ram_lut_end__; /* End of .ram_lut section in RAM */
 
 /* Legacy Harmony symbols for compatibility */
 extern uint32_t _sfixed;
@@ -74,6 +80,20 @@ void __attribute__((optimize("-O1"), section(".text.Reset_Handler"), long_call, 
         uint32_t* src = &__etext;
         uint32_t* dst = &__data_start__;
         while (dst < &__data_end__) {
+                *dst++ = *src++;
+        }
+
+        /* Initialize .ramfunc section (copy from flash to RAM) */
+        src = &__ramfunc_load__;
+        dst = &__ramfunc_start__;
+        while (dst < &__ramfunc_end__) {
+                *dst++ = *src++;
+        }
+
+        /* Initialize .ram_lut section (copy from flash to RAM) */
+        src = &__ram_lut_load__;
+        dst = &__ram_lut_start__;
+        while (dst < &__ram_lut_end__) {
                 *dst++ = *src++;
         }
 
