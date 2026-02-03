@@ -17,8 +17,8 @@
  */
 
 /**
- * @file   sin_cos_lut_q15.hpp
- * @brief  Construction of LUT for sin/cos using fixed-point arithmetic (based on the implementation of math_utils.hpp)
+ * @file   TrigonometricLUT.hpp
+ * @brief  Construction of LUT for sin/cos using Q15 fixed-point arithmetic (compile-time via GCEM)
  * @author Georgios Gkogkou <ggkogkou125@gmail.com>
  */
 
@@ -27,53 +27,41 @@
 #include <array>
 #include <cstdint>
 #include <numbers>
+#include "gcem.hpp"
 
-namespace MathUtilities {
+namespace TrigonometricLUT {
 
 /**
  * Sine LUT in Q15 for a 14-bit encoder (0..16383)
  */
-template <std::size_t N = 16384>
+template <std::size_t N = 4096>
 struct SineLookUpTableQ15 {
         static_assert(N % 4 == 0, "LUT size must be dividable by 4");
+        static_assert((N & (N - 1)) == 0, "LUT size must be a power of two");
 
         static constexpr int32_t TWO_PI_MRAD = 6283;
+        static constexpr std::size_t ENCODER_COUNTS = 16384;
         static constexpr std::size_t QUARTER = N / 4;
 
         using LookUpTable = std::array<int16_t, N>;
 
-        static consteval float calculateSineFromMaclaurin(float x) {
-                const float xSquare = x * x;
-
-                constexpr float f3 = 1.0f / 6.0f;
-                constexpr float f5 = 1.0f / 120.0f;
-                constexpr float f7 = 1.0f / 5040.0f;
-                constexpr float f9 = 1.0f / 362880.0f;
-                constexpr float f11 = 1.0f / 39916800.0f;
-                constexpr float f13 = 1.0f / 6227020800.0f;
-
-                return x *
-                        (1.0f +
-                         xSquare * (-f3 + xSquare * (f5 + xSquare * (-f7 + xSquare * (f9 + xSquare * (-f11 + xSquare * f13))))));
-        }
-
-        static consteval int16_t floatToQ15(float x) {
+        static consteval int16_t floatToQ15(double x) {
                 // clamp to [-1, +1) for Q15
-                if (x >= 0.9999694824f)
-                        x = 0.9999694824f; // 32767/32768
-                if (x <= -1.0f)
-                        x = -1.0f;
-                return static_cast<int16_t>(x * 32768.0f);
+                if (x >= 0.9999694824)
+                        x = 0.9999694824; // 32767/32768
+                if (x <= -1.0)
+                        x = -1.0;
+                return static_cast<int16_t>(x * 32768.0);
         }
 
         static consteval LookUpTable generateLookUpTable() {
                 LookUpTable lut{};
 
-                constexpr float TWO_PI = 2.0f * std::numbers::pi_v<float>;
+                constexpr double TWO_PI = 2.0 * std::numbers::pi_v<double>;
 
                 for (std::size_t i = 0; i <= QUARTER; ++i) {
-                        const float theta = TWO_PI * static_cast<float>(i) / static_cast<float>(N);
-                        lut[i] = floatToQ15(calculateSineFromMaclaurin(theta));
+                        const double theta = TWO_PI * static_cast<double>(i) / static_cast<double>(N);
+                        lut[i] = floatToQ15(gcem::sin(theta));
                 }
 
                 for (std::size_t i = QUARTER + 1; i < 2 * QUARTER; ++i)
@@ -88,13 +76,14 @@ struct SineLookUpTableQ15 {
                 return lut;
         }
 
-        static constexpr LookUpTable sineLUT = generateLookUpTable();
+        static constexpr LookUpTable sineLUT __attribute__((section(".ram_lut"))) = generateLookUpTable();
 
         /**
          * Operator[] for raw encoder counts (0..16383)
          */
         constexpr int16_t operator[](uint16_t encoder14) const noexcept {
-                return sineLUT[static_cast<std::size_t>(encoder14) & (N - 1)];
+                const uint32_t idx = (static_cast<uint32_t>(encoder14) * static_cast<uint32_t>(N)) >> 14;
+                return sineLUT[static_cast<std::size_t>(idx) & (N - 1)];
         }
 
         /**
@@ -116,12 +105,13 @@ struct SineLookUpTableQ15 {
 /**
  * Cosine LUT by quarter-cycle shift of sine LUT
  */
-template <std::size_t N = 16384>
+template <std::size_t N = 4096>
 struct CosineLookUpTableQ15 : private SineLookUpTableQ15<N> {
         using Base = SineLookUpTableQ15<N>;
 
         constexpr int16_t operator[](uint16_t encoder14) const noexcept {
-                return Base::sineLUT[(static_cast<std::size_t>(encoder14) + Base::QUARTER) & (N - 1)];
+                const uint32_t idx = (static_cast<uint32_t>(encoder14) * static_cast<uint32_t>(N)) >> 14;
+                return Base::sineLUT[(static_cast<std::size_t>(idx) + Base::QUARTER) & (N - 1)];
         }
 
         constexpr int16_t operator[](int32_t theta_mrad) const noexcept {
@@ -136,15 +126,15 @@ struct CosineLookUpTableQ15 : private SineLookUpTableQ15<N> {
         }
 };
 
-inline constexpr SineLookUpTableQ15<16384> sine_q15_14bit{};
-inline constexpr CosineLookUpTableQ15<16384> cosine_q15_14bit{};
+inline constexpr SineLookUpTableQ15<4096> sine_q15_14bit{};
+inline constexpr CosineLookUpTableQ15<4096> cosine_q15_14bit{};
 
-} // namespace MathUtilities
+} // namespace TrigonometricLUT
 
 /**
  * Compile-time checks
  */
-namespace MathUtilities::LUT_Tests {
+namespace TrigonometricLUT::LUT_Tests {
 constexpr int32_t absolute_q31(int32_t x) {
         return (x < 0) ? -x : x;
 }
@@ -175,7 +165,7 @@ constexpr int32_t c0 = static_cast<int32_t>(cosine_q15_14bit[uint16_t{1234}]);
 constexpr int64_t mag2 = static_cast<int64_t>(s0) * s0 + static_cast<int64_t>(c0) * c0;
 static_assert(absolute_q31(static_cast<int32_t>(mag2 - 1073741824LL)) < 25'000'000, "sin^2+cos^2 should be near 1");
 
-constexpr int32_t TWO_PI_MRAD = SineLookUpTableQ15<16384>::TWO_PI_MRAD;
+constexpr int32_t TWO_PI_MRAD = SineLookUpTableQ15<4096>::TWO_PI_MRAD;
 static_assert(sine_q15_14bit[int32_t{-100}] == sine_q15_14bit[TWO_PI_MRAD - 100], "mrad wrap should match");
 
-} // namespace MathUtilities::LUT_Tests
+} // namespace TrigonometricLUT::LUT_Tests

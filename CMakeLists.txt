@@ -92,6 +92,21 @@ else ()
 endif ()
 
 # ------------------------------------------------------------------------------
+# GCEM (header-only)
+# ------------------------------------------------------------------------------
+set(GCEM_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib/gcem/include")
+if (EXISTS "${GCEM_INCLUDE_DIR}/gcem.hpp")
+    message(STATUS "Found GCEM at: ${GCEM_INCLUDE_DIR}")
+else ()
+    set(GCEM_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib/gcem")
+    if (EXISTS "${GCEM_INCLUDE_DIR}/gcem.hpp")
+        message(STATUS "Found GCEM at: ${GCEM_INCLUDE_DIR}")
+    else ()
+        message(WARNING "GCEM not found under lib/gcem (submodule not initialized?)")
+    endif ()
+endif ()
+
+# ------------------------------------------------------------------------------
 # Includes
 # ------------------------------------------------------------------------------
 include_directories(
@@ -121,6 +136,7 @@ include_directories(
         drivers
 
         ${ETL_INCLUDE_DIR}
+        ${GCEM_INCLUDE_DIR}
 )
 
 # ------------------------------------------------------------------------------

@@ -69,6 +69,11 @@ SECTIONS
     LONG (__ramfunc_start__)
     LONG ((__ramfunc_end__ - __ramfunc_start__) / 4)
 
+    /* RAM LUT section copy info */
+    LONG (__ram_lut_load__)
+    LONG (__ram_lut_start__)
+    LONG ((__ram_lut_end__ - __ram_lut_start__) / 4)
+
     __copy_table_end__ = .;
   } > FLASH
 
@@ -130,8 +135,9 @@ SECTIONS
    * (e.g., flash programming routines, interrupt handlers)
    */
   __etext2 = __etext + SIZEOF(.data);
+  __ramfunc_load__ = __etext2;
 
-  .ramfunc : AT (__etext2)
+  .ramfunc : AT (__ramfunc_load__)
   {
     . = ALIGN(4);
     __ramfunc_start__ = .;
@@ -139,6 +145,19 @@ SECTIONS
     *(.ramfunc.*)
     . = ALIGN(4);
     __ramfunc_end__ = .;
+  } > RAM
+
+  __etext3 = __ramfunc_load__ + SIZEOF(.ramfunc);
+  __ram_lut_load__ = __etext3;
+
+  .ram_lut : AT (__ram_lut_load__)
+  {
+    . = ALIGN(4);
+    __ram_lut_start__ = .;
+    *(.ram_lut)
+    *(.ram_lut.*)
+    . = ALIGN(4);
+    __ram_lut_end__ = .;
   } > RAM
 
   .bss :

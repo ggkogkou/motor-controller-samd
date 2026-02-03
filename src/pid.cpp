@@ -24,7 +24,7 @@
 
 #include "pid.hpp"
 
-int32_t PID::compute(int32_t error) {
+int32_t __attribute__((section(".ramfunc"))) PID::compute(int32_t error) {
         const int32_t ProportionalTerm = K_Proportional * error;
         const int32_t DerivativeTerm = K_Derivative * (error - previousError);
 
