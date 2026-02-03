@@ -27,7 +27,6 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
-#include "attributes.hpp"
 
 namespace SpaceVectorModulation {
 
@@ -86,9 +85,9 @@ public:
          * @param vBeta The Vβ component found after inverse Park transformation in mV
          * @return The duty cycles in the Q15 fixed-point arithmetic interval [0, 32'767]
          */
-        [[nodiscard]] RAMFUNC DutyCycles compute(int32_t vAlpha, int32_t vBeta) const;
+        [[nodiscard]] DutyCycles compute(int32_t vAlpha, int32_t vBeta) const;
 
-        [[nodiscard]] RAMFUNC PWM_Periods compute(int32_t vAlpha, int32_t vBeta, uint32_t pwmPeriod) const;
+        [[nodiscard]] PWM_Periods compute(int32_t vAlpha, int32_t vBeta, uint32_t pwmPeriod) const;
 
 private:
         /**

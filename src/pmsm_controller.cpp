@@ -197,7 +197,7 @@ void PMSM_Controller::runVelocityLoop(uint16_t thetaEncoder) {
 
         const int32_t VelocityError = targetVelocity_mrad_s - velocityEstimator->angularVelocity; /// in mrad/s
 
-        Iref.Iq_mA = pidVelocity.computePI(VelocityError); /// output is Iq,ref in mA
+        Iref.Iq_mA = pidVelocity.compute(VelocityError); /// output is Iq,ref in mA
 
         tlm_angle_mrad = wrapped_mrad;
         tlm_omega_mrad_s = velocityEstimator->angularVelocity;
@@ -206,7 +206,7 @@ void PMSM_Controller::runVelocityLoop(uint16_t thetaEncoder) {
 
 void PMSM_Controller::runCurrentLoop(const PhaseCurrents& phaseCurrents, PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder,
                                      TelemetryLogger* telemetry) {
-        BENCHMARK_IO_Set();
+        // BENCHMARK_IO_Set();
 
         const uint16_t ThetaEl = calculateElectricalAngle(thetaEncoder);
 
@@ -215,8 +215,8 @@ void PMSM_Controller::runCurrentLoop(const PhaseCurrents& phaseCurrents, PhaseDu
         const int32_t Id_Error = Iref.Id_mA - dqFrame[0]; /// in mA
         const int32_t Iq_Error = Iref.Iq_mA - dqFrame[1]; /// in mA
 
-        const int32_t Uq_mV = pidIq.computePI(Iq_Error); /// in mV
-        const int32_t Ud_mV = pidId.computePI(Id_Error); /// in mV
+        const int32_t Uq_mV = pidIq.compute(Iq_Error); /// in mV
+        const int32_t Ud_mV = pidId.compute(Id_Error); /// in mV
 
         const int32_t Ud_i_mV = pidId.lastIntegralTerm();
         const int32_t Uq_i_mV = pidIq.lastIntegralTerm();
@@ -260,7 +260,7 @@ void PMSM_Controller::runCurrentLoop(const PhaseCurrents& phaseCurrents, PhaseDu
                 telemetry->updateLatest(tp);
         }
 
-        BENCHMARK_IO_Clear();
+        // BENCHMARK_IO_Clear();
 }
 
 void PMSM_Controller::stopMotor(const PhaseDutyCycles& dutyCycles) const {

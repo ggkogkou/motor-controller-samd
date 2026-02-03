@@ -26,7 +26,7 @@
 
 namespace SpaceVectorModulation {
 
-RAMFUNC DutyCycles SVPWM::compute(int32_t vAlpha, int32_t vBeta) const {
+DutyCycles SVPWM::compute(int32_t vAlpha, int32_t vBeta) const {
         constexpr int32_t HALF_Q15 = 16384; // 0.5 * 32768
         constexpr int32_t SQRT3_2_Q15 = 28378; // (sqrt(3)/2) * 32768
 
@@ -59,7 +59,7 @@ RAMFUNC DutyCycles SVPWM::compute(int32_t vAlpha, int32_t vBeta) const {
         return DutyCycles{DutyCycleA, DutyCycleB, DutyCycleC};
 }
 
-RAMFUNC PWM_Periods SVPWM::compute(int32_t vAlpha, int32_t vBeta, uint32_t pwmPeriod) const {
+PWM_Periods SVPWM::compute(int32_t vAlpha, int32_t vBeta, uint32_t pwmPeriod) const {
         const auto [dA, dB, dC] = compute(vAlpha, vBeta);
 
         constexpr uint32_t POW_2_14 = 1 << 14; /// 2^14
