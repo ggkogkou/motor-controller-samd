@@ -5,15 +5,15 @@
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * (at your option) any later version
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU General Public License for more details
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>
  */
 
 /**
@@ -30,108 +30,19 @@
 #include <cstdint>
 #include <limits>
 #include <type_traits>
+#include "as5047p_config.hpp"
 #include "definitions.h"
+#include "etl/expected.h"
 #include "spi_buffer.hpp"
 
 using namespace ATSAMD21_GGKOGKOU;
 
-struct AS5047P_Config {
-        enum class RotationDirection : uint16_t {
-                CLOCKWISE = 0b0000'0000,
-                COUNTER_CLOCKWISE = 0b0000'0100,
-        };
-
-        enum class PWM_OutputPin : uint16_t {
-                PIN_W = 0b0000'0000, // ABI is operating , I is used as PWM
-                PIN_I = 0b0000'1000, // UVW is operating , I is used as PWM
-        };
-
-        enum class DAEC_Status : uint16_t {
-                ENABLED = 0b0000'0000,
-                DISABLED = 0b0001'0000,
-        };
-
-        enum class DataSelect : uint16_t {
-                DAEC_ANG = 0b0000'0000,
-                CORDIC_ANG = 0b0100'0000,
-        };
-
-        enum class PWM_Status : uint16_t {
-                ENABLED = 0b1000'0000,
-                DISABLED = 0b0000'0000,
-        };
-
-        /**
-         * The 14-bit zero position (default 0x0000)
-         */
-        uint16_t zeroPosition = 0x0000;
-
-        /**
-         * The rotation direction, bit DIR of SETTINGS1
-         */
-        RotationDirection rotationDirection = RotationDirection::CLOCKWISE;
-
-        /**
-         * Bit UVW_ABI of SETTINGS1
-         */
-        PWM_OutputPin pwmOutputPin = PWM_OutputPin::PIN_W;
-
-        /**
-         * Bit DAECDIS of SETTINGS1
-         */
-        DAEC_Status dynamicAngleCompensation = DAEC_Status::ENABLED;
-
-        /**
-         * Bit Dataselect of SETTINGS1
-         */
-        DataSelect dataSelect = DataSelect::DAEC_ANG;
-
-        /**
-         * Bit PWMon of SETTINGS1
-         */
-        PWM_Status pwmStatus = PWM_Status::DISABLED;
-
-        enum class PolePairs : uint8_t {
-                ONE = 0b000,
-                TWO = 0b001,
-                THREE = 0b010,
-                FOUR = 0b011,
-                FIVE = 0b100,
-                SIX = 0b101,
-                SEVEN = 0b110,
-                EIGHT = 0b111,
-        };
-
-        enum class HysteresisBits : uint8_t {
-                THREE = 0b00,
-                TWO = 0b01,
-                ONE = 0b10,
-                ZERO = 0b11,
-        };
-
-        enum class ABI_Resolution : uint8_t {
-                ABIRES_000 = 0b000,
-                ABIRES_001 = 0b001,
-                ABIRES_010 = 0b010,
-                ABIRES_011 = 0b011,
-                ABIRES_100 = 0b100,
-                ABIRES_101 = 0b101,
-                ABIRES_110 = 0b110,
-                ABIRES_111 = 0b111,
-        };
-
-        enum class ABIBIN : uint8_t {
-                DECIMAL = 0,
-                BINARY = 1,
-        };
-};
-
 /**
  * @class AS5047P
- * @brief Represents an interface for interacting with the AS5047P magnetic rotary sensor.
+ * @brief Represents an interface for interacting with the AS5047P magnetic rotary sensor
  *
  * The AS5047P is a high-resolution magnetic rotary encoder. This class provides
- * functionality to read the current angle value reported by the sensor.
+ * functionality to read the current angle value reported by the sensor
  *
  * SPI Transaction
  * ----------------
@@ -153,8 +64,8 @@ public:
         using RegisterAddress_t = std::uint16_t;
         using RegisterData_t = std::uint16_t;
         using ReadWriteCommandMask_t = std::uint16_t;
-        using Angle_t = float;
-        using FieldMagnitude_t = float;
+        using AngleDegrees_t = float;
+        using FieldMagnitude_t = RegisterData_t;
 
         /**
          * Default constructor of the driver class
@@ -174,6 +85,11 @@ public:
          * Default destructor of the class
          */
         ~AS5047P() = default;
+
+        AS5047P(const AS5047P&) = delete;
+        AS5047P& operator=(const AS5047P&) = delete;
+        AS5047P(AS5047P&&) = delete;
+        AS5047P& operator=(AS5047P&&) = delete;
 
         /**
          * SPI_Request object; passed between the SPI_Buffer layer and AS5047 driver
@@ -212,66 +128,252 @@ public:
         };
 
         /**
-         * Function that initiates a new SPI Read transaction
+         * @enum AGC_DiagnosticsError
+         *
+         * A set of diagnostic features that can be read from, AGC register
+         */
+        /**
+         * @enum AGC_DiagnosticsError
+         * @brief Diagnostic flags derived from the DIAAGC register
+         */
+        enum class AGC_DiagnosticsError {
+                MAGNETIC_FIELD_TOO_LOW,
+                MAGNETIC_FIELD_TOO_HIGH,
+                CORDIC_OVF,
+                OFFSET_COMP_NOT_READY,
+        };
+
+        /**
+         * @enum AGC_DiagnosticsReadError
+         * @brief Errors reported when reading diagnostics
+         */
+        enum class AGC_DiagnosticsReadError : std::uint8_t {
+                SENSOR_BUSY,
+        };
+
+        /**
+         * @enum ReadError
+         * @brief Error codes for read transactions and cached reads
+         */
+        enum class ReadError : std::uint8_t {
+                NOT_READY,
+                BUSY,
+                SUBMIT_FAILED,
+                PARITY_ERROR,
+                ERROR_FLAG_SET,
+                OUT_OF_RANGE,
+                UNEXPECTED_STATE,
+        };
+
+        /**
+         * @enum WriteError
+         * @brief Error codes for write transactions
+         */
+        enum class WriteError : std::uint8_t {
+                NOT_READY,
+                BUSY,
+                SUBMIT_FAILED,
+                PARITY_ERROR,
+                ERROR_FLAG_SET,
+                UNEXPECTED_STATE,
+        };
+
+        /**
+         * @struct ERRFL_Status
+         * @brief Parsed ERRFL status flags with raw register value
+         */
+        struct ERRFL_Status {
+                /// Parity error flag
+                bool parityError = false;
+                /// Invalid command flag
+                bool invalidCommand = false;
+                /// Framing error flag
+                bool framingError = false;
+                /// Raw ERRFL register contents
+                RegisterData_t raw = 0;
+        };
+
+        /**
+         * @struct AGC_DiagnosticsReport
+         * @brief Parsed diagnostics report from DIAAGC
+         */
+        struct AGC_DiagnosticsReport {
+                /// Automatic gain control value (AGC)
+                std::uint8_t agcValue = 0;
+                /// Array of diagnostics errors collected from DIAAGC
+                std::array<AGC_DiagnosticsError, 4> errors{};
+                /// Number of valid entries in @ref errors
+                std::uint8_t errorCount = 0;
+        };
+
+        /**
+         * Function that initiates a new SPI Read transaction and reports submission errors
          *
          * @param registerAddress
-         * @return
+         * @return Expected success or error
          */
-        bool request(RegisterAddress registerAddress);
+        etl::expected<void, ReadError> request(RegisterAddress registerAddress);
 
         /**
-         * Function that reads the uncompensated angle (skip DAEC)
+         * Function that initiates a new SPI Write transaction and reports submission errors
          *
-         * @return The 14-bit measured angle uncompensated
+         * @param registerAddress
+         * @param data
+         * @return Expected success or error
          */
-        [[nodiscard]] Angle_t measureAngleUncompensated() const;
+        etl::expected<void, WriteError> writeRegister(RegisterAddress registerAddress, RegisterData_t data);
 
         /**
-         * Function that reads the compensated angle (DAEC output)
+         * Function that returns the status of the last completed read transaction
          *
-         * @return The 14-bit measured angle compensated
+         * @return Expected success or error
          */
-        [[nodiscard]] Angle_t measureAngleCompensated() const;
+        etl::expected<void, ReadError> lastReadResult() const;
+
+        /**
+         * Function that returns the status of the last completed write transaction
+         *
+         * @return Expected success or error
+         */
+        etl::expected<void, WriteError> lastWriteResult() const;
+
+        /**
+         * Function that returns the last ERRFL status flags
+         *
+         * @return The last ERRFL status
+         */
+        ERRFL_Status lastErrflStatus() const;
 
         /**
          * Function that reads the compensated angle (DAEC output)
          *
          * @return The 14-bit raw register value for angle compensated
          */
-        [[nodiscard]] uint16_t measureAngleCompensatedRaw() const;
+        [[nodiscard]] etl::expected<RegisterData_t, ReadError> measureAngleCompensatedRaw() const;
+
+        /**
+         * Function that reads the uncompensated angle (skip DAEC)
+         *
+         * @return The 14-bit raw register value for angle uncompensated
+         */
+        [[nodiscard]] etl::expected<RegisterData_t, ReadError> measureAngleUncompensatedRaw() const;
 
         /**
          * Function that reads the CORDIC magnetic field magnitude
          *
          * @return The 14-bit measured magnetic field magnitude
          */
-        [[nodiscard]] FieldMagnitude_t measureFieldMagnitude() const;
+        [[nodiscard]] etl::expected<FieldMagnitude_t, ReadError> measureFieldMagnitude() const;
 
         /**
-         * Function that reads the DIAAGC register and logs the warnings
+         * Utility function to convert a raw 14-bit angle to degrees [0, 360)
          *
-         * TODO: Return the warnings properly in a data structure
+         * @param rawAngle The 14-bit raw angle value
+         * @return Angle in degrees
          */
-        void readAGC_Diagnostics() const;
+        [[nodiscard]] static AngleDegrees_t rawAngleToDegrees(RegisterData_t rawAngle);
+
+        /**
+         * Function that reads the DIAAGC register and returns diagnostics
+         *
+         * @return Diagnostics report or error when no stable data is available
+         */
+        etl::expected<AGC_DiagnosticsReport, AGC_DiagnosticsReadError> readAGC_Diagnostics() const;
 
         /**
          * Function that reads and clears (by IC design) the error flags from ERRFL register
          */
         void readAndClearErrorFlags() const;
 
+        /**
+         * Function that checks for ongoing sensor transaction
+         * @return True if there is an ongoing sensor transaction
+         */
         static bool sensorBusy();
 
 private:
-        uint16_t latestRegisterRequested = 0;
+        /**
+         * @var latestRegisterRequested
+         *
+         * The latest value read from a register
+         */
+        /**
+         * @struct RegisterCache
+         * @brief Local cache of most recently read register values
+         */
+        struct RegisterCache {
+                /// Cached ANGLECOM raw value
+                RegisterData_t angleComRaw = 0;
+                /// Cached ANGLEUNC raw value
+                RegisterData_t angleUncRaw = 0;
+                /// Cached MAG raw value
+                RegisterData_t magRaw = 0;
+                /// Cached DIAAGC raw value
+                RegisterData_t diagRaw = 0;
+                /// Cached ERRFL raw value
+                RegisterData_t errflRaw = 0;
+                /// Cached AGC value (lower 8 bits of DIAAGC)
+                std::uint8_t agcValue = 0;
+        };
 
+        /// Cached register values from the last successful read
+        RegisterCache registerCache{};
+        /// Last requested register address for the pending transaction
+        RegisterAddress lastRequestedRegister = RegisterAddress::NOP;
+
+        /**
+         * @var isSensorBusy
+         *
+         * True if the sensor is busy with an ongoing transaction
+         */
         inline static bool isSensorBusy = false;
 
         /**
+         * @enum PendingTransfer
+         * @brief Tracks the in-flight SPI transaction phase
+         */
+        enum class PendingTransfer : std::uint8_t {
+                NONE,
+                READ_COMMAND,
+                READ_ERRFL,
+                WRITE_COMMAND,
+                WRITE_DATA,
+                WRITE_ERRFL,
+        };
+
+        /// Current pending transfer type/state
+        PendingTransfer pendingTransfer = PendingTransfer::NONE;
+        /// Pending write data frame (data stage of a write)
+        std::array<std::uint8_t, 2> pendingWriteFrame{};
+
+        /**
+         * @enum TransactionState
+         * @brief State machine for read/write operations
+         */
+        enum class TransactionState : std::uint8_t {
+                IDLE,
+                IN_PROGRESS,
+                SUCCESS,
+                ERROR,
+        };
+
+        /// Last read transaction state
+        TransactionState lastReadState = TransactionState::IDLE;
+        /// Last write transaction state
+        TransactionState lastWriteState = TransactionState::IDLE;
+        /// Last read transaction error code
+        ReadError lastReadError = ReadError::NOT_READY;
+        /// Last write transaction error code
+        WriteError lastWriteError = WriteError::NOT_READY;
+        /// Last ERRFL status flags
+        ERRFL_Status errflStatus{};
+
+        /**
          * @enum ERRFL_RegisterMask
-         * @brief Represents the bitmask definitions for the ERRFL (Error Flag) register.
+         * @brief Represents the bitmask definitions for the ERRFL (Error Flag) register
          *
-         * The ERRFL register provides diagnostic error flags that indicate specific sensor errors.
-         * Each bit in this enumeration corresponds to a particular type of error detected by the sensor.
+         * The ERRFL register provides diagnostic error flags that indicate specific sensor errors
+         * Each bit in this enumeration corresponds to a particular type of error detected by the sensor
          */
         enum class ERRFL_RegisterMask : RegisterData_t {
                 PARITY_ERROR = 0b0000'0000'0000'0100,
@@ -292,9 +394,9 @@ private:
 
         /**
          * @enum ParityBit
-         * @brief Represents the parity bit options for the SPI communication with the AS5047P sensor.
+         * @brief Represents the parity bit options for the SPI communication with the AS5047P sensor
          *
-         * The AS5047P uses a single parity bit in its SPI protocol for error detection in communication.
+         * The AS5047P uses a single parity bit in its SPI protocol for error detection in communication
          */
         enum class ParityBit : uint16_t {
                 PARITY_BIT_0 = 0b0000'0000'0000'0000,
@@ -303,11 +405,11 @@ private:
 
         /**
          * @enum DIAAGC_RegisterMask
-         * @brief Represents the bitmask definitions for the DIAAGC register.
+         * @brief Represents the bitmask definitions for the DIAAGC register
          *
-         * The DIAAGC register provides diagnostic and automatic gain control (AGC) information.
+         * The DIAAGC register provides diagnostic and automatic gain control (AGC) information
          * This enumeration defines specific flags and fields within the register that
-         * indicate diagnostics or configuration status of the AS5047P sensor.
+         * indicate diagnostics or configuration status of the AS5047P sensor
          */
         enum class DIAAGC_RegisterMask : RegisterData_t {
                 MAG_FIELD_TOO_LOW = 0b0000'1000'0000'0000,
@@ -316,6 +418,13 @@ private:
                 OFFSET_COMP = 0b0000'0001'0000'0000,
                 AGC_VALUE = 0b0000'0000'1111'1111,
         };
+
+        /// Mask for 14-bit register data values
+        static constexpr RegisterData_t RegisterDataMask = 0b0011'1111'1111'1111;
+        /// Mask for MSBs of read data (upper 6 bits of first byte)
+        static constexpr uint8_t ReadDataMsbMask = 0b0011'1111;
+        /// Mask for the error flag bit in read responses
+        static constexpr uint8_t ReadErrorFlagMask = 0b0100'0000;
 
         /**
          * The SPI command frame size in bytes
@@ -333,8 +442,7 @@ private:
          */
         static constexpr uint16_t AngleResolutionSPI = 16384;
 
-        static_assert(AngleResolutionSPI <= std::numeric_limits<uint16_t>::max(),
-                      "AngleResolutionSPI must fit in 'int'");
+        static_assert(AngleResolutionSPI <= std::numeric_limits<uint16_t>::max(), "AngleResolutionSPI must fit in 'int'");
 
         /**
          * The full rotation angle in degrees
@@ -342,18 +450,39 @@ private:
         static constexpr float FullRotationDegrees = 360.0f;
 
         /**
-         * Callback function -- called by the SPI_Buffer ISR
+         * Helper function that adds an even parity bit to a 16-bit SPI frame
+         *
+         * @param frame The 16-bit SPI frame without parity
+         * @return The frame with the parity bit set
+         */
+        [[nodiscard]] static constexpr uint16_t setEvenParity(uint16_t frame) {
+                if (std::popcount(frame) % 2 == 0)
+                        return frame | static_cast<uint16_t>(ParityBit::PARITY_BIT_0);
+
+                return frame | static_cast<uint16_t>(ParityBit::PARITY_BIT_1);
+        }
+
+        /**
+         * Callback function to be called after the completion of an SPI read transaction
+         *
          * @param context
          */
-        static void spiTransferCallback(void* context);
+        static void spiReadCallback(void* context);
+
+        /**
+         * Callback function to be called after the completion of an SPI write transaction
+         *
+         * @param context
+         */
+        static void spiWriteCallback(void* context);
 
         /**
          * Function that performs the SPI Read operation between MCU and AS5047P magnetic encoder
          *
          * @param registerAddress The address of the device register
-         * @return True if the SPI transaction was placed successfully
+         * @return Expected success or error code
          */
-        [[nodiscard]] bool readDeviceRegister(RegisterAddress registerAddress);
+        [[nodiscard]] etl::expected<void, ReadError> readDeviceRegister(RegisterAddress registerAddress);
 
         /**
          * Function that performs the SPI Write operation between MCU and AS5047P magnetic encoder
@@ -361,17 +490,16 @@ private:
          * @param registerAddress The address of the device register
          * @param data The data that will be written into the specified device register
          */
-        void writeDeviceRegister(RegisterAddress registerAddress, RegisterData_t data);
+        etl::expected<void, WriteError> writeDeviceRegister(RegisterAddress registerAddress, RegisterData_t data);
 
         /**
          * Operator | overload for the construction of the command
          *
-         * @param commandMask
-         * @param registerAddress
-         * @return
+         * @param commandMask Read/write command mask
+         * @param registerAddress Register address to encode
+         * @return Composed SPI command frame
          */
-        friend constexpr uint16_t operator|(ReadWriteCommandMask commandMask,
-                                        RegisterAddress registerAddress) {
+        friend constexpr uint16_t operator|(ReadWriteCommandMask commandMask, RegisterAddress registerAddress) {
                 return static_cast<uint16_t>(commandMask) | static_cast<uint16_t>(registerAddress);
         };
 };

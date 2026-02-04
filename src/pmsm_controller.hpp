@@ -101,6 +101,23 @@ public:
                             TelemetryLogger* telemetry = nullptr);
 
         /**
+         * Update telemetry values sourced from hardware (ADC + encoder status).
+         *
+         * @note Called from the fast current loop ISR before telemetry snapshot is produced.
+         */
+        __attribute__((always_inline)) void updateTelemetryHardware(uint32_t adcSeq, uint32_t missedPairs, uint16_t adcU_raw,
+                                                                    uint16_t adcV_raw, uint16_t adcU_off, uint16_t adcV_off,
+                                                                    uint32_t encoderErrorCode) {
+                tlm_adc_seq = adcSeq;
+                tlm_missed_pairs = missedPairs;
+                tlm_adc_u_raw = adcU_raw;
+                tlm_adc_v_raw = adcV_raw;
+                tlm_adc_u_off = adcU_off;
+                tlm_adc_v_off = adcV_off;
+                tlm_encoder_error_code = encoderErrorCode;
+        }
+
+        /**
          * Function that moves the rotor in open-loop. It is used during startup calibration procedures.
          *
          * @param dutyCycles
@@ -188,6 +205,16 @@ private:
                 DONE, /// Calibration procedure has finished
         };
 
+        enum class DirectionCalibrationState {
+                INIT,
+                MOVING,
+        };
+
+        enum class OffsetCalibrationState {
+                LOCKING,
+                DONE,
+        };
+
         /**
          * The calibration state.
          * @note This variable is used to communicate the stage of the calibration between functions.
@@ -231,6 +258,16 @@ private:
          */
         volatile int32_t tlm_angle_mrad = 0;
         volatile int32_t tlm_omega_mrad_s = 0;
+        volatile int32_t tlm_target_velocity_mrad_s = 0;
+        volatile int32_t tlm_target_position_mrad = 0;
+        volatile int32_t tlm_target_unwrapped_mrad = 0;
+        volatile uint32_t tlm_adc_seq = 0;
+        volatile uint32_t tlm_missed_pairs = 0;
+        volatile uint32_t tlm_adc_u_raw = 0;
+        volatile uint32_t tlm_adc_v_raw = 0;
+        volatile uint32_t tlm_adc_u_off = 0;
+        volatile uint32_t tlm_adc_v_off = 0;
+        volatile uint32_t tlm_encoder_error_code = 0;
 
         /**
          * Velocity loop period (ISR period) in microseconds
@@ -323,9 +360,14 @@ private:
         uint16_t directionCalibrationThetaStart = 0;
 
         /**
-         * Point out whether direction calibration is an ongoing task
+         * Direction calibration sub-state
          */
-        bool ongoingCalibration = false;
+        DirectionCalibrationState directionCalibrationState = DirectionCalibrationState::INIT;
+
+        /**
+         * Encoder offset calibration sub-state
+         */
+        OffsetCalibrationState offsetCalibrationState = OffsetCalibrationState::LOCKING;
 
         /**
          * Function that performs the direction calibration. The logic followed to achieve this is:
