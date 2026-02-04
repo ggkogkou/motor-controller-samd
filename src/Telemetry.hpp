@@ -59,7 +59,7 @@ struct TelemetryParameters {
         int32_t vd_i_mV = 0;
         int32_t vq_i_mV = 0;
 
-        int32_t angle_mrad = 0;
+        uint32_t angle_raw = 0;
         int32_t omega_mrad_s = 0;
 
         uint32_t adc_seq = 0;

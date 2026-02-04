@@ -63,8 +63,12 @@ public:
          * Command a target position in milliradians [0, 2π)
          *
          * @param targetAngle_mrad Target angle in milliradians
+         * @param direction Path direction (CW, CCW, or SHORTEST)
+         * @param revolutions Full turns to add in the given direction
          */
-        void moveToAngle(int32_t targetAngle_mrad);
+        void moveToAngle(int32_t targetAngle_mrad,
+                         PMSM_Controller::PositionDirection direction = PMSM_Controller::PositionDirection::CCW,
+                         int32_t revolutions = 0);
 
 private:
         static void ADC_Callback(ADC_STATUS status, uintptr_t context);
@@ -248,7 +252,7 @@ private:
         /**
          * TC4 (Current loop) timings
          */
-        static constexpr float CurrentLoopFrequencyKHz = 14.0f;
+        static constexpr float CurrentLoopFrequencyKHz = 16.0f;
         static constexpr uint32_t CurrentLoopFrequencyHz = static_cast<uint32_t>(CurrentLoopFrequencyKHz * 1000.0f);
         static constexpr uint32_t CurrentLoopPeriod_us = 1'000'000u / CurrentLoopFrequencyHz;
 

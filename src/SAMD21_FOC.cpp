@@ -83,8 +83,8 @@ void SAMD21_FOC::stop() const {
         __enable_irq();
 }
 
-void SAMD21_FOC::moveToAngle(int32_t targetAngle_mrad) {
-        motor.setTargetPosition(targetAngle_mrad);
+void SAMD21_FOC::moveToAngle(int32_t targetAngle_mrad, PMSM_Controller::PositionDirection direction, int32_t revolutions) {
+        motor.setTargetPosition(targetAngle_mrad, direction, revolutions);
 }
 
 void SAMD21_FOC::ADC_Callback(ADC_STATUS status, uintptr_t context) {
@@ -175,10 +175,18 @@ void SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_STATUS status) {
         }
 
         motor.runVelocityLoop(rotorPosition);
+
+        if (not AS5047P::sensorBusy()) {
+                (void)encoder.request(AS5047P::RegisterAddress::ANGLECOM);
+        }
 }
 
 void SAMD21_FOC::TC4_FOC_Handler(TC_TIMER_STATUS status) {
         (void)status;
+
+        if (not AS5047P::sensorBusy()) {
+                (void)encoder.request(AS5047P::RegisterAddress::ANGLECOM);
+        }
 
         if (not switchToCloseLoop || !offsetsReady || not rotorPositionValid)
                 return;
@@ -200,13 +208,15 @@ void SAMD21_FOC::TC4_FOC_Handler(TC_TIMER_STATUS status) {
         lastUsedAdcPairSeq = seq;
         NVIC_EnableIRQ(ADC_IRQn);
 
-        const uint16_t rotorPosition = rotorPositionCached;
+        static constexpr uint16_t EncoderMask = 0x3FFF;
+        const auto rotorPosition = static_cast<uint16_t>(encoder.measureAngleCompensatedRaw() & EncoderMask);
+        rotorPositionCached = rotorPosition;
 
         currents.Ia_mA = adcRawToCurrent(U, adcOffsetU);
         currents.Ib_mA = adcRawToCurrent(V, adcOffsetV);
         currents.Ic_mA = -(currents.Ia_mA + currents.Ib_mA);
 
-        TelemetryLogger* t = nullptr;
+        TelemetryLogger* t = telemetryLogger; // force logging every time
 
         if (telemetryLogger) {
                 if (++telemetryDividerCounter >= TelemetryDivider) {
