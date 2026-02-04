@@ -25,11 +25,11 @@
 #pragma once
 
 #include <algorithm>
+#include <cstdint>
 #include <span>
 #include <type_traits>
 #include "USART_TxStream.hpp"
 #include "definitions.h"
-#include <cstdint>
 
 namespace Telemetry {
 
@@ -53,9 +53,6 @@ struct TelemetryParameters {
         int32_t iq_mA = 0;
         int32_t id_ref_mA = 0;
         int32_t iq_ref_mA = 0;
-        int32_t id_err_mA = 0;
-        int32_t iq_err_mA = 0;
-
         int32_t vd_i_mV = 0;
         int32_t vq_i_mV = 0;
 
@@ -69,6 +66,17 @@ struct TelemetryParameters {
         int32_t adc_v_raw = 0;
         int32_t adc_u_off = 0;
         int32_t adc_v_off = 0;
+
+        int32_t svpwm_perA = 0;
+        int32_t svpwm_perB = 0;
+        int32_t svpwm_perC = 0;
+
+        int32_t omega_target_mrad_s = 0;
+        int32_t theta_target_mrad = 0;
+        int32_t theta_target_unwrapped_mrad = 0;
+
+        uint32_t zero_offset_electrical_angle_raw = 0;
+        uint32_t encoder_error_code = 0;
 };
 
 /**
@@ -77,7 +85,7 @@ struct TelemetryParameters {
 namespace Tests {
 
 static_assert(std::is_trivially_copyable_v<TelemetryParameters>);
-static_assert(sizeof(TelemetryParameters) == 92, "TelemetryParameters size changed");
+static_assert(sizeof(TelemetryParameters) == 116, "TelemetryParameters size changed");
 static_assert(sizeof(TelemetryParameters) % 4 == 0);
 
 } // namespace Tests

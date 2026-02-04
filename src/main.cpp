@@ -42,23 +42,24 @@ using namespace PermanentMagnetSynchronousMotor;
         uint32_t lastDropped = 0;
         uint32_t loopCounter = 0;
 
-        static constexpr int32_t TargetAngle90deg_mrad = 1571; // ~pi/2 mrad
+        bool targetToggle = false;
 
-        foc.moveToAngle(TargetAngle90deg_mrad, PMSM_Controller::PositionDirection::CCW);
+        static constexpr int32_t TargetAngleA_mrad = 0;
+        static constexpr int32_t TargetAngleB_mrad = 3141; // ~π mrad
+
+        foc.moveToAngle(TargetAngleA_mrad);
 
         while (true) {
                 telemetry.writeFrame(logging);
 
-                if (const uint32_t dropped = logging.getDroppedBytes(); dropped != lastDropped) {
+                if (const uint32_t dropped = logging.getDroppedBytes(); dropped != lastDropped)
                         lastDropped = dropped;
-                        // BENCHMARK_IO_Set();
-                        // BENCHMARK_IO_Clear();
+
+                if (loopCounter++ % 5000u == 0) { // move every 60 * 50ms = 3sec
+                        targetToggle = !targetToggle;
+                        foc.moveToAngle(targetToggle ? TargetAngleB_mrad : TargetAngleA_mrad);
                 }
 
-                if (loopCounter++ % 100u == 0) { // move every 100 * 50ms = 5sec
-                        foc.moveToAngle(TargetAngle90deg_mrad, PMSM_Controller::PositionDirection::CCW, 1);
-                }
-
-                SYSTICK_DelayMs(50);
+                SYSTICK_DelayMs(1);
         }
 }

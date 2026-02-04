@@ -70,6 +70,20 @@ public:
                          PMSM_Controller::PositionDirection direction = PMSM_Controller::PositionDirection::CCW,
                          int32_t revolutions = 0);
 
+        /**
+         * Encoder error monitoring (poll outside ISRs).
+         */
+        [[nodiscard]] etl::expected<void, AS5047P::ReadError> encoderLastReadResult() const {
+                return encoder.lastReadResult();
+        }
+
+        /**
+         * Last ERRFL snapshot (valid after ERROR_FLAG_SET).
+         */
+        [[nodiscard]] AS5047P::ERRFL_Status encoderLastErrflStatus() const {
+                return encoder.lastErrflStatus();
+        }
+
 private:
         static void ADC_Callback(ADC_STATUS status, uintptr_t context);
         static void TC3_Callback(TC_TIMER_STATUS status, uintptr_t context);
@@ -201,13 +215,32 @@ private:
 
         int32_t opAmpOffset_mV = 1'650;
 
+        enum class TC3_State : uint8_t {
+                PrimeEncoder,
+                CalibrateOffsets,
+                StartupCalibration,
+                ClosedLoop,
+                Fault,
+        };
+
+        enum class TC4_State : uint8_t {
+                Idle,
+                RunCurrentLoop,
+                Fault,
+        };
+
+        TC3_State tc3State = TC3_State::PrimeEncoder;
+        TC4_State tc4State = TC4_State::Idle;
+
         bool switchToCloseLoop = false;
+        bool encoderFaulted = false;
+        uint32_t encoderErrorCode = 0;
 
         /**
          * Cached timing
          */
         float dT = 0.0f;
-        bool encoderPrimed = false;
+
 
         /**
          * @enum TC_InputClockPrescaler
