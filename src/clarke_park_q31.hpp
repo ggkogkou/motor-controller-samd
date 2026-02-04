@@ -51,8 +51,7 @@ inline constexpr int16_t INV_SQRT3_Q15 = 18919; // round((1/sqrt(3))*32768)
 /**
  * Multiply an int32 value by a Q15 coefficient -> int32 result (same unit as value)
  */
-__attribute__((always_inline))
-[[nodiscard]] inline int32_t mul_q15(int32_t value, int16_t q15) noexcept {
+[[nodiscard]] __attribute__((always_inline)) inline int32_t mul_q15(int32_t value, int16_t q15) noexcept {
         const int32_t prod = value * static_cast<int32_t>(q15);
         return prod >> Q15_SHIFT;
 }
@@ -60,24 +59,10 @@ __attribute__((always_inline))
 /**
  * Park transform (theta in 14-bit raw value)
  */
-__attribute__((always_inline))
-[[nodiscard]] inline DQFrame_i32 performParkTransform(int32_t Ua, int32_t Ub, uint16_t theta14) noexcept {
+[[nodiscard]] __attribute__((always_inline)) inline DQFrame_i32 performParkTransform(int32_t Ua, int32_t Ub,
+                                                                                     uint16_t theta14) noexcept {
         const int16_t CosineTheta = TrigonometricLUT::cosine_q15_14bit[theta14];
-        const int16_t SineTheta   = TrigonometricLUT::sine_q15_14bit[theta14];
-
-        const int32_t Ud = mul_q15(Ua, CosineTheta) + mul_q15(Ub, SineTheta);
-        const int32_t Uq = -mul_q15(Ua, SineTheta) + mul_q15(Ub, CosineTheta);
-
-        return {Ud, Uq};
-}
-
-/**
- * Park transform (theta in mrad)
- */
-__attribute__((always_inline))
-[[nodiscard]] inline DQFrame_i32 performParkTransform(int32_t Ua, int32_t Ub, int32_t theta_mrad) noexcept {
-        const int16_t CosineTheta = TrigonometricLUT::cosine_q15_14bit[theta_mrad];
-        const int16_t SineTheta   = TrigonometricLUT::sine_q15_14bit[theta_mrad];
+        const int16_t SineTheta = TrigonometricLUT::sine_q15_14bit[theta14];
 
         const int32_t Ud = mul_q15(Ua, CosineTheta) + mul_q15(Ub, SineTheta);
         const int32_t Uq = -mul_q15(Ua, SineTheta) + mul_q15(Ub, CosineTheta);
@@ -88,27 +73,13 @@ __attribute__((always_inline))
 /**
  * Inverse Park transform (theta in 14-bit raw value)
  */
-__attribute__((always_inline))
-[[nodiscard]] inline AlphaBetaFrame_i32 performInverseParkTransform(int32_t Ud, int32_t Uq, uint16_t theta14) noexcept {
+[[nodiscard]] __attribute__((always_inline)) inline AlphaBetaFrame_i32 performInverseParkTransform(int32_t Ud, int32_t Uq,
+                                                                                                   uint16_t theta14) noexcept {
         const int16_t CosineTheta = TrigonometricLUT::cosine_q15_14bit[theta14];
-        const int16_t SineTheta   = TrigonometricLUT::sine_q15_14bit[theta14];
+        const int16_t SineTheta = TrigonometricLUT::sine_q15_14bit[theta14];
 
         const int32_t Ualpha = mul_q15(Ud, CosineTheta) - mul_q15(Uq, SineTheta);
-        const int32_t Ubeta  = mul_q15(Ud, SineTheta) + mul_q15(Uq, CosineTheta);
-
-        return {Ualpha, Ubeta};
-}
-
-/**
- * Inverse Park transform (theta in mrad)
- */
-__attribute__((always_inline))
-[[nodiscard]] inline AlphaBetaFrame_i32 performInverseParkTransform(int32_t Ud, int32_t Uq, int32_t theta_mrad) noexcept {
-        const int16_t CosineTheta = TrigonometricLUT::cosine_q15_14bit[theta_mrad];
-        const int16_t SineTheta   = TrigonometricLUT::sine_q15_14bit[theta_mrad];
-
-        const int32_t Ualpha = mul_q15(Ud, CosineTheta) - mul_q15(Uq, SineTheta);
-        const int32_t Ubeta  = mul_q15(Ud, SineTheta) + mul_q15(Uq, CosineTheta);
+        const int32_t Ubeta = mul_q15(Ud, SineTheta) + mul_q15(Uq, CosineTheta);
 
         return {Ualpha, Ubeta};
 }
@@ -116,40 +87,22 @@ __attribute__((always_inline))
 /**
  * Clarke transform
  */
-__attribute__((always_inline))
-[[nodiscard]] inline AlphaBetaFrame_i32 performClarkeTransform(int32_t Ua, int32_t Ub, int32_t /*Uc*/ = 0) noexcept {
+[[nodiscard]] __attribute__((always_inline)) inline AlphaBetaFrame_i32 performClarkeTransform(int32_t Ua, int32_t Ub) noexcept {
         const int32_t Ualpha = Ua;
-        const int32_t Ubeta  = mul_q15(Ua + 2 * Ub, INV_SQRT3_Q15);
+        const int32_t Ubeta = mul_q15(Ua + 2 * Ub, INV_SQRT3_Q15);
         return {Ualpha, Ubeta};
 }
 
 /**
  * Chained Clarke + Park (theta in 14-bit raw)
  */
-__attribute__((always_inline))
-[[nodiscard]] inline DQFrame_i32 performClarkeParkTransforms(int32_t Ua, int32_t Ub, uint16_t theta14) noexcept {
+[[nodiscard]] __attribute__((always_inline)) inline DQFrame_i32 performClarkeParkTransforms(int32_t Ua, int32_t Ub,
+                                                                                            uint16_t theta14) noexcept {
         const int32_t Ualpha = Ua;
-        const int32_t Ubeta  = mul_q15(Ua + 2 * Ub, INV_SQRT3_Q15);
+        const int32_t Ubeta = mul_q15(Ua + 2 * Ub, INV_SQRT3_Q15);
 
         const int16_t CosineTheta = TrigonometricLUT::cosine_q15_14bit[theta14];
-        const int16_t SineTheta   = TrigonometricLUT::sine_q15_14bit[theta14];
-
-        const int32_t Ud = mul_q15(Ualpha, CosineTheta) + mul_q15(Ubeta, SineTheta);
-        const int32_t Uq = -mul_q15(Ualpha, SineTheta) + mul_q15(Ubeta, CosineTheta);
-
-        return {Ud, Uq};
-}
-
-/**
- * Chained Clarke + Park (theta in mrad)
- */
-__attribute__((always_inline))
-[[nodiscard]] inline DQFrame_i32 performClarkeParkTransforms(int32_t Ua, int32_t Ub, int32_t theta_mrad) noexcept {
-        const int32_t Ualpha = Ua;
-        const int32_t Ubeta  = mul_q15(Ua + 2 * Ub, INV_SQRT3_Q15);
-
-        const int16_t CosineTheta = TrigonometricLUT::cosine_q15_14bit[theta_mrad];
-        const int16_t SineTheta   = TrigonometricLUT::sine_q15_14bit[theta_mrad];
+        const int16_t SineTheta = TrigonometricLUT::sine_q15_14bit[theta14];
 
         const int32_t Ud = mul_q15(Ualpha, CosineTheta) + mul_q15(Ubeta, SineTheta);
         const int32_t Uq = -mul_q15(Ualpha, SineTheta) + mul_q15(Ubeta, CosineTheta);

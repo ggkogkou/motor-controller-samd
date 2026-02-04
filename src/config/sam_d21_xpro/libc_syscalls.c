@@ -24,6 +24,7 @@
 // DOM-IGNORE-END
 
 #include <device.h> /* for ARM CMSIS __BKPT() */
+#include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <sys/stat.h>
@@ -69,6 +70,36 @@ extern caddr_t _sbrk(int incr) {
         heap += incr;
 
         return (caddr_t)prev_heap;
+}
+
+int _close(int fd) {
+        (void)fd;
+        errno = EBADF;
+        return -1;
+}
+
+int _lseek(int fd, int ptr, int dir) {
+        (void)fd;
+        (void)ptr;
+        (void)dir;
+        errno = EBADF;
+        return -1;
+}
+
+int _read(int fd, void* buf, size_t cnt) {
+        (void)fd;
+        (void)buf;
+        (void)cnt;
+        errno = EBADF;
+        return -1;
+}
+
+int _write(int fd, const void* buf, size_t cnt) {
+        (void)fd;
+        (void)buf;
+        (void)cnt;
+        errno = EBADF;
+        return -1;
 }
 
 #ifdef __cplusplus

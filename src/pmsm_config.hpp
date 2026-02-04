@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include "math_utils.hpp"
 
 namespace PermanentMagnetSynchronousMotor {
@@ -44,7 +45,9 @@ struct PMSM_Config {
         /**
          * Encoder electrical offset and direction calibration voltage limit
          */
-        static constexpr float InitialCalibrationVoltageLimit = 4.0f;
+        static constexpr float InitialCalibrationVoltageLimit = 8.0f;
+
+        static constexpr float EncoderOffsetCalibrationVd = 10.0f;
 
         /**
          * Target velocity for the outer velocity loop
@@ -79,6 +82,15 @@ struct PMSM_Config {
          */
         static constexpr float MotorKV_Rating = 26.0f;
         static constexpr float MotorInternalResistance = 11.0f;
+
+        /**
+         * Direction conventions
+         * --------------------
+         * EncoderDirection: +1 if encoder raw increases with CW, -1 if it increases with CCW.
+         * TorqueDirection:  +1 if +Iq produces CW torque, -1 if +Iq produces CCW torque.
+         */
+        static constexpr int8_t EncoderDirection = 1;
+        static constexpr int8_t TorqueDirection = 1;
 };
 
 } // namespace PermanentMagnetSynchronousMotor

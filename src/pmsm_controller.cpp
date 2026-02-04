@@ -29,10 +29,10 @@ namespace PermanentMagnetSynchronousMotor {
 PMSM_Controller::PMSM_Controller(uint32_t pwmPeriod) : PMSM_Controller(pwmPeriod, 1'000, 1'000) {}
 
 PMSM_Controller::PMSM_Controller(uint32_t pwmPeriod, uint32_t velocityLoopPeriod, uint32_t currentLoopPeriod) :
-    pidPosition(3.0f, 0.0f, 0.0f, 50'000.0f, static_cast<float>(velocityLoopPeriod) * 1e-6f),
-    pidVelocity(0.5f, 10.0f, 0.0f, 4000.0f, static_cast<float>(velocityLoopPeriod) * 1e-6f),
-    pidId(0.25f, 20.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit * 1000.0f, static_cast<float>(currentLoopPeriod) * 1e-6f),
-    pidIq(0.35f, 50.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit * 1000.0f, static_cast<float>(currentLoopPeriod) * 1e-6f),
+    pidPosition(2.0f, 0.0f, 0.0f, 50'000.0f, static_cast<float>(velocityLoopPeriod) * 1e-6f),
+    pidVelocity(1.0f, 10.0f, 0.0f, 4000.0f, static_cast<float>(velocityLoopPeriod) * 1e-6f),
+    pidId(0.5f, 100.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit * 1000.0f, static_cast<float>(currentLoopPeriod) * 1e-6f),
+    pidIq(0.5f, 100.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit * 1000.0f, static_cast<float>(currentLoopPeriod) * 1e-6f),
     velocityLoopPeriod_us(velocityLoopPeriod), CurrentLoopPeriod_us(currentLoopPeriod), pwmPeriod(pwmPeriod),
     dT(static_cast<float>(velocityLoopPeriod) * 1e-6f) {
         targetVelocity_mrad_s = std::lroundf(PMSM_Config::TargetVelocity * 1000.0f);
@@ -54,8 +54,8 @@ bool PMSM_Controller::startupCalibration(const PhaseDutyCycles& dutyCycles, uint
         }
 
         if (calibrationState == CalibrationState::DONE) {
-                if (!velocityEstimator) {
-                        const int32_t wrapped_mrad = rawToMilliRad(thetaEncoder);
+                if (not velocityEstimator) {
+                        const int32_t wrapped_mrad = signedMechanical_mrad(thetaEncoder);
                         velocityEstimator.emplace(wrapped_mrad, 10'000u); // tau = 10ms
                 }
                 return true;
@@ -103,7 +103,7 @@ void PMSM_Controller::directionCalibration(const PhaseDutyCycles& dutyCycles, ui
 
 void PMSM_Controller::encoderOffsetCalibration(const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder) {
         constexpr int32_t Uq = 0; /// in mV
-        const int32_t Ud = std::lroundf(PMSM_Config::InitialCalibrationVoltageLimit * 1000.0f); /// in mV
+        const int32_t Ud = std::lroundf(PMSM_Config::EncoderOffsetCalibrationVd * 1000.0f); /// in mV
         constexpr uint16_t ThetaElectricalLock = 0;
 
         const auto InvPark = MathUtils::performInverseParkTransform(Ud, Uq, ThetaElectricalLock);
@@ -115,7 +115,7 @@ void PMSM_Controller::encoderOffsetCalibration(const PhaseDutyCycles& dutyCycles
 
         timerCounter++;
 
-        if (timerCounter > MoveDuringCalibrationTicks) {
+        if (timerCounter > KeepRotorLockedTicks) {
                 thetaMechanical = thetaEncoder;
 
                 uint16_t tmpEl14 = wrapAngle(thetaMechanical * PMSM_Config::MotorPolePairs);
@@ -147,8 +147,9 @@ void PMSM_Controller::updateOpenLoop(const PhaseDutyCycles& dutyCycles) {
         dutyCycles.perC = pwmPeriod - perC;
 }
 
-void PMSM_Controller::setTargetPosition(int32_t targetAngle_mrad) {
+void PMSM_Controller::setTargetPosition(int32_t targetAngle_mrad, PositionDirection direction, int32_t revolutions) {
         constexpr int32_t TWO_PI_MRAD = 6283;
+
         if (targetAngle_mrad < 0) {
                 targetAngle_mrad %= TWO_PI_MRAD;
                 if (targetAngle_mrad < 0)
@@ -158,20 +159,44 @@ void PMSM_Controller::setTargetPosition(int32_t targetAngle_mrad) {
         }
 
         targetPosition_mrad = targetAngle_mrad;
+        positionDirection = direction;
+        targetRevolutions = revolutions < 0 ? 0 : revolutions;
+        targetUnwrappedValid = false;
 }
 
 void PMSM_Controller::runPositionLoop(uint16_t thetaEncoder) {
-        constexpr int32_t TWO_PI_MRAD = 6283;
-        constexpr int32_t PI_MRAD = TWO_PI_MRAD / 2;
+        constexpr int32_t TWO_PI_MRAD = 6'283;
 
-        const int32_t current_mrad = rawToMilliRad(thetaEncoder);
-        int32_t error = targetPosition_mrad - current_mrad;
+        const int32_t current_wrapped_mrad = rawToMilliRad(thetaEncoder);
+        const int32_t current_unwrapped_mrad = velocityEstimator ? velocityEstimator->unwrappedAngle : current_wrapped_mrad;
 
-        if (error > PI_MRAD)
-                error -= TWO_PI_MRAD;
-        else if (error < -PI_MRAD)
-                error += TWO_PI_MRAD;
+        const int32_t forward = [&] {
+                int32_t f = targetPosition_mrad - current_wrapped_mrad;
+                if (f < 0)
+                        f += TWO_PI_MRAD;
+                return f;
+        }();
 
+        const int32_t backward = forward - TWO_PI_MRAD;
+
+        if (not targetUnwrappedValid) {
+                const int32_t delta = [&] {
+                        switch (positionDirection) {
+                        case PositionDirection::CW:
+                                return forward + targetRevolutions * TWO_PI_MRAD;
+                        case PositionDirection::CCW:
+                                return backward - targetRevolutions * TWO_PI_MRAD;
+                        case PositionDirection::SHORTEST:
+                        default:
+                                return (forward <= -backward) ? forward : backward;
+                        }
+                }();
+
+                targetUnwrapped_mrad = current_unwrapped_mrad + delta;
+                targetUnwrappedValid = true;
+        }
+
+        const int32_t error = targetUnwrapped_mrad - current_unwrapped_mrad;
         targetVelocity_mrad_s = pidPosition.compute(error);
 }
 
@@ -186,28 +211,18 @@ void PMSM_Controller::runVelocityLoop(uint16_t thetaEncoder) {
 
         velocityEstimator->update(wrapped_mrad, DeltaTime);
 
-        // const auto VelocityAbsoluteValue = [](int32_t x) -> int32_t {
-        //         if (x < 0)
-        //                 return -x;
-        //
-        //         return x;
-        // }(velocityEstimator->angularVelocity);
-        //
-        // const int32_t VelocityError = targetVelocity_mrad_s - VelocityAbsoluteValue; /// in mrad/s
-
         const int32_t VelocityError = targetVelocity_mrad_s - velocityEstimator->angularVelocity; /// in mrad/s
 
         Iref.Iq_mA = pidVelocity.compute(VelocityError); /// output is Iq,ref in mA
 
-        tlm_angle_mrad = wrapped_mrad;
         tlm_omega_mrad_s = velocityEstimator->angularVelocity;
         // BENCHMARK_IO_Clear();
 }
 
-void __attribute__((section(".ramfunc")))
-PMSM_Controller::runCurrentLoop(const PhaseCurrents& phaseCurrents, PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder,
-                                TelemetryLogger* telemetry) {
-        BENCHMARK_IO_Set();
+void __attribute__((section(".ramfunc"))) PMSM_Controller::runCurrentLoop(const PhaseCurrents& phaseCurrents,
+                                                                          PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder,
+                                                                          TelemetryLogger* telemetry) {
+        // BENCHMARK_IO_Set();
 
         const uint16_t ThetaEl = calculateElectricalAngle(thetaEncoder);
 
@@ -255,13 +270,13 @@ PMSM_Controller::runCurrentLoop(const PhaseCurrents& phaseCurrents, PhaseDutyCyc
                 tp.id_err_mA = Id_Error;
                 tp.iq_err_mA = Iq_Error;
 
-                tp.angle_mrad = rawToMilliRad(thetaEncoder);
+                tp.angle_raw = static_cast<uint32_t>(thetaEncoder);
                 tp.omega_mrad_s = tlm_omega_mrad_s;
 
                 telemetry->updateLatest(tp);
         }
 
-        BENCHMARK_IO_Clear();
+        // BENCHMARK_IO_Clear();
 }
 
 void PMSM_Controller::stopMotor(const PhaseDutyCycles& dutyCycles) const {

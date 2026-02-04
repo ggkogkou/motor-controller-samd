@@ -12178,7 +12178,9 @@
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="sercom3" name="USART_7816_BAUD_VALUE"/>
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;sercom3&gt;
   &lt;sercom3 dnOrder=&quot;0&quot; id=&quot;USART_7816_BAUD_VALUE&quot;&gt;
-    &lt;Values dnOrder=&quot;0&quot;/&gt;
+    &lt;Values dnOrder=&quot;0&quot;&gt;
+      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;sercom3&quot; value=&quot;2&quot;/&gt;
+    &lt;/Values&gt;
   &lt;/sercom3&gt;
 &lt;/sercom3&gt;
 </value>
@@ -12259,7 +12261,9 @@
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="sercom3" name="USART_BAUD_RATE"/>
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;sercom3&gt;
   &lt;sercom3 dnOrder=&quot;0&quot; id=&quot;USART_BAUD_RATE&quot;&gt;
-    &lt;Values dnOrder=&quot;0&quot;/&gt;
+    &lt;Values dnOrder=&quot;0&quot;&gt;
+      &lt;User dnOrder=&quot;0&quot; value=&quot;460800&quot;/&gt;
+    &lt;/Values&gt;
   &lt;/sercom3&gt;
 &lt;/sercom3&gt;
 </value>
@@ -12269,7 +12273,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;sercom3&gt;
   &lt;sercom3 dnOrder=&quot;0&quot; id=&quot;USART_BAUD_VALUE&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;sercom3&quot; value=&quot;63019&quot;/&gt;
+      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;sercom3&quot; value=&quot;55469&quot;/&gt;
     &lt;/Values&gt;
   &lt;/sercom3&gt;
 &lt;/sercom3&gt;
@@ -15367,7 +15371,7 @@
    <generatedFileHashHistoryMap class="java.util.TreeMap">
       <entry>
          <file>../src/config/sam_d21_xpro/definitions.h</file>
-         <hash>d403e536e3714a6d59300e9f5be031c15321d19887738ce8b66369e558400f53</hash>
+         <hash>81a93396dee0fb50f9aeb766e8fca7a624f02b01ac659bdf353a4bbebd2a0054</hash>
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/device.h</file>
@@ -15387,7 +15391,7 @@
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/initialization.c</file>
-         <hash>ccdae10fe4ccffe5e72bda0308e59c663b1dc8569535d0666bb0ffd400a9854f</hash>
+         <hash>91f5fc4c0ca7af5929eb21552ac5b0f5c879fe13abbba18abdc6927ada74d05f</hash>
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/interrupts.c</file>
@@ -15483,7 +15487,7 @@
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom3_usart.c</file>
-         <hash>581bd588ed92702d40d1fd10396c6ef032686ab71690b2c58869636d3192a2af</hash>
+         <hash>c7808ce42d8396dc8842c7543af4bec20867c53c311dabc90e8b070f8f627206</hash>
       </entry>
       <entry>
          <file>../src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom3_usart.h</file>

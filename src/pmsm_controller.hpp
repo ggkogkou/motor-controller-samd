@@ -27,6 +27,7 @@
 #include <cstdint>
 #include <optional>
 #include "Telemetry.hpp"
+#include "VelocityEstimator.hpp"
 #include "definitions.h"
 #include "math_utils.hpp"
 #include "pid.hpp"
@@ -62,85 +63,18 @@ struct PhaseDutyCycles {
         PhaseDutyCycles(uint32_t& a, uint32_t& b, uint32_t& c) : perA(a), perB(b), perC(c) {}
 };
 
-/**
- * @struct AngleVelocityEstimator
- *
- * Implementation of a velocity estimator to be used in the velocity control loop
- */
-struct AngleVelocityEstimator {
-        int32_t lastWrappedAngle; // mrad
-        int32_t unwrappedAngle; // mrad
-        int32_t angularVelocity; // mrad/sec
-        uint32_t filterTimeConstant; // usec
-
-        /**
-         * Useful constants
-         */
-        static constexpr int32_t TWO_PI_MRAD = 6283;
-        static constexpr int32_t PI_MRAD = TWO_PI_MRAD / 2;
-
-        /**
-         * Class constructor
-         *
-         * @param initialWrappedAngle The initial wrapped angle (in mrad)
-         * @param tau The change of time dT (in μsec)
-         */
-        explicit AngleVelocityEstimator(int32_t initialWrappedAngle, uint32_t tau = 10'000) :
-            lastWrappedAngle(initialWrappedAngle), unwrappedAngle(initialWrappedAngle), angularVelocity(0), filterTimeConstant(tau) {}
-
-        /**
-         * Function that must be called periodically in order to run the velocity control loop
-         *
-         * @param wrappedAngle The wrapped angle (in mrad)
-         * @param deltaTime The change of time dT (in μsec)
-         */
-        void update(int32_t wrappedAngle, uint32_t deltaTime) {
-                const auto wrapDelta = [&](int32_t a, int32_t b) -> int32_t {
-                        int32_t d = a - b;
-                        if (d > PI_MRAD)
-                                d -= TWO_PI_MRAD;
-                        if (d < -PI_MRAD)
-                                d += TWO_PI_MRAD;
-                        return d;
-                };
-
-                const auto derivative_mrad_per_sec = [&](int32_t delta, uint32_t dt_us) -> int32_t {
-                        if (dt_us == 0u)
-                                return 0;
-                        const auto num = static_cast<int64_t>(delta) * 1'000'000LL;
-                        return static_cast<int32_t>(num / static_cast<int64_t>(dt_us));
-                };
-
-                const auto alpha_q15 = [&](uint32_t tau_us, uint32_t dt_us) -> int32_t {
-                        const uint32_t Denominator = tau_us + dt_us;
-                        if (Denominator == 0u)
-                                return 0;
-                        const auto a = (static_cast<int64_t>(tau_us) << 15) / static_cast<int64_t>(Denominator);
-                        if (a < 0)
-                                return 0;
-                        if (a > 32768)
-                                return 32768;
-                        return static_cast<int32_t>(a);
-                };
-
-                const int32_t delta = wrapDelta(wrappedAngle, lastWrappedAngle);
-                unwrappedAngle += delta;
-
-                const int32_t rawDerivative = derivative_mrad_per_sec(delta, deltaTime);
-
-                const int32_t a_q15 = alpha_q15(filterTimeConstant, deltaTime);
-                const int32_t one_minus_a_q15 = 32768 - a_q15;
-
-                const auto filt = static_cast<int64_t>(a_q15) * static_cast<int64_t>(angularVelocity) +
-                        static_cast<int64_t>(one_minus_a_q15) * static_cast<int64_t>(rawDerivative);
-
-                angularVelocity = static_cast<int32_t>(filt >> 15);
-                lastWrappedAngle = wrappedAngle;
-        }
-};
-
 class PMSM_Controller {
 public:
+        enum class PositionDirection {
+                SHORTEST,
+                CW,
+                CCW,
+        };
+
+        enum class ControlMode {
+                POSITION,
+                VELOCITY,
+        };
         /**
          * Class constructor
          */
@@ -202,8 +136,11 @@ public:
          * Set a target position for the outer position control loop
          *
          * @param targetAngle_mrad Target angle in milliradians [0, 2π)
+         * @param direction Path direction (CW, CCW, or SHORTEST)
+         * @param revolutions Full turns to add in the given direction
          */
-        void setTargetPosition(int32_t targetAngle_mrad);
+        void setTargetPosition(int32_t targetAngle_mrad, PositionDirection direction = PositionDirection::CCW,
+                               int32_t revolutions = 0);
 
         /**
          * Run the position loop (outer loop) and update the target velocity
@@ -273,6 +210,22 @@ private:
         int32_t targetPosition_mrad = 0;
 
         /**
+         * Desired path to reach the target position
+         */
+        PositionDirection positionDirection = PositionDirection::SHORTEST;
+
+        /**
+         * Extra full turns to apply in the requested direction
+         */
+        int32_t targetRevolutions = 0;
+
+        /**
+         * Unwrapped target position used for multi-turn positioning
+         */
+        int32_t targetUnwrapped_mrad = 0;
+        bool targetUnwrappedValid = false;
+
+        /**
          * Cache variables for telemetry usage
          * @note Supposed to be updated in velocity loop only
          */
@@ -304,9 +257,14 @@ private:
         uint32_t timerCounter = 0;
 
         /**
-         * How many ticks to run during calibration (?)
+         * How many ticks to run direction calibration in open-loop
          */
         static constexpr uint32_t MoveDuringCalibrationTicks = 250;
+
+        /**
+         * How many ticks to keep rotor locked during encoder offset calibration
+         */
+        static constexpr uint32_t KeepRotorLockedTicks = 2000;
 
         /**
          * @var velocityEstimator
@@ -418,12 +376,24 @@ private:
                 return static_cast<int32_t>(static_cast<int64_t>(wrapped) * TWO_PI_mrad / EncoderResolution);
         }
 
+        [[nodiscard]] inline uint16_t signedMechanicalRaw(uint16_t rawAngle) const noexcept {
+                constexpr uint16_t EncoderResolution = 16384u;
+                const uint16_t wrapped = wrapAngle(rawAngle);
+                constexpr int8_t encoderDir = (PMSM_Config::EncoderDirection >= 0) ? 1 : -1;
+                return encoderDir >= 0 ? wrapped : wrapAngle(EncoderResolution - wrapped);
+        }
+
+        [[nodiscard]] inline int32_t signedMechanical_mrad(uint16_t rawAngle) const noexcept {
+                return rawToMilliRad(signedMechanicalRaw(rawAngle));
+        }
+
         [[nodiscard]] inline uint16_t calculateElectricalAngle(uint16_t thetaMech) const {
                 constexpr uint32_t EncoderResolution = 16384u;
 
                 uint16_t thetaElectrical = wrapAngle(thetaMech * PMSM_Config::MotorPolePairs);
 
-                if (dirSign < 0)
+                const int8_t effectiveDir = (dirSign >= 0 ? 1 : -1);
+                if (effectiveDir < 0)
                         thetaElectrical = wrapAngle(EncoderResolution - thetaElectrical);
 
                 return wrapAngle(thetaElectrical - ZeroOffsetElectricalAngle);
