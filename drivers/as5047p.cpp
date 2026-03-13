@@ -129,9 +129,6 @@ AS5047P::ERRFL_Status AS5047P::lastErrflStatus() const {
 void AS5047P::spiReadCallback(void* context) {
         auto* self = static_cast<AS5047P*>(context);
 
-        BENCHMARK_IO_Set();
-        BENCHMARK_IO_Clear();
-
         const auto& RxBuffer = self->spiRequest.rxBuffer;
         const auto RxWord =
                 static_cast<std::uint16_t>(static_cast<std::uint16_t>(RxBuffer[0]) << 8 | static_cast<std::uint16_t>(RxBuffer[1]));

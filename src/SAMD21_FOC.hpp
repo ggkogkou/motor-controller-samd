@@ -66,9 +66,7 @@ public:
          * @param direction Path direction (CW, CCW, or SHORTEST)
          * @param revolutions Full turns to add in the given direction
          */
-        void moveToAngle(int32_t targetAngle_mrad,
-                         PMSM_Controller::PositionDirection direction = PMSM_Controller::PositionDirection::CCW,
-                         int32_t revolutions = 0);
+        void moveToAngle(int32_t targetAngle_mrad, PMSM_Controller::PositionDirection direction, int32_t revolutions = 0);
 
         /**
          * Encoder error monitoring (poll outside ISRs).
@@ -87,11 +85,18 @@ public:
 private:
         static void ADC_Callback(ADC_STATUS status, uintptr_t context);
         static void TC3_Callback(TC_TIMER_STATUS status, uintptr_t context);
-        static void TC4_Callback(TC_TIMER_STATUS status, uintptr_t context);
 
+        /**
+         * Callback function that runs from the ADC ISR and executes the current loop
+         * @param status
+         */
         void ADC_Callback(ADC_STATUS status);
+
+        /**
+         * Callback function that implements the FOC position/velocity state machine
+         * @param status
+         */
         void TC3_FOC_Handler(TC_TIMER_STATUS status);
-        void TC4_FOC_Handler(TC_TIMER_STATUS status);
 
         /**
          * Function that writes the cached PWM periods to the TCC0 registers
@@ -192,9 +197,10 @@ private:
         /**
          * The ADC readings (raw values)
          */
-        volatile uint16_t adcResultU = 0;
-        volatile uint16_t adcResultV = 0;
-        volatile uint16_t adcResultW = 0;
+        static constexpr uint8_t PhaseIndexU = 0;
+        static constexpr uint8_t PhaseIndexV = 1;
+
+        volatile uint16_t adcResult[2] = {0, 0};
 
         volatile bool adcResultsReady = false;
         volatile uint8_t adcScanIndex = 0;
@@ -211,26 +217,19 @@ private:
 
         static constexpr int32_t R_Shunt_mOhm = 100;
 
-        static constexpr int32_t SenseGain = 20;
+        static constexpr int32_t SenseGain = 12;
 
-        int32_t opAmpOffset_mV = 1'650;
+        int32_t opAmpOffset_mV = 1'100;
 
-        enum class TC3_State : uint8_t {
-                PrimeEncoder,
-                CalibrateOffsets,
-                StartupCalibration,
-                ClosedLoop,
-                Fault,
+        enum class FOC_State : uint8_t {
+                PRIME_ENCODER,
+                CALIBRATE_ADC_ZERO_OFFSETS,
+                STARTUP_CALIBRATIONS,
+                CLOSED_LOOP,
+                FAULT_DETECTED,
         };
 
-        enum class TC4_State : uint8_t {
-                Idle,
-                RunCurrentLoop,
-                Fault,
-        };
-
-        TC3_State tc3State = TC3_State::PrimeEncoder;
-        TC4_State tc4State = TC4_State::Idle;
+        FOC_State focState = FOC_State::PRIME_ENCODER;
 
         bool switchToCloseLoop = false;
         bool encoderFaulted = false;
@@ -240,7 +239,6 @@ private:
          * Cached timing
          */
         float dT = 0.0f;
-
 
         /**
          * @enum TC_InputClockPrescaler
@@ -272,32 +270,16 @@ private:
 
         static constexpr uint16_t TC3_TimerFrequency = static_cast<uint16_t>(TC3_TimerFrequency_KHz);
 
-        static constexpr float VelocityLoopFrequencyKHz = 3.0f;
-
-        static constexpr uint32_t VelocityLoopFrequencyHz = static_cast<uint32_t>(VelocityLoopFrequencyKHz * 1000.0f);
+        static constexpr float VelocityLoopFrequencyRatio = 0.15f;
 
         uint32_t TC3_TimerFrequencyHz = 0;
 
         uint32_t TC3_TOP_RegisterValue = 0;
 
-        static constexpr uint32_t VelocityLoopPeriod_us = 1'000'000 / VelocityLoopFrequencyHz;
-
         /**
-         * TC4 (Current loop) timings
+         * Current loop timings
          */
-        static constexpr float CurrentLoopFrequencyKHz = 16.0f;
-        static constexpr uint32_t CurrentLoopFrequencyHz = static_cast<uint32_t>(CurrentLoopFrequencyKHz * 1000.0f);
-        static constexpr uint32_t CurrentLoopPeriod_us = 1'000'000u / CurrentLoopFrequencyHz;
-
-        uint32_t TC4_TimerFrequencyHz = 0;
-        uint32_t TC4_TOP_RegisterValue = 0;
-
-        static constexpr uint32_t TelemetryHz = 200;
-        static constexpr uint32_t TelemetryDivider = (CurrentLoopFrequencyHz + TelemetryHz / 2) / TelemetryHz;
-
-        static_assert(TelemetryDivider >= 1);
-
-        uint32_t telemetryDividerCounter = 0;
+        static constexpr float CurrentLoopFrequencyRatio = 1.0f;
 
         /**
          * Cache rotor position for the current loop
@@ -305,10 +287,7 @@ private:
         volatile uint16_t rotorPositionCached = 0;
         volatile bool rotorPositionValid = false;
 
-        volatile uint16_t adcU_latest = 0;
-        volatile uint16_t adcV_latest = 0;
-        uint32_t adcPairSeq = 0;
-        uint32_t lastUsedAdcPairSeq = 0;
+        // uint32_t adcPairSeq = 0;
 
         uint32_t missedPairs = 0;
 
@@ -316,10 +295,7 @@ private:
          * Position loop
          */
         static constexpr uint32_t PositionLoopFrequencyHz = 1'000;
-        static constexpr uint32_t PositionLoopDivider =
-                (VelocityLoopFrequencyHz + PositionLoopFrequencyHz / 2) / PositionLoopFrequencyHz;
-
-        static_assert(PositionLoopDivider >= 1);
+        uint32_t positionLoopDivider = 1;
 
         uint32_t positionLoopDividerCounter = 0;
 
@@ -381,6 +357,39 @@ private:
                 static_assert(sizeof(long) <= sizeof(PER_Value), "PER_Value is too big to fit in a long");
 
                 return static_cast<counter_ticks_t>(PER_Value);
+        }
+
+        [[nodiscard]] static __attribute__((always_inline)) uint32_t frequencyHzFromKHz(frequency_kHz_t frequency_khz) {
+                if (frequency_khz <= 0.0f)
+                        return 1u;
+                return static_cast<uint32_t>(frequency_khz * 1000.0f + 0.5f);
+        }
+
+        [[nodiscard]] static __attribute__((always_inline)) uint32_t periodUsFromHz(uint32_t frequency_hz) {
+                if (frequency_hz == 0u)
+                        return 1'000'000u;
+                return 1'000'000u / frequency_hz;
+        }
+
+        [[nodiscard]] static __attribute__((always_inline)) uint32_t velocityLoopFrequencyHzFromPwm(frequency_kHz_t pwmFrequencyKHz) {
+                const uint32_t pwmHz = frequencyHzFromKHz(pwmFrequencyKHz);
+                const float scaled = static_cast<float>(pwmHz) * VelocityLoopFrequencyRatio;
+                const uint32_t velHz = static_cast<uint32_t>(scaled + 0.5f);
+                return velHz == 0u ? 1u : velHz;
+        }
+
+        [[nodiscard]] static __attribute__((always_inline)) uint32_t currentLoopFrequencyHzFromPwm(frequency_kHz_t pwmFrequencyKHz) {
+                const float scaled = static_cast<float>(frequencyHzFromKHz(pwmFrequencyKHz)) * CurrentLoopFrequencyRatio;
+                const uint32_t curHz = static_cast<uint32_t>(scaled + 0.5f);
+                return curHz == 0u ? 1u : curHz;
+        }
+
+        [[nodiscard]] static __attribute__((always_inline)) uint32_t velocityLoopPeriodUsFromPwm(frequency_kHz_t pwmFrequencyKHz) {
+                return periodUsFromHz(velocityLoopFrequencyHzFromPwm(pwmFrequencyKHz));
+        }
+
+        [[nodiscard]] static __attribute__((always_inline)) uint32_t currentLoopPeriodUsFromPwm(frequency_kHz_t pwmFrequencyKHz) {
+                return periodUsFromHz(currentLoopFrequencyHzFromPwm(pwmFrequencyKHz));
         }
 
         /**

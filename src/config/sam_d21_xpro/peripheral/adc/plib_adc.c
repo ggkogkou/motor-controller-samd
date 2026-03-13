@@ -95,8 +95,8 @@ void ADC_Initialize(void) {
         ADC_REGS->ADC_CALIB = (uint16_t)((ADC_CALIB_LINEARITY_CAL(adc_linearity0 | (adc_linearity1 << 5U))) |
                                          ADC_CALIB_BIAS_CAL((((*(uint32_t*)(OTP4_ADDR + 4U)) & ADC_BIASCAL_Msk) >> ADC_BIASCAL_POS)));
 
-        /* Sampling length */
-        ADC_REGS->ADC_SAMPCTRL = ADC_SAMPCTRL_SAMPLEN(3U);
+        /* Sampling length: minimum for fastest conversions */
+        ADC_REGS->ADC_SAMPCTRL = ADC_SAMPCTRL_SAMPLEN(0U);
 
         /* reference */
         ADC_REGS->ADC_REFCTRL = ADC_REFCTRL_REFSEL_INTVCC0;
@@ -109,14 +109,15 @@ void ADC_Initialize(void) {
         ADC_REGS->ADC_INPUTCTRL = (uint32_t)ADC_POSINPUT_PIN10 | (uint32_t)ADC_NEGINPUT_GND | ADC_INPUTCTRL_INPUTSCAN(1U) |
                 ADC_INPUTCTRL_INPUTOFFSET(0U) | ADC_INPUTCTRL_GAIN_1X;
 
-        ADC_REGS->ADC_AVGCTRL  = ADC_AVGCTRL_SAMPLENUM(2U) | ADC_AVGCTRL_ADJRES(2U);
+        /* No hardware averaging */
+        ADC_REGS->ADC_AVGCTRL  = ADC_AVGCTRL_SAMPLENUM(0U) | ADC_AVGCTRL_ADJRES(0U);
 
         while ((ADC_REGS->ADC_STATUS & ADC_STATUS_SYNCBUSY_Msk) != 0U) {
                 /* Wait for Synchronization */
         }
 
         /* Prescaler, Resolution & Operation Mode */
-        ADC_REGS->ADC_CTRLB = ADC_CTRLB_PRESCALER_DIV4 | ADC_CTRLB_RESSEL_16BIT;
+        ADC_REGS->ADC_CTRLB = ADC_CTRLB_PRESCALER_DIV4 | ADC_CTRLB_RESSEL_12BIT;
 
         while ((ADC_REGS->ADC_STATUS & ADC_STATUS_SYNCBUSY_Msk) != 0U) {
                 /* Wait for Synchronization */
