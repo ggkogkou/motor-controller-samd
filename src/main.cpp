@@ -22,44 +22,34 @@
  * @author Georgios Gkogkou <ggkogkou125@gmail.com>
  */
 
+#include "RadiationTestDemo.hpp"
 #include "SAMD21_FOC.hpp"
-
-using namespace PermanentMagnetSynchronousMotor;
 
 [[noreturn]] int main() {
         SYS_Initialize(nullptr);
         SYSTICK_TimerStart();
         SPI_Buffer::init();
 
-        static constexpr frequency_kHz_t PWM_Frequency = 24.0f;
+        static constexpr frequency_kHz_t PWM_Frequency = 19.0f;
+        static constexpr bool EnableLogging = true;
 
         USART_TxStream logging;
         TelemetryLogger telemetry;
-        SAMD21_FOC foc{PWM_Frequency, &telemetry};
+        TelemetryLogger* telemetryPtr = nullptr;
+        if (EnableLogging)
+                telemetryPtr = &telemetry;
+        SAMD21_FOC foc{PWM_Frequency, telemetryPtr};
 
-        logging.init();
+        if (telemetryPtr != nullptr)
+                logging.init();
 
-        uint32_t lastDropped = 0;
-        uint32_t loopCounter = 0;
-
-        bool targetToggle = false;
-
-        static constexpr int32_t TargetAngleA_mrad = 0;
-        static constexpr int32_t TargetAngleB_mrad = 3141; // ~π mrad
-
-        foc.moveToAngle(TargetAngleA_mrad);
+        RadiationTestDemo radiationTestDemo(foc, telemetryPtr);
+        radiationTestDemo.start();
 
         while (true) {
-                telemetry.writeFrame(logging);
+                if (radiationTestDemo.loggingEnabled())
+                        telemetry.writeFrame(logging);
 
-                if (const uint32_t dropped = logging.getDroppedBytes(); dropped != lastDropped)
-                        lastDropped = dropped;
-
-                if (loopCounter++ % 5000u == 0) { // move every 60 * 50ms = 3sec
-                        targetToggle = !targetToggle;
-                        foc.moveToAngle(targetToggle ? TargetAngleB_mrad : TargetAngleA_mrad);
-                }
-
-                SYSTICK_DelayMs(1);
+                SYSTICK_DelayMs(3);
         }
 }

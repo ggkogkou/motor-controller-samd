@@ -80,9 +80,7 @@ void TCC0_PWMInitialize(void) {
 
         TCC0_REGS->TCC_DRVCTRL = TCC_DRVCTRL_INVEN1_Msk | TCC_DRVCTRL_INVEN5_Msk;
 
-        /* Event output configuration (restored) */
-        // TCC0_REGS->TCC_EVCTRL = TCC_EVCTRL_OVFEO_Msk;
-        // TCC0_REGS->TCC_EVCTRL = TCC_EVCTRL_CNTEO_Msk | TCC_EVCTRL_CNTSEL_START;
+        /* Event output configuration: counter event at END (BOTTOM in dual-slope) */
         TCC0_REGS->TCC_EVCTRL = TCC_EVCTRL_MCEO3_Msk;
 
         while (TCC0_REGS->TCC_SYNCBUSY != 0U) {

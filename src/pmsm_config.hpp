@@ -47,7 +47,7 @@ struct PMSM_Config {
          */
         static constexpr float InitialCalibrationVoltageLimit = 8.0f;
 
-        static constexpr float EncoderOffsetCalibrationVd = 10.0f;
+        static constexpr float EncoderOffsetCalibrationVd = 8.0f;
 
         /**
          * Target velocity for the outer velocity loop

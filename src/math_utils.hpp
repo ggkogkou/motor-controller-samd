@@ -246,7 +246,7 @@ using AlphaBetaFrame = std::array<float, 2>;
  * @param Uc
  * @return
  */
-[[nodiscard]] [[maybe_unused]] inline AlphaBetaFrame performClarkeTransform(float Ua, float Ub, float Uc = 0) {
+[[nodiscard]] [[maybe_unused]] inline AlphaBetaFrame performClarkeTransform(float Ua, float Ub) {
         const float Ualpha = Ua;
         const float Ubeta = (Ua + Ub * 2.0f) / SQRT3;
 

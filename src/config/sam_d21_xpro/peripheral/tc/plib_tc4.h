@@ -96,14 +96,13 @@ void TC4_TimerStop( void );
 uint32_t TC4_TimerFrequencyGet( void );
 
 
-void TC4_Timer16bitPeriodSet( uint16_t period );
+void TC4_Timer32bitPeriodSet( uint32_t period );
 
-uint16_t TC4_Timer16bitPeriodGet( void );
+uint32_t TC4_Timer32bitPeriodGet( void );
 
-uint16_t TC4_Timer16bitCounterGet( void );
+uint32_t TC4_Timer32bitCounterGet( void );
 
-void TC4_Timer16bitCounterSet( uint16_t count );
-
+void TC4_Timer32bitCounterSet( uint32_t count );
 
 
 

@@ -48,6 +48,7 @@
             <logicalFolder name="tc" displayName="tc" projectFiles="true">
               <itemPath>../src/config/sam_d21_xpro/peripheral/tc/plib_tc_common.h</itemPath>
               <itemPath>../src/config/sam_d21_xpro/peripheral/tc/plib_tc3.h</itemPath>
+              <itemPath>../src/config/sam_d21_xpro/peripheral/tc/plib_tc4.h</itemPath>
             </logicalFolder>
             <logicalFolder name="f7" displayName="tcc" projectFiles="true">
               <itemPath>../src/config/sam_d21_xpro/peripheral/tcc/plib_tcc0.h</itemPath>
@@ -208,6 +209,7 @@
             </logicalFolder>
             <logicalFolder name="tc" displayName="tc" projectFiles="true">
               <itemPath>../src/config/sam_d21_xpro/peripheral/tc/plib_tc3.c</itemPath>
+              <itemPath>../src/config/sam_d21_xpro/peripheral/tc/plib_tc4.c</itemPath>
             </logicalFolder>
             <logicalFolder name="f7" displayName="tcc" projectFiles="true">
               <itemPath>../src/config/sam_d21_xpro/peripheral/tcc/plib_tcc0.c</itemPath>

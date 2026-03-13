@@ -83,11 +83,12 @@ public:
         explicit PMSM_Controller(uint32_t pwmPeriod, uint32_t velocityLoopPeriod, uint32_t currentLoopPeriod);
 
         /**
-         * Function that runs the velocity and current loops
+         * Function that runs the velocity loop
          *
          * @param thetaEncoder
+         * @param telemetry Optional telemetry logger (nullptr disables logging)
          */
-        void runVelocityLoop(uint16_t thetaEncoder);
+        void runVelocityLoop(uint16_t thetaEncoder, TelemetryLogger* telemetry = nullptr);
 
         /**
          * Function that runs the inner current control loop (Iq, Id)
@@ -95,10 +96,8 @@ public:
          * @param phaseCurrents
          * @param dutyCycles
          * @param thetaEncoder
-         * @param telemetry
          */
-        void runCurrentLoop(const PhaseCurrents& phaseCurrents, PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder,
-                            TelemetryLogger* telemetry = nullptr);
+        void runCurrentLoop(const PhaseCurrents& phaseCurrents, PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder);
 
         /**
          * Update telemetry values sourced from hardware (ADC + encoder status).
@@ -114,6 +113,10 @@ public:
                 tlm_adc_v_raw = adcV_raw;
                 tlm_adc_u_off = adcU_off;
                 tlm_adc_v_off = adcV_off;
+                tlm_encoder_error_code = encoderErrorCode;
+        }
+
+        __attribute__((always_inline)) void updateEncoderErrorCode(uint32_t encoderErrorCode) {
                 tlm_encoder_error_code = encoderErrorCode;
         }
 
@@ -170,7 +173,7 @@ private:
         /**
          * The Space Vector PWM block
          */
-        SVPWM pwm{18'000, ZeroSequenceModulationType::MIDPOINT_CLAMP};
+        SVPWM pwm{20'000, ZeroSequenceModulationType::MIDPOINT_CLAMP};
 
         /**
          * Position PI: error in mrad, output in mrad/s
@@ -261,6 +264,12 @@ private:
         volatile int32_t tlm_target_velocity_mrad_s = 0;
         volatile int32_t tlm_target_position_mrad = 0;
         volatile int32_t tlm_target_unwrapped_mrad = 0;
+        volatile int32_t tlm_ia_mA = 0;
+        volatile int32_t tlm_ib_mA = 0;
+        volatile int32_t tlm_id_mA = 0;
+        volatile int32_t tlm_iq_mA = 0;
+        volatile int32_t tlm_id_ref_mA = 0;
+        volatile int32_t tlm_iq_ref_mA = 0;
         volatile uint32_t tlm_adc_seq = 0;
         volatile uint32_t tlm_missed_pairs = 0;
         volatile uint32_t tlm_adc_u_raw = 0;
@@ -296,7 +305,7 @@ private:
         /**
          * How many ticks to run direction calibration in open-loop
          */
-        static constexpr uint32_t MoveDuringCalibrationTicks = 250;
+        static constexpr uint32_t MoveDuringCalibrationTicks = 200;
 
         /**
          * How many ticks to keep rotor locked during encoder offset calibration
@@ -328,12 +337,11 @@ private:
         uint32_t thetaMechanical = 0;
 
         /**
-         * Direction sign
-         * --------------
-         * CW = +1,
-         * CCW = -1
+         * Auto-calibrated encoder direction sign relative to control coordinates.
+         * +1 means raw encoder increases with positive electrical rotation.
          */
         int8_t dirSign = 1;
+        int8_t lastDirSign = 1;
 
         uint32_t telemetrySeq = 0;
 
@@ -421,7 +429,7 @@ private:
         [[nodiscard]] inline uint16_t signedMechanicalRaw(uint16_t rawAngle) const noexcept {
                 constexpr uint16_t EncoderResolution = 16384u;
                 const uint16_t wrapped = wrapAngle(rawAngle);
-                constexpr int8_t encoderDir = (PMSM_Config::EncoderDirection >= 0) ? 1 : -1;
+                const int8_t encoderDir = (dirSign >= 0) ? 1 : -1;
                 return encoderDir >= 0 ? wrapped : wrapAngle(EncoderResolution - wrapped);
         }
 
@@ -430,14 +438,8 @@ private:
         }
 
         [[nodiscard]] inline uint16_t calculateElectricalAngle(uint16_t thetaMech) const {
-                constexpr uint32_t EncoderResolution = 16384u;
-
-                uint16_t thetaElectrical = wrapAngle(thetaMech * PMSM_Config::MotorPolePairs);
-
-                const int8_t effectiveDir = (dirSign >= 0 ? 1 : -1);
-                if (effectiveDir < 0)
-                        thetaElectrical = wrapAngle(EncoderResolution - thetaElectrical);
-
+                const uint16_t thetaSigned = signedMechanicalRaw(thetaMech);
+                const uint16_t thetaElectrical = wrapAngle(thetaSigned * PMSM_Config::MotorPolePairs);
                 return wrapAngle(thetaElectrical - ZeroOffsetElectricalAngle);
         }
 

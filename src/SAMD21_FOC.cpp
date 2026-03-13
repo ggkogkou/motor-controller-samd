@@ -29,26 +29,27 @@ namespace PermanentMagnetSynchronousMotor {
 SAMD21_FOC::SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz) : SAMD21_FOC(pwmFrequencyKHz, nullptr) {}
 
 SAMD21_FOC::SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz, TelemetryLogger* telemetry) :
-    telemetryLogger(telemetry), motor(calculatePWM_PeriodFromFrequency(pwmFrequencyKHz), VelocityLoopPeriod_us, CurrentLoopPeriod_us),
+    telemetryLogger(telemetry),
+    motor(calculatePWM_PeriodFromFrequency(pwmFrequencyKHz), velocityLoopPeriodUsFromPwm(pwmFrequencyKHz),
+          currentLoopPeriodUsFromPwm(pwmFrequencyKHz)),
     tccPeriod_PER(calculatePWM_PeriodFromFrequency(pwmFrequencyKHz)) {
         __disable_irq();
 
-        TC3_TimerFrequencyHz = TC3_TimerFrequencyGet();
-        TC3_TOP_RegisterValue = TC3_TimerFrequencyHz / VelocityLoopFrequencyHz - 1;
-        TC3_Timer16bitPeriodSet(TC3_TOP_RegisterValue);
+        const uint32_t velocityLoopFrequencyHz = velocityLoopFrequencyHzFromPwm(pwmFrequencyKHz);
+        positionLoopDivider = (velocityLoopFrequencyHz + PositionLoopFrequencyHz / 2) / PositionLoopFrequencyHz;
+        if (positionLoopDivider == 0u)
+                positionLoopDivider = 1u;
 
-        TC4_TimerFrequencyHz = TC4_TimerFrequencyGet();
-        TC4_TOP_RegisterValue = TC4_TimerFrequencyHz / CurrentLoopFrequencyHz - 1u;
-        TC4_Timer16bitPeriodSet(TC4_TOP_RegisterValue);
+        TC3_TimerFrequencyHz = TC3_TimerFrequencyGet();
+        TC3_TOP_RegisterValue = TC3_TimerFrequencyHz / velocityLoopFrequencyHz - 1;
+        TC3_Timer16bitPeriodSet(TC3_TOP_RegisterValue);
 
         TCC0_PWM24bitPeriodSet(tccPeriod_PER);
 
-        static constexpr uint32_t SampleOffsetTicks = 1;
-        static constexpr bool SampleOnFallingRamp = false;
-        uint32_t ccValue = SampleOffsetTicks & 0x7FFFFF;
-
-        if (SampleOnFallingRamp)
-                ccValue |= (1u << 23);
+        static constexpr uint32_t SampleOffsetTicksFromPeriodEnd = 40;
+        const uint32_t sampleTicks = (tccPeriod_PER > SampleOffsetTicksFromPeriodEnd) ?
+                (tccPeriod_PER - SampleOffsetTicksFromPeriodEnd) : 0U;
+        const uint32_t ccValue = sampleTicks & 0xFFFFFFU;
 
         TCC0_REGS->TCC_CC[3] = ccValue;
 
@@ -58,12 +59,10 @@ SAMD21_FOC::SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz, TelemetryLogger* telemet
 
         ADC_CallbackRegister(&SAMD21_FOC::ADC_Callback, reinterpret_cast<uintptr_t>(this));
         TC3_TimerCallbackRegister(&SAMD21_FOC::TC3_Callback, reinterpret_cast<uintptr_t>(this));
-        TC4_TimerCallbackRegister(&SAMD21_FOC::TC4_Callback, reinterpret_cast<uintptr_t>(this));
 
         ADC_Enable();
         TCC0_PWMStart();
         TC3_TimerStart();
-        TC4_TimerStart();
 
         setPWM_DutyCycles();
 
@@ -83,241 +82,146 @@ void SAMD21_FOC::stop() const {
         __enable_irq();
 }
 
-void SAMD21_FOC::moveToAngle(int32_t targetAngle_mrad, PMSM_Controller::PositionDirection direction, int32_t revolutions) {
-        motor.setTargetPosition(targetAngle_mrad, direction, revolutions);
-}
-
 void SAMD21_FOC::ADC_Callback(ADC_STATUS status, uintptr_t context) {
-        auto* self = reinterpret_cast<SAMD21_FOC*>(context);
-
-        if (self)
+        if (auto* self = reinterpret_cast<SAMD21_FOC*>(context))
                 self->ADC_Callback(status);
 }
 
 void SAMD21_FOC::TC3_Callback(TC_TIMER_STATUS status, uintptr_t context) {
-        auto* self = reinterpret_cast<SAMD21_FOC*>(context);
-
-        if (self)
+        if (auto* self = reinterpret_cast<SAMD21_FOC*>(context))
                 self->TC3_FOC_Handler(status);
 }
 
-void SAMD21_FOC::TC4_Callback(TC_TIMER_STATUS status, uintptr_t context) {
-        auto* self = reinterpret_cast<SAMD21_FOC*>(context);
-
-        if (self)
-                self->TC4_FOC_Handler(status);
+void SAMD21_FOC::moveToAngle(int32_t targetAngle_mrad, PMSM_Controller::PositionDirection direction, int32_t revolutions) {
+        motor.setTargetPosition(targetAngle_mrad, direction, revolutions);
 }
 
-void SAMD21_FOC::ADC_Callback(ADC_STATUS status) {
+void __attribute__((section(".ramfunc"))) SAMD21_FOC::ADC_Callback(ADC_STATUS status) {
         if (status & ADC_INTFLAG_RESRDY_Msk) {
-                // BENCHMARK_IO_Set();
-                // BENCHMARK_IO_Clear();
+                const uint16_t Sample = ADC_ConversionResultGet();
 
-                const uint16_t sample = ADC_ConversionResultGet();
+                adcResult[adcScanIndex] = Sample;
+                adcScanIndex ^= 1u;
 
-                if (adcScanIndex == 0u)
-                        adcResultU = sample;
-                else
-                        adcResultV = sample;
+                if (adcScanIndex != 0) {
+                        // BENCHMARK_IO_Set();
+                        // BENCHMARK_IO_Clear();
 
-                adcScanIndex = (adcScanIndex + 1u) & 1u;
-
-                if (adcScanIndex == 0u) {
-                        adcU_latest = adcResultU;
-                        adcV_latest = adcResultV;
-                        adcPairSeq++;
-
-                        adcResultsReady = true;
+                        ADC_ConversionStart();
+                        return;
                 }
+
+                BENCHMARK_IO_Set();
+                // BENCHMARK_IO_Clear();
+                adcResultsReady = true;
+
+                if (focState == FOC_State::FAULT_DETECTED || not switchToCloseLoop || not offsetsReady || not rotorPositionValid)
+                        return;
+
+                currents.Ia_mA = adcRawToCurrent(adcResult[PhaseIndexU], adcOffsetU);
+                currents.Ib_mA = adcRawToCurrent(adcResult[PhaseIndexV], adcOffsetV);
+
+                motor.runCurrentLoop(currents, dutyCycles, rotorPositionCached);
+                setPWM_DutyCycles();
+                BENCHMARK_IO_Clear();
         }
 
-        if (status & ADC_INTFLAG_OVERRUN_Msk) {
-
+        if (status & ADC_INTFLAG_OVERRUN_Msk)
                 ADC_InterruptsClear(ADC_INTFLAG_OVERRUN_Msk);
-        }
 }
 
-void SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_STATUS status) {
+void __attribute__((section(".ramfunc"))) SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_STATUS status) {
         (void)status;
 
-        const auto runClosedLoop = [&](uint16_t rotorPosition) {
-                rotorPositionCached = rotorPosition;
-                rotorPositionValid = true;
+        const auto updateEncoder = [&](uint16_t& rotorPosition) -> bool {
+                static constexpr uint16_t EncoderMask = 0x3FFF;
 
-                if (++positionLoopDividerCounter >= PositionLoopDivider) {
-                        positionLoopDividerCounter = 0;
-                        motor.runPositionLoop(rotorPosition);
+                const auto RotorResult = encoder.measureAngleCompensatedRaw();
+                auto angle = static_cast<uint16_t>(rotorPositionCached & EncoderMask);
+
+                if (not RotorResult.has_value()) {
+                        const auto EncoderError = RotorResult.error();
+                        encoderErrorCode = static_cast<uint32_t>(EncoderError);
+                        if (EncoderError == AS5047P::ReadError::PARITY_ERROR || EncoderError == AS5047P::ReadError::ERROR_FLAG_SET) {
+                                encoderFaulted = true;
+                                motor.stopMotor(dutyCycles);
+                                setPWM_DutyCycles();
+                                focState = FOC_State::FAULT_DETECTED;
+                                return false;
+                        }
+                } else {
+                        encoderErrorCode = 0;
+                        angle = static_cast<uint16_t>(RotorResult.value() & EncoderMask);
+                        rotorPositionCached = angle;
+                        rotorPositionValid = true;
                 }
 
-                motor.runVelocityLoop(rotorPosition);
+                rotorPosition = angle;
 
-                if (not AS5047P::sensorBusy()) {
-                        (void)encoder.request(AS5047P::RegisterAddress::ANGLECOM);
-                }
+                return true;
         };
 
-        switch (tc3State) {
-        case TC3_State::PrimeEncoder:
-                (void)encoder.request(AS5047P::RegisterAddress::ANGLECOM);
-                tc3State = TC3_State::CalibrateOffsets;
+        if (focState == FOC_State::CLOSED_LOOP) {
+                uint16_t rotorPosition = 0;
+
+                if (updateEncoder(rotorPosition)) {
+                        motor.updateEncoderErrorCode(encoderErrorCode);
+                        if (++positionLoopDividerCounter >= positionLoopDivider) {
+                                positionLoopDividerCounter = 0;
+                                motor.runPositionLoop(rotorPosition);
+                        }
+
+                        motor.runVelocityLoop(rotorPosition, telemetryLogger);
+                }
+
+                if (not AS5047P::sensorBusy())
+                        (void)encoder.request(AS5047P::RegisterAddress::ANGLECOM);
+
+                BENCHMARK_IO_Clear();
+
                 return;
-        case TC3_State::CalibrateOffsets:
+        }
+
+        switch (focState) {
+        case FOC_State::PRIME_ENCODER:
+                (void)encoder.request(AS5047P::RegisterAddress::ANGLECOM);
+                focState = FOC_State::CALIBRATE_ADC_ZERO_OFFSETS;
+                break;
+        case FOC_State::CALIBRATE_ADC_ZERO_OFFSETS:
                 if (not offsetsReady) {
                         motor.stopMotor(dutyCycles);
                         setPWM_DutyCycles();
                         adcZeroOffsetCalibration();
-                        return;
+                        break;
                 }
-                tc3State = TC3_State::StartupCalibration;
+                focState = FOC_State::STARTUP_CALIBRATIONS;
                 [[fallthrough]];
-        case TC3_State::StartupCalibration:
+        case FOC_State::STARTUP_CALIBRATIONS:
                 {
-                        static constexpr uint16_t EncoderMask = 0x3FFF;
-                        const auto rotorResult = encoder.measureAngleCompensatedRaw();
-                        if (!rotorResult.has_value()) {
-                                const auto error = rotorResult.error();
-                                encoderErrorCode = static_cast<uint32_t>(error);
-                                if (error == AS5047P::ReadError::PARITY_ERROR || error == AS5047P::ReadError::ERROR_FLAG_SET) {
-                                        encoderFaulted = true;
-                                        motor.stopMotor(dutyCycles);
-                                        setPWM_DutyCycles();
-                                        tc3State = TC3_State::Fault;
-                                        return;
-                                }
-                        } else {
-                                encoderErrorCode = 0;
-                        }
-
-                        const auto rotorPosition = rotorResult.has_value() ? static_cast<uint16_t>(rotorResult.value() & EncoderMask)
-                                                                           : static_cast<uint16_t>(rotorPositionCached & EncoderMask);
+                        uint16_t rotorPosition = 0;
+                        if (not updateEncoder(rotorPosition))
+                                break;
 
                         if (not switchToCloseLoop) {
                                 switchToCloseLoop = motor.startupCalibration(dutyCycles, rotorPosition);
                                 setPWM_DutyCycles();
                                 if (switchToCloseLoop)
-                                        tc3State = TC3_State::ClosedLoop;
-                                return;
+                                        focState = FOC_State::CLOSED_LOOP;
+                                break;
                         }
 
-                        tc3State = TC3_State::ClosedLoop;
-                        runClosedLoop(rotorPosition);
-                        return;
+                        focState = FOC_State::CLOSED_LOOP;
+                        break;
                 }
-        case TC3_State::ClosedLoop:
-                {
-                        static constexpr uint16_t EncoderMask = 0x3FFF;
-                        const auto rotorResult = encoder.measureAngleCompensatedRaw();
-                        if (not rotorResult.has_value()) {
-                                const auto error = rotorResult.error();
-                                encoderErrorCode = static_cast<uint32_t>(error);
-                                if (error == AS5047P::ReadError::PARITY_ERROR || error == AS5047P::ReadError::ERROR_FLAG_SET) {
-                                        encoderFaulted = true;
-                                        motor.stopMotor(dutyCycles);
-                                        setPWM_DutyCycles();
-                                        tc3State = TC3_State::Fault;
-                                        return;
-                                }
-                        } else {
-                                encoderErrorCode = 0;
-                        }
-
-                        const auto rotorPosition = rotorResult.has_value() ? static_cast<uint16_t>(rotorResult.value() & EncoderMask)
-                                                                           : static_cast<uint16_t>(rotorPositionCached & EncoderMask);
-
-                        runClosedLoop(rotorPosition);
-                        return;
-                }
-        case TC3_State::Fault:
+        case FOC_State::FAULT_DETECTED:
         default:
                 motor.stopMotor(dutyCycles);
                 setPWM_DutyCycles();
-                return;
-        }
-}
-
-void SAMD21_FOC::TC4_FOC_Handler(TC_TIMER_STATUS status) {
-        (void)status;
-
-        if (not AS5047P::sensorBusy()) {
-                (void)encoder.request(AS5047P::RegisterAddress::ANGLECOM);
-        }
-
-        switch (tc4State) {
-        case TC4_State::Idle:
-                if (not switchToCloseLoop || !offsetsReady || not rotorPositionValid)
-                        return;
-
-                tc4State = TC4_State::RunCurrentLoop;
-                [[fallthrough]];
-        case TC4_State::RunCurrentLoop:
                 break;
-        case TC4_State::Fault:
-        default:
-                motor.stopMotor(dutyCycles);
-                setPWM_DutyCycles();
-                return;
         }
 
-        uint32_t seq;
-        uint16_t U, V;
-
-        NVIC_DisableIRQ(ADC_IRQn);
-        seq = adcPairSeq;
-
-        if (seq == lastUsedAdcPairSeq) {
-                missedPairs++;
-                NVIC_EnableIRQ(ADC_IRQn);
-                return;
-        }
-
-        U = adcU_latest;
-        V = adcV_latest;
-        lastUsedAdcPairSeq = seq;
-        NVIC_EnableIRQ(ADC_IRQn);
-
-        static constexpr uint16_t EncoderMask = 0x3FFF;
-        const auto rotorResult = encoder.measureAngleCompensatedRaw();
-        if (not rotorResult.has_value()) {
-                const auto error = rotorResult.error();
-                encoderErrorCode = static_cast<uint32_t>(error);
-                if (error == AS5047P::ReadError::PARITY_ERROR || error == AS5047P::ReadError::ERROR_FLAG_SET) {
-                        encoderFaulted = true;
-                        motor.stopMotor(dutyCycles);
-                        setPWM_DutyCycles();
-                        tc4State = TC4_State::Fault;
-                        return;
-                }
-        } else {
-                encoderErrorCode = 0;
-        }
-
-        const auto rotorPosition = rotorResult.has_value() ? static_cast<uint16_t>(rotorResult.value() & EncoderMask)
-                                                           : static_cast<uint16_t>(rotorPositionCached & EncoderMask);
-        rotorPositionCached = rotorPosition;
-
-        currents.Ia_mA = adcRawToCurrent(U, adcOffsetU);
-        currents.Ib_mA = adcRawToCurrent(V, adcOffsetV);
-        currents.Ic_mA = -(currents.Ia_mA + currents.Ib_mA);
-
-        motor.updateTelemetryHardware(adcPairSeq, missedPairs, U, V, adcOffsetU, adcOffsetV, encoderErrorCode);
-
-        TelemetryLogger* t = telemetryLogger; // force logging every time
-
-        if (telemetryLogger) {
-                if (++telemetryDividerCounter >= TelemetryDivider) {
-                        telemetryDividerCounter = 0;
-                        t = telemetryLogger;
-                }
-        }
-
-        motor.runCurrentLoop(currents, dutyCycles, rotorPosition, t);
-        setPWM_DutyCycles();
-
-        if (not AS5047P::sensorBusy()) {
+        if (not AS5047P::sensorBusy())
                 (void)encoder.request(AS5047P::RegisterAddress::ANGLECOM);
-        }
-
-        // BENCHMARK_IO_Clear();
 }
 
 void SAMD21_FOC::setPWM_DutyCycles() const {
@@ -332,11 +236,9 @@ void SAMD21_FOC::adcZeroOffsetCalibration() {
         if (not adcResultsReady)
                 return;
 
-        NVIC_DisableIRQ(ADC_IRQn);
-        const uint16_t U = adcResultU;
-        const uint16_t V = adcResultV;
+        const uint16_t U = adcResult[PhaseIndexU];
+        const uint16_t V = adcResult[PhaseIndexV];
         adcResultsReady = false;
-        NVIC_EnableIRQ(ADC_IRQn);
 
         if (offsetsReady)
                 return;

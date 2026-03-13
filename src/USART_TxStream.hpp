@@ -48,10 +48,6 @@ public:
 
         void poll();
 
-        [[nodiscard]] uint32_t getDroppedBytes() const {
-                return ring.getDroppedBytes();
-        }
-
 private:
         std::array<uint8_t, BufferSize> storage{};
 

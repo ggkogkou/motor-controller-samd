@@ -52,7 +52,6 @@ public:
         void reset() {
                 head = 0;
                 tail = 0;
-                droppedBytes = 0;
         }
 
         [[nodiscard]] size_t capacity() const {
@@ -81,10 +80,6 @@ public:
                 return next(head) == tail;
         }
 
-        [[nodiscard]] uint32_t getDroppedBytes() const {
-                return droppedBytes;
-        }
-
         /**
          * @brief Enqueue as many bytes as fit; returns bytes accepted
          */
@@ -101,10 +96,8 @@ public:
 
                 const size_t toWrite = (data.size() < f) ? data.size() : f;
 
-                if (toWrite == 0) {
-                        droppedBytes = droppedBytes + static_cast<uint32_t>(data.size());
+                if (toWrite == 0)
                         return 0;
-                }
 
                 const size_t untilEnd = sizeBytes - h;
                 const size_t first = (toWrite < untilEnd) ? toWrite : untilEnd;
@@ -118,10 +111,6 @@ public:
                 __DMB();
 
                 head = wrapAdd(h, toWrite);
-
-                if (toWrite < data.size()) {
-                        droppedBytes = droppedBytes + static_cast<uint32_t>(data.size() - toWrite);
-                }
 
                 return toWrite;
         }
@@ -158,8 +147,6 @@ private:
 
         volatile size_t head = 0;
         volatile size_t tail = 0;
-
-        volatile uint32_t droppedBytes = 0;
 
         size_t next(size_t idx) const {
                 ++idx;
