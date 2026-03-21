@@ -9,7 +9,7 @@ Frame format:
 LEN = 1 + payload_size  (type + payload)
 
 This script auto-detects payload size based on LEN and supports:
-- payload 44 bytes (minimal: currents + angle + encoder status)
+- payload 44 bytes (dirSign/offsets/iq_ref/angle/errors)
 - payload 88 bytes (older, includes flags)
 - payload 92 bytes (newer, includes vd_i_mV/vq_i_mV, no flags)
 - payload 116 bytes (adds svpwm, targets, encoder status; no id/iq errors)
@@ -42,23 +42,24 @@ def crc16_ccitt(data: bytes, crc: int = 0xFFFF) -> int:
 
 # Payload parsers keyed by payload size in bytes
 PARSERS: Dict[int, Dict[str, Any]] = {
-    # 44 bytes: <II 6i I i I
+    # 44 bytes: <i I I i i I I i I I I
     44: {
-        "name": "v44(minimal)",
-        "struct": struct.Struct("<II6iIiI"),
+        "name": "v44(dirSign/offsets/iq_ref/angle/errors)",
+        "struct": struct.Struct("<iIIiiIIiIII"),
         "header": [
-            "seq", "t_us",
+            "dirSign", "ZeroOffsetElectricalAngle", "ThetaEl",
             "ia_mA", "ib_mA",
-            "id_mA", "iq_mA", "id_ref_mA", "iq_ref_mA",
-            "angle_raw", "omega_mrad_s",
-            "encoder_error_code",
+            "adcOffsetU", "adcOffsetV",
+            "iq_ref_mA",
+            "angle_raw",
+            "runtime_mem_corruption_err", "encoder_err",
         ],
         "idx": {
-            "seq": 0,
-            "omega": 9,
-            "ia": 2, "ib": 3,
+            "dirSign": 0,
+            "theta_el": 2,
+            "ia": 3, "ib": 4,
+            "iq_ref": 7,
             "angle_raw": 8,
-            "id": 4, "iq": 5,
         },
     },
     # 88 bytes: <II 13i II 4i I
@@ -314,20 +315,21 @@ def main() -> int:
                                     out_txt.flush()
 
                         idx = active_parser["idx"]
-                        if "id" not in idx or "iq" not in idx:
-                            if args.debug:
-                                print("[debug] telemetry format lacks id/iq; skipping plot update")
-                            continue
-                        seq = values[idx["seq"]]
-                        omega = values[idx["omega"]]
+                        has_seq = "seq" in idx
+                        has_omega = "omega" in idx
+                        has_idiq = "id" in idx and "iq" in idx
+
+                        seq = values[idx["seq"]] if has_seq else None
+                        omega = values[idx["omega"]] if has_omega else None
                         ia_mA = values[idx["ia"]]
                         ib_mA = values[idx["ib"]]
-                        id_mA = values[idx["id"]]
-                        iq_mA = values[idx["iq"]]
+                        id_mA = values[idx["id"]] if has_idiq else None
+                        iq_mA = values[idx["iq"]] if has_idiq else None
 
-                        if prev_seq is not None and seq < prev_seq and args.debug:
+                        if has_seq and prev_seq is not None and seq < prev_seq and args.debug:
                             print(f"[debug] seq reset? {prev_seq} -> {seq}")
-                        prev_seq = seq
+                        if has_seq:
+                            prev_seq = seq
 
 
                         line_csv = ",".join(str(x) for x in values)
@@ -341,11 +343,13 @@ def main() -> int:
                             out_txt.flush()
 
                         ts.append(t)
-                        ws.append(omega)
+                        if has_omega and omega is not None:
+                            ws.append(omega)
                         ia.append(ia_mA)
                         ib.append(ib_mA)
-                        idq_d.append(id_mA)
-                        idq_q.append(iq_mA)
+                        if has_idiq and id_mA is not None and iq_mA is not None:
+                            idq_d.append(id_mA)
+                            idq_q.append(iq_mA)
 
                     if args.plot_fps <= 0.0:
                         should_plot = True
@@ -355,15 +359,18 @@ def main() -> int:
                     if should_plot:
                         last_plot = now
                         if len(ts) > 1:
-                            line_w.set_data(ts, ws)
-                            ax_w.set_xlim(max(0.0, t - args.plot_window), t)
+                            if has_omega and ws:
+                                line_w.set_data(ts, ws)
+                                ax_w.set_xlim(max(0.0, t - args.plot_window), t)
 
-                            ymin = min(ws); ymax = max(ws)
-                            if ymin == ymax:
-                                ymin -= 1; ymax += 1
-                            pad = 0.05 * (ymax - ymin)
-                            ax_w.set_ylim(ymin - pad, ymax + pad)
-                            txt_w.set_text(f"omega = {ws[-1]} mrad/s")
+                                ymin = min(ws); ymax = max(ws)
+                                if ymin == ymax:
+                                    ymin -= 1; ymax += 1
+                                pad = 0.05 * (ymax - ymin)
+                                ax_w.set_ylim(ymin - pad, ymax + pad)
+                                txt_w.set_text(f"omega = {ws[-1]} mrad/s")
+                            else:
+                                txt_w.set_text("omega = n/a")
 
                             line_ia.set_data(ts, ia)
                             line_ib.set_data(ts, ib)
@@ -374,16 +381,17 @@ def main() -> int:
                             ipad = 0.05 * (imax - imin)
                             ax_i.set_ylim(imin - ipad, imax + ipad)
 
-                            line_id.set_data(ts, idq_d)
-                            line_iq.set_data(ts, idq_q)
-                            ax_dq.set_xlim(max(0.0, t - args.plot_window), t)
+                            if has_idiq and idq_d and idq_q:
+                                line_id.set_data(ts, idq_d)
+                                line_iq.set_data(ts, idq_q)
+                                ax_dq.set_xlim(max(0.0, t - args.plot_window), t)
 
-                            dmin = min(min(idq_d), min(idq_q))
-                            dmax = max(max(idq_d), max(idq_q))
-                            if dmin == dmax:
-                                dmin -= 1; dmax += 1
-                            dpad = 0.05 * (dmax - dmin)
-                            ax_dq.set_ylim(dmin - dpad, dmax + dpad)
+                                dmin = min(min(idq_d), min(idq_q))
+                                dmax = max(max(idq_d), max(idq_q))
+                                if dmin == dmax:
+                                    dmin -= 1; dmax += 1
+                                dpad = 0.05 * (dmax - dmin)
+                                ax_dq.set_ylim(dmin - dpad, dmax + dpad)
 
                         fig.canvas.draw_idle()
                         plt.pause(0.001)

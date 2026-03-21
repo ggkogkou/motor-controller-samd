@@ -263,21 +263,17 @@ void __attribute__((section(".ramfunc"))) PMSM_Controller::runVelocityLoop(uint1
 
         if (telemetry) {
                 TelemetryParameters tp;
-                tp.seq = ++telemetrySeq;
-                tp.t_us = SYSTICK_TimerCounterGet();
-
+                tp.dirSign = (dirSign < 0) ? -1 : 1;
+                tp.ZeroOffsetElectricalAngle = static_cast<uint32_t>(ZeroOffsetElectricalAngle);
+                tp.ThetaEl = tlm_theta_el;
                 tp.ia_mA = tlm_ia_mA;
                 tp.ib_mA = tlm_ib_mA;
-
-                tp.id_mA = tlm_id_mA;
-                tp.iq_mA = tlm_iq_mA;
-                tp.id_ref_mA = tlm_id_ref_mA;
+                tp.adcOffsetU = tlm_adc_u_off;
+                tp.adcOffsetV = tlm_adc_v_off;
                 tp.iq_ref_mA = tlm_iq_ref_mA;
-
                 tp.angle_raw = static_cast<uint32_t>(thetaEncoder);
-                tlm_angle_mrad = tp.angle_raw;
-                tp.omega_mrad_s = tlm_omega_mrad_s;
-                tp.encoder_error_code = tlm_encoder_error_code;
+                tp.runtime_mem_corruption_err = 0;
+                tp.encoder_err = tlm_encoder_error_code;
 
                 telemetry->updateLatest(tp);
         }
@@ -289,6 +285,7 @@ void __attribute__((section(".ramfunc"))) PMSM_Controller::runCurrentLoop(const 
         // BENCHMARK_IO_Set();
 
         const uint16_t ThetaEl = calculateElectricalAngle(thetaEncoder);
+        tlm_theta_el = ThetaEl;
 
         const auto dqFrame = MathUtils::performClarkeParkTransforms(phaseCurrents.Ia_mA, phaseCurrents.Ib_mA, ThetaEl);
 

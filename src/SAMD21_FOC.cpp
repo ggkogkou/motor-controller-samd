@@ -121,6 +121,9 @@ void __attribute__((section(".ramfunc"))) SAMD21_FOC::ADC_Callback(ADC_STATUS st
                 currents.Ia_mA = adcRawToCurrent(adcResult[PhaseIndexU], adcOffsetU);
                 currents.Ib_mA = adcRawToCurrent(adcResult[PhaseIndexV], adcOffsetV);
 
+                motor.updateTelemetryHardware(0, missedPairs, adcResult[PhaseIndexU], adcResult[PhaseIndexV], adcOffsetU, adcOffsetV,
+                                              encoderErrorCode);
+
                 motor.runCurrentLoop(currents, dutyCycles, rotorPositionCached);
                 setPWM_DutyCycles();
                 BENCHMARK_IO_Clear();

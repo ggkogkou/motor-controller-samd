@@ -39,21 +39,17 @@ namespace Telemetry {
  * A collection of the parameters that can be monitored during the algorithm execution
  */
 struct TelemetryParameters {
-        uint32_t seq = 0;
-        uint32_t t_us = 0;
-
+        int32_t dirSign = 0;
+        uint32_t ZeroOffsetElectricalAngle = 0;
+        uint32_t ThetaEl = 0;
         int32_t ia_mA = 0;
         int32_t ib_mA = 0;
-
-        int32_t id_mA = 0;
-        int32_t iq_mA = 0;
-        int32_t id_ref_mA = 0;
+        uint32_t adcOffsetU = 0;
+        uint32_t adcOffsetV = 0;
         int32_t iq_ref_mA = 0;
-
         uint32_t angle_raw = 0;
-        int32_t omega_mrad_s = 0;
-
-        uint32_t encoder_error_code = 0;
+        uint32_t runtime_mem_corruption_err = 0;
+        uint32_t encoder_err = 0;
 };
 
 /**
