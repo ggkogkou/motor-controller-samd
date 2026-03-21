@@ -93,7 +93,7 @@ private:
         /**
          * The DC link voltage in mV
          */
-        int32_t dcLinkVoltage = 5000;
+        int32_t dcLinkVoltage = 20'000;
 
         /**
          * Fixed-point inverse of the DC link voltage (1/Vdc) in Q15 format

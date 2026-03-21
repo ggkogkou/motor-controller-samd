@@ -270,6 +270,7 @@ private:
         volatile int32_t tlm_iq_mA = 0;
         volatile int32_t tlm_id_ref_mA = 0;
         volatile int32_t tlm_iq_ref_mA = 0;
+        volatile uint32_t tlm_theta_el = 0;
         volatile uint32_t tlm_adc_seq = 0;
         volatile uint32_t tlm_missed_pairs = 0;
         volatile uint32_t tlm_adc_u_raw = 0;
@@ -342,8 +343,6 @@ private:
          */
         int8_t dirSign = 1;
         int8_t lastDirSign = 1;
-
-        uint32_t telemetrySeq = 0;
 
         /**
          * @struct ReferenceCurrents
