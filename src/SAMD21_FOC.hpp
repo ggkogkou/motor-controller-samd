@@ -121,6 +121,13 @@ private:
         static constexpr int32_t ADC_MaximumRawValue = ADC_Resolution - 1;
 
         /**
+         * @brief Counter variable to check the ALU health status
+         *
+         * At each execution of position loop increment the counter and check if the value was actually incremented
+         */
+        uint32_t aluHealthCheckCounter = 0;
+
+        /**
          * Helper function that converts the raw 12-bit ADC reading to the corresponding voltage (in mV)
          *
          * @param adcRawValue The 12-bit ADC raw word from RESRDY register

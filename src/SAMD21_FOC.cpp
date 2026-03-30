@@ -170,6 +170,12 @@ void __attribute__((section(".ramfunc"))) SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_S
                 if (updateEncoder(rotorPosition)) {
                         motor.updateEncoderErrorCode(encoderErrorCode);
                         if (++positionLoopDividerCounter >= positionLoopDivider) {
+                                const auto ALU_HealthCheckPrevious = aluHealthCheckCounter;
+                                aluHealthCheckCounter = aluHealthCheckCounter + 1;
+
+                                if (aluHealthCheckCounter != static_cast<uint32_t>(ALU_HealthCheckPrevious + 1))
+                                        NVIC_SystemReset();
+
                                 positionLoopDividerCounter = 0;
                                 motor.runPositionLoop(rotorPosition);
                         }
