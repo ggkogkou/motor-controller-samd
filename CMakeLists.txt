@@ -152,13 +152,9 @@ set(SOURCES
         src/USART_TxStream.cpp
         src/SAMD21_FOC.cpp
         src/Telemetry.cpp
-
-        # System initialization and configuration
-        src/config/sam_d21_xpro/initialization.c
-        src/config/sam_d21_xpro/exceptions.c
-        src/config/sam_d21_xpro/interrupts.c
-        src/config/sam_d21_xpro/startup_gcc.c
-        src/config/sam_d21_xpro/libc_syscalls.c
+        src/InterruptHandlers.cpp
+        src/startup_device.cpp
+        src/libc_syscalls.cpp
 
         # Peripheral libraries
         src/config/sam_d21_xpro/peripheral/adc/plib_adc.c

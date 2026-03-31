@@ -60,19 +60,19 @@ SECTIONS
     __copy_table_start__ = .;
 
     /* Data section copy info */
-    LONG (__etext)
-    LONG (__data_start__)
-    LONG ((__data_end__ - __data_start__) / 4)
+    LONG (LOADADDR(.data))
+    LONG (ADDR(.data))
+    LONG (SIZEOF(.data) / 4)
 
     /* RAM functions section copy info */
-    LONG (__etext2)
-    LONG (__ramfunc_start__)
-    LONG ((__ramfunc_end__ - __ramfunc_start__) / 4)
+    LONG (LOADADDR(.ramfunc))
+    LONG (ADDR(.ramfunc))
+    LONG (SIZEOF(.ramfunc) / 4)
 
     /* RAM LUT section copy info */
-    LONG (__ram_lut_load__)
-    LONG (__ram_lut_start__)
-    LONG ((__ram_lut_end__ - __ram_lut_start__) / 4)
+    LONG (LOADADDR(.ram_lut))
+    LONG (ADDR(.ram_lut))
+    LONG (SIZEOF(.ram_lut) / 4)
 
     __copy_table_end__ = .;
   } > FLASH
@@ -83,20 +83,26 @@ SECTIONS
     __zero_table_start__ = .;
     
     /* BSS section zero info */
-    LONG (__bss_start__)
-    LONG ((__bss_end__ - __bss_start__) / 4)
+    LONG (ADDR(.bss))
+    LONG (SIZEOF(.bss) / 4)
 
     __zero_table_end__ = .;
   } > FLASH
 
-  /**
-   * Location counter can end up 2byte aligned with narrow Thumb code but
-   * __etext is assumed by startup code to be the LMA of a section in RAM
-   * which must be 4byte aligned 
-   */
-  __etext = ALIGN (4);
+  PROVIDE(__etext = LOADADDR(.data));
 
-  .data : AT (__etext)
+  .stack (ORIGIN(RAM)) (NOLOAD) :
+  {
+    . = ALIGN(8);
+    __StackLimit = .;
+    . = . + __STACK_SIZE;
+    . = ALIGN(8);
+    __StackTop = .;
+  } > RAM
+  PROVIDE(__stack = __StackTop);
+  PROVIDE(_stack = __StackTop);
+
+  .data : ALIGN(4)
   {
     __data_start__ = .;
     *(vtable)
@@ -128,16 +134,13 @@ SECTIONS
     /* All data end */
     __data_end__ = .;
 
-  } > RAM
+  } > RAM AT > FLASH
 
   /*
    * RAM functions section - for time-critical code
    * (e.g., flash programming routines, interrupt handlers)
    */
-  __etext2 = __etext + SIZEOF(.data);
-  __ramfunc_load__ = __etext2;
-
-  .ramfunc : AT (__ramfunc_load__)
+  .ramfunc : ALIGN(4)
   {
     . = ALIGN(4);
     __ramfunc_start__ = .;
@@ -145,12 +148,9 @@ SECTIONS
     *(.ramfunc.*)
     . = ALIGN(4);
     __ramfunc_end__ = .;
-  } > RAM
+  } > RAM AT > FLASH
 
-  __etext3 = __ramfunc_load__ + SIZEOF(.ramfunc);
-  __ram_lut_load__ = __etext3;
-
-  .ram_lut : AT (__ram_lut_load__)
+  .ram_lut : ALIGN(4)
   {
     . = ALIGN(4);
     __ram_lut_start__ = .;
@@ -158,7 +158,7 @@ SECTIONS
     *(.ram_lut.*)
     . = ALIGN(4);
     __ram_lut_end__ = .;
-  } > RAM
+  } > RAM AT > FLASH
 
   .bss :
   {
@@ -182,28 +182,9 @@ SECTIONS
     __HeapLimit = .;
   } > RAM
 
-  .stack (ORIGIN(RAM) + LENGTH(RAM) - __STACK_SIZE) (COPY) :
-  {
-    . = ALIGN(8);
-    __StackLimit = .;
-    . = . + __STACK_SIZE;
-    . = ALIGN(8);
-    __StackTop = .;
-  } > RAM
-  PROVIDE(__stack = __StackTop);
-
   /* Legacy SAMD21 symbol compatibility */
-  PROVIDE(_sfixed = ADDR(.text));
-  PROVIDE(_efixed = ADDR(.text) + SIZEOF(.text));
-  PROVIDE(_etext = __etext);
-  PROVIDE(_srelocate = __data_start__);
-  PROVIDE(_erelocate = __data_end__);
-  PROVIDE(_szero = __bss_start__);
-  PROVIDE(_ezero = __bss_end__);
-  PROVIDE(_sstack = __StackLimit);
-  PROVIDE(_estack = __StackTop);
   PROVIDE(_stack = __StackTop);
 
   /* Check if data + heap + stack exceeds RAM limit */
-  ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
+  ASSERT(__StackTop <= __data_start__, "region RAM overflowed with stack")
 }

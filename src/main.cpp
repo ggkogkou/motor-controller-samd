@@ -24,9 +24,29 @@
 
 #include "RadiationTestDemo.hpp"
 #include "SAMD21_FOC.hpp"
+#include "startup_device.hpp"
+
+void initializePeripherals() {
+        NVMCTRL_REGS->NVMCTRL_CTRLB = NVMCTRL_CTRLB_RWS(3UL);
+
+        PORT_Initialize();
+        CLOCK_Initialize();
+        SERCOM3_USART_Initialize();
+        NVMCTRL_Initialize();
+        EVSYS_Initialize();
+        TCC0_PWMInitialize();
+        SYSTICK_TimerInitialize();
+        DMAC_Initialize();
+        SERCOM5_SPI_Initialize();
+        ADC_Initialize();
+        EIC_Initialize();
+        TC3_TimerInitialize();
+        TC4_TimerInitialize();
+        NVIC_Initialize();
+}
 
 [[noreturn]] int main() {
-        SYS_Initialize(nullptr);
+        initializePeripherals();
         SYSTICK_TimerStart();
         SPI_Buffer::init();
 

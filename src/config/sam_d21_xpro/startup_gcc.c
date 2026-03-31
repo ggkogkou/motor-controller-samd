@@ -26,87 +26,24 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include "device.h"
-#include "interrupts.h"
-
+#include "InterruptHandlers.hpp"
 /*
  * ARM GCC startup code for SAMD21J18A
  * Uses traditional GCC startup initialization
  * Compatible with existing MPLAB Harmony peripheral drivers
  */
 
-/* Symbols from linker script */
-extern uint32_t __etext; /* End of .text section in FLASH */
-extern uint32_t __data_start__; /* Start of .data section in RAM */
-extern uint32_t __data_end__; /* End of .data section in RAM */
-extern uint32_t __bss_start__; /* Start of .bss section in RAM */
-extern uint32_t __bss_end__; /* End of .bss section in RAM */
-extern uint32_t __ramfunc_load__; /* Start of .ramfunc load image in FLASH */
-extern uint32_t __ramfunc_start__; /* Start of .ramfunc section in RAM */
-extern uint32_t __ramfunc_end__; /* End of .ramfunc section in RAM */
-extern uint32_t __ram_lut_load__; /* Start of .ram_lut load image in FLASH */
-extern uint32_t __ram_lut_start__; /* Start of .ram_lut section in RAM */
-extern uint32_t __ram_lut_end__; /* End of .ram_lut section in RAM */
-
-/* Legacy Harmony symbols for compatibility */
-extern uint32_t _sfixed;
-
-/* array initialization function */
-extern void __attribute__((long_call)) __libc_init_array(void);
-
-/* Optional application-provided functions - keep for compatibility */
-extern void __attribute__((weak, long_call, alias("Dummy_App_Func"))) _on_reset(void);
-extern void __attribute__((weak, long_call, alias("Dummy_App_Func"))) _on_bootstrap(void);
-
-extern int main(void);
-
-/* Brief default application function used as a weak reference */
-extern void Dummy_App_Func(void);
-void __attribute__((optimize("-O1"), long_call)) Dummy_App_Func(void) {
-        /* Do nothing */
-        return;
-}
-
+extern const H3DeviceVectors exception_table;
 /**
  * \brief ARM GCC Reset Handler with CMSIS table-driven initialization
  * Replaces XC32-specific initialization with ARM GCC compatible version
  * Maintains all SAMD21-specific hardware optimizations
  */
 void __attribute__((optimize("-O1"), section(".text.Reset_Handler"), long_call, noreturn)) Reset_Handler(void) {
-        /* Call the optional application-provided _on_reset() function. */
-        _on_reset();
-
-        /* Traditional data initialization instead of CMSIS tables */
-        /* Initialize .data section (copy from flash to RAM) */
-        uint32_t* src = &__etext;
-        uint32_t* dst = &__data_start__;
-        while (dst < &__data_end__) {
-                *dst++ = *src++;
-        }
-
-        /* Initialize .ramfunc section (copy from flash to RAM) */
-        src = &__ramfunc_load__;
-        dst = &__ramfunc_start__;
-        while (dst < &__ramfunc_end__) {
-                *dst++ = *src++;
-        }
-
-        /* Initialize .ram_lut section (copy from flash to RAM) */
-        src = &__ram_lut_load__;
-        dst = &__ram_lut_start__;
-        while (dst < &__ram_lut_end__) {
-                *dst++ = *src++;
-        }
-
-        /* Initialize .bss section (zero fill) */
-        dst = &__bss_start__;
-        while (dst < &__bss_end__) {
-                *dst++ = 0;
-        }
 
 #ifdef SCB_VTOR_TBLOFF_Msk
         /*  Set the vector-table base address in FLASH */
-        uint32_t* pSrc = (uint32_t*)&_sfixed;
-        SCB->VTOR = ((uint32_t)pSrc & SCB_VTOR_TBLOFF_Msk);
+        SCB->VTOR = ((uint32_t)&exception_table & SCB_VTOR_TBLOFF_Msk);
 #endif /* SCB_VTOR_TBLOFF_Msk */
 
         /* SAMD21-specific hardware optimizations - keep from original MPLAB */
@@ -120,14 +57,8 @@ void __attribute__((optimize("-O1"), section(".text.Reset_Handler"), long_call, 
         /* Overwriting the default value of the NVMCTRL.CTRLB.MANW bit (errata reference 13134) */
         NVMCTRL_REGS->NVMCTRL_CTRLB |= 1 << 7;
 
-        /* Initialize the C library */
-        __libc_init_array();
-
-        /* Call the optional application-provided _on_bootstrap() function. */
-        _on_bootstrap();
-
-        /* Branch to application's main function */
-        (void)main();
+        /* Hand off to CMSIS program start: copy/zero tables + C runtime + main */
+        __PROGRAM_START();
 
 #if (defined(__DEBUG) || defined(__DEBUG_D))
         __builtin_software_breakpoint();

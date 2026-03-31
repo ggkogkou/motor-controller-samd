@@ -61,7 +61,7 @@
 // *****************************************************************************
 
 /* MISRA C-2012 Rule 8.6 deviated below. Deviation record ID -  H3_MISRAC_2012_R_8_6_DR_1 */
-extern uint32_t _stack;
+extern uint32_t __stack;
 extern const H3DeviceVectors exception_table;
 
 extern void DefaultHandler();
@@ -115,7 +115,7 @@ __attribute__ ((section(".vectors"), used))
 const H3DeviceVectors exception_table=
 {
     /* Configure Initial Stack Pointer, using linker-generated symbols */
-    .pvStack = &_stack,
+    .pvStack = &__stack,
 
     .pfnReset_Handler              = Reset_Handler,
     .pfnNonMaskableInt_Handler     = NonMaskableInt_Handler,

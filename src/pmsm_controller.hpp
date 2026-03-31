@@ -33,6 +33,7 @@
 #include "pid.hpp"
 #include "pmsm_config.hpp"
 #include "svpwm.hpp"
+#include "TMR.hpp"
 
 namespace PermanentMagnetSynchronousMotor {
 
@@ -173,7 +174,7 @@ private:
         /**
          * The Space Vector PWM block
          */
-        SVPWM pwm{20'000, ZeroSequenceModulationType::MIDPOINT_CLAMP};
+        SVPWM pwm{14'000, ZeroSequenceModulationType::MIDPOINT_CLAMP};
 
         /**
          * Position PI: error in mrad, output in mrad/s
