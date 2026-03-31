@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <device.h> /* for ARM CMSIS __BKPT() */
-#include <errno.h>
+#include <samd21g18a.h>
+#include <cerrno>
 #include <sys/stat.h>
 #include <sys/types.h>
 

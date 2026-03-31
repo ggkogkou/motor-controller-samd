@@ -24,7 +24,7 @@
 
 #include "RadiationTestDemo.hpp"
 #include "SAMD21_FOC.hpp"
-#include "startup_device.hpp"
+#include "DeviceStartup.hpp"
 
 void initializePeripherals() {
         NVMCTRL_REGS->NVMCTRL_CTRLB = NVMCTRL_CTRLB_RWS(3UL);
