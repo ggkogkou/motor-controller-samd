@@ -22,15 +22,18 @@
  * @author Georgios Gkogkou <ggkogkou125@gmail.com>
  */
 
+#include <GenericClockController.hpp>
+
+#include "DeviceStartup.hpp"
 #include "RadiationTestDemo.hpp"
 #include "SAMD21_FOC.hpp"
-#include "DeviceStartup.hpp"
+#include "GenericClockController.hpp"
 
 void initializePeripherals() {
         NVMCTRL_REGS->NVMCTRL_CTRLB = NVMCTRL_CTRLB_RWS(3UL);
 
         PORT_Initialize();
-        CLOCK_Initialize();
+        GenericClockController::initializePeripheral();
         SERCOM3_USART_Initialize();
         NVMCTRL_Initialize();
         EVSYS_Initialize();

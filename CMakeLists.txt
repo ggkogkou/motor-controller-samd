@@ -136,6 +136,7 @@ include_directories(
         device_startup
 
         drivers
+        drivers/samd21_peripherals
 
         ${ETL_INCLUDE_DIR}
         ${GCEM_INCLUDE_DIR}
@@ -165,7 +166,7 @@ set(SOURCES
 
         # Peripheral libraries
         src/config/sam_d21_xpro/peripheral/adc/plib_adc.c
-        src/config/sam_d21_xpro/peripheral/clock/plib_clock.c
+#        src/config/sam_d21_xpro/peripheral/clock/plib_clock.c
         src/config/sam_d21_xpro/peripheral/dmac/plib_dmac.c
         src/config/sam_d21_xpro/peripheral/eic/plib_eic.c
         src/config/sam_d21_xpro/peripheral/evsys/plib_evsys.c
@@ -181,6 +182,8 @@ set(SOURCES
 
         drivers/as5047p.cpp
         drivers/drv8316.cpp
+
+        drivers/samd21_peripherals/GenericClockController.cpp
 )
 
 # ------------------------------------------------------------------------------
