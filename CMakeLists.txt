@@ -155,6 +155,7 @@ set(SOURCES
         src/SAMD21_FOC.cpp
         src/Telemetry.cpp
         src/CriticalVariables.cpp
+        src/StartupCalibration.cpp
 
         # System initialization and configuration
         src/config/sam_d21_xpro/initialization.c

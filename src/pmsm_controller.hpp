@@ -27,6 +27,7 @@
 #include <cstdint>
 #include <optional>
 #include "CriticalVariables.hpp"
+#include "StartupCalibration.hpp"
 #include "TMR.hpp"
 #include "Telemetry.hpp"
 #include "VelocityEstimator.hpp"
@@ -197,41 +198,6 @@ private:
         PID pidIq;
 
         /**
-         * @enum CalibrationState
-         *
-         * Enum class that represents the possible states during the startup calibration process.
-         * The values are used to flag when one process is done for the next one to begin.
-         */
-        enum class CalibrationState {
-                IDLE, /// Calibration has not started yet
-                PREPARING, /// Bring the rotor in the [0, π/4] interval
-                DIRECTION_CALIBRATION, /// Ongoing direction calibration
-                OFFSET_CALIBRATION, /// Ongoing encoder offset calibration
-                DONE, /// Calibration procedure has finished
-        };
-
-        enum class DirectionCalibrationState {
-                INIT,
-                MOVING,
-        };
-
-        enum class OffsetCalibrationState {
-                LOCKING,
-                DONE,
-        };
-
-        /**
-         * The calibration state.
-         * @note This variable is used to communicate the stage of the calibration between functions.
-         */
-        CalibrationState calibrationState = CalibrationState::PREPARING;
-
-        /**
-         * Open-loop step in encoder counts per tick (computed once in ctor)
-         */
-        uint16_t openLoopStepCounts14 = 1u;
-
-        /**
          * The target angular velocity in mrad/s
          */
         int32_t targetVelocity_mrad_s = 0;
@@ -297,25 +263,6 @@ private:
         TMR<uint32_t> pwmPeriod;
 
         /**
-         * Helper variable to count the number of ISRs that have been executed.
-         *
-         * That keeps track of the position in a very inefficient and inaccurate way.
-         *
-         * @note Find a better alternative for this
-         */
-        uint32_t timerCounter = 0;
-
-        /**
-         * How many ticks to run direction calibration in open-loop
-         */
-        static constexpr uint32_t MoveDuringCalibrationTicks = 200;
-
-        /**
-         * How many ticks to keep rotor locked during encoder offset calibration
-         */
-        static constexpr uint32_t KeepRotorLockedTicks = 2000;
-
-        /**
          * @var velocityEstimator
          *
          * Represents an optional AngleVelocityEstimator instance used to estimate the angular velocity
@@ -335,16 +282,16 @@ private:
         TMR<uint16_t> ZeroOffsetElectricalAngle;
 
         /**
-         * The mechanical angle measured by the encoder as a 14-bit raw value
-         */
-        uint32_t thetaMechanical = 0;
-
-        /**
          * Auto-calibrated encoder direction sign relative to control coordinates.
          * +1 means raw encoder increases with positive electrical rotation.
          */
         TMR<int32_t> dirSign;
         TMR<int32_t> lastDirSign;
+
+        /**
+         * Startup calibration helper
+         */
+        StartupCalibration startupCalibrator;
 
         /**
          * @struct ReferenceCurrents
@@ -362,49 +309,6 @@ private:
          * The ReferenceCurrents object that is used to communicate data between control loops
          */
         ReferenceCurrents Iref{};
-
-        /**
-         * Encoder angle at the moment we start the direction check
-         */
-        uint16_t directionCalibrationThetaStart = 0;
-
-        /**
-         * Direction calibration sub-state
-         */
-        DirectionCalibrationState directionCalibrationState = DirectionCalibrationState::INIT;
-
-        /**
-         * Encoder offset calibration sub-state
-         */
-        OffsetCalibrationState offsetCalibrationState = OffsetCalibrationState::LOCKING;
-
-        /**
-         * Function that performs the direction calibration. The logic followed to achieve this is:
-         *
-         * 1. The startupCalibration() function has already brought the rotor in the [0, π/4] interval, so this is taken
-         * for granted
-         *
-         * 2. Move the rotor at open-loop for a small period of time, neededTicks
-         *
-         * 3. If the rotor is now in the interval [π/2, 3π/2], then the winding excitation used is CW. Else, the
-         * direction of movement is CCW
-         *
-         * @param dutyCycles
-         * @param thetaEncoder
-         */
-        void directionCalibration(const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder);
-
-        /**
-         * Function that performs the zero-offset calibration. Its goal is to find the zero-offset electrical angle. The
-         * procedure followed is:
-         *
-         * 1. Inject to the motor windings only d-axis current to lock it to a position
-         *
-         *
-         * @param dutyCycles
-         * @param thetaEncoder
-         */
-        void encoderOffsetCalibration(const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder);
 
         /**
          * Helper function that wraps the angle inside the [0, 2π] interval. Since the angles are read in raw, it wraps in [0, 16383].
