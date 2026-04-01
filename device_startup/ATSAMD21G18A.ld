@@ -21,6 +21,14 @@ __STACK_SIZE = 0x00002000;
 /* 4KB Heap */
 __HEAP_SIZE  = 0x00001000;
 
+/* TMR banks; 1024 bytes each */
+__TMR_BANK_SIZE = 0x400;
+
+__STACK_TOP_ALIGNED = ALIGN(__RAM_BASE + __STACK_SIZE, __TMR_BANK_SIZE);
+__TMR_BANK_1_BASE = __STACK_TOP_ALIGNED;
+__TMR_BANK_2_BASE = __TMR_BANK_1_BASE + __TMR_BANK_SIZE;
+__TMR_BANK_3_BASE = __TMR_BANK_2_BASE + __TMR_BANK_SIZE;
+
 ENTRY(Reset_Handler)
 
 MEMORY
@@ -107,6 +115,14 @@ SECTIONS
         LONG (ADDR(.bss))
         LONG (SIZEOF(.bss) / 4)
 
+        /* Zero out the TMR banks contents */
+        LONG (ADDR(.tmr_bank_1))
+        LONG (SIZEOF(.tmr_bank_1) / 4)
+        LONG (ADDR(.tmr_bank_2))
+        LONG (SIZEOF(.tmr_bank_2) / 4)
+        LONG (ADDR(.tmr_bank_3))
+        LONG (SIZEOF(.tmr_bank_3) / 4)
+
         __zero_table_end__ = .;
     } > flash
 
@@ -124,6 +140,39 @@ SECTIONS
         __StackTop = .;
     } > ram
     PROVIDE(__stack = __StackTop);
+
+    .tmr_bank_1 __TMR_BANK_1_BASE (NOLOAD) :
+    {
+        . = ALIGN(4);
+        __tmr_bank_1_start__ = .;
+        KEEP(*(.tmr_bank_1))
+        KEEP(*(.tmr_bank_1.*))
+        . = __tmr_bank_1_start__ + __TMR_BANK_SIZE;
+        . = ALIGN(4);
+        __tmr_bank_1_end__ = .;
+    } > ram
+
+    .tmr_bank_2 __TMR_BANK_2_BASE (NOLOAD) :
+    {
+        . = ALIGN(4);
+        __tmr_bank_2_start__ = .;
+        KEEP(*(.tmr_bank_2))
+        KEEP(*(.tmr_bank_2.*))
+        . = __tmr_bank_2_start__ + __TMR_BANK_SIZE;
+        . = ALIGN(4);
+        __tmr_bank_2_end__ = .;
+    } > ram
+
+    .tmr_bank_3 __TMR_BANK_3_BASE (NOLOAD) :
+    {
+        . = ALIGN(4);
+        __tmr_bank_3_start__ = .;
+        KEEP(*(.tmr_bank_3))
+        KEEP(*(.tmr_bank_3.*))
+        . = __tmr_bank_3_start__ + __TMR_BANK_SIZE;
+        . = ALIGN(4);
+        __tmr_bank_3_end__ = .;
+    } > ram
 
     .data : ALIGN(4)
     {
@@ -202,5 +251,11 @@ SECTIONS
     } > ram
 
     /* Check if data + heap + stack exceeds RAM limit */
-    ASSERT(__StackTop <= __data_start__, "32kB RAM is not enough!!!")
+    ASSERT(__HeapLimit <= (ORIGIN(ram) + LENGTH(ram)), "32kB RAM is not enough!!!")
+
+    /* Check if the TMR bank size and ordering checks */
+    ASSERT((__tmr_bank_1_end__ - __tmr_bank_1_start__) == __TMR_BANK_SIZE, "TMR bank 1 wrong size")
+    ASSERT((__tmr_bank_2_end__ - __tmr_bank_2_start__) == __TMR_BANK_SIZE, "TMR bank 2 wrong size")
+    ASSERT((__tmr_bank_3_end__ - __tmr_bank_3_start__) == __TMR_BANK_SIZE, "TMR bank 3 wrong size")
+    ASSERT(__tmr_bank_3_end__ <= __data_start__, "TMR banks overlap .data")
 }

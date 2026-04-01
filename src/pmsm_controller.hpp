@@ -26,6 +26,8 @@
 
 #include <cstdint>
 #include <optional>
+#include "CriticalVariables.hpp"
+#include "TMR.hpp"
 #include "Telemetry.hpp"
 #include "VelocityEstimator.hpp"
 #include "definitions.h"
@@ -33,7 +35,6 @@
 #include "pid.hpp"
 #include "pmsm_config.hpp"
 #include "svpwm.hpp"
-#include "TMR.hpp"
 
 namespace PermanentMagnetSynchronousMotor {
 
@@ -283,7 +284,7 @@ private:
         /**
          * Velocity loop period (ISR period) in microseconds
          */
-        const uint32_t velocityLoopPeriod_us = 1'000;
+        TMR<uint32_t> velocityLoopPeriod_us;
 
         /**
          * Current (Iq, Id) loop period (ISR period) in microseconds
@@ -293,7 +294,7 @@ private:
         /**
          * The PWM period, either in counter-ticks or μs
          */
-        const uint32_t pwmPeriod = 1'000;
+        TMR<uint32_t> pwmPeriod;
 
         /**
          * Helper variable to count the number of ISRs that have been executed.
@@ -326,12 +327,12 @@ private:
         /**
          * Loop time step in seconds (derived from velocityLoopPeriod_us)
          */
-        float dT = static_cast<float>(velocityLoopPeriod_us) * 1e-6f;
+        float dT;
 
         /**
          * Zero-offset electrical angle in raw 14-bit format
          */
-        uint16_t ZeroOffsetElectricalAngle = 0;
+        TMR<uint16_t> ZeroOffsetElectricalAngle;
 
         /**
          * The mechanical angle measured by the encoder as a 14-bit raw value
@@ -342,8 +343,8 @@ private:
          * Auto-calibrated encoder direction sign relative to control coordinates.
          * +1 means raw encoder increases with positive electrical rotation.
          */
-        int8_t dirSign = 1;
-        int8_t lastDirSign = 1;
+        TMR<int32_t> dirSign;
+        TMR<int32_t> lastDirSign;
 
         /**
          * @struct ReferenceCurrents
@@ -429,7 +430,7 @@ private:
         [[nodiscard]] inline uint16_t signedMechanicalRaw(uint16_t rawAngle) const noexcept {
                 constexpr uint16_t EncoderResolution = 16384u;
                 const uint16_t wrapped = wrapAngle(rawAngle);
-                const int8_t encoderDir = (dirSign >= 0) ? 1 : -1;
+                const int8_t encoderDir = (dirSign.read() >= 0) ? 1 : -1;
                 return encoderDir >= 0 ? wrapped : wrapAngle(EncoderResolution - wrapped);
         }
 
@@ -440,7 +441,7 @@ private:
         [[nodiscard]] inline uint16_t calculateElectricalAngle(uint16_t thetaMech) const {
                 const uint16_t thetaSigned = signedMechanicalRaw(thetaMech);
                 const uint16_t thetaElectrical = wrapAngle(thetaSigned * PMSM_Config::MotorPolePairs);
-                return wrapAngle(thetaElectrical - ZeroOffsetElectricalAngle);
+                return wrapAngle(thetaElectrical - ZeroOffsetElectricalAngle.read());
         }
 
         /**
