@@ -154,6 +154,7 @@ set(SOURCES
         src/USART_TxStream.cpp
         src/SAMD21_FOC.cpp
         src/Telemetry.cpp
+        src/CriticalVariables.cpp
 
         # System initialization and configuration
         src/config/sam_d21_xpro/initialization.c
