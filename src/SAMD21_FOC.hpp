@@ -47,7 +47,7 @@ public:
          */
         explicit SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz);
 
-        explicit SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz, TelemetryLogger* telemetry = nullptr);
+        explicit SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz, TelemetryLogger<TelemetryPayload44>* telemetry = nullptr);
 
         /**
          * Compiler generated default destructor
@@ -103,7 +103,7 @@ private:
          */
         void setPWM_DutyCycles() const;
 
-        TelemetryLogger* telemetryLogger = nullptr;
+        TelemetryLogger<TelemetryPayload44>* telemetryLogger = nullptr;
 
         /**
          * The ADC reference voltage in mV (1/1.48*Vdd)

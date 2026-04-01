@@ -117,9 +117,8 @@ public:
          * Function that runs the velocity loop
          *
          * @param thetaEncoder
-         * @param telemetry Optional telemetry logger (nullptr disables logging)
          */
-        void runVelocityLoop(uint16_t thetaEncoder, TelemetryLogger* telemetry = nullptr);
+        void runVelocityLoop(uint16_t thetaEncoder);
 
         /**
          * Function that runs the inner current control loop (Iq, Id)
@@ -200,6 +199,13 @@ public:
          */
         void runPositionLoop(uint16_t thetaEncoder);
 
+        /**
+         * Function that updates the monitored parameters
+         * @param tp
+         * @param thetaEncoder
+         */
+        void fillTelemetryPayload(TelemetryPayload44& tp, uint16_t thetaEncoder) const;
+
 private:
         /**
          * The Space Vector PWM block
@@ -256,13 +262,6 @@ private:
          * @note Supposed to be updated in velocity loop only
          */
         TelemetryCache tlm{};
-
-        /**
-         * Function that updates the monitored parameters
-         * @param tp
-         * @param thetaEncoder
-         */
-        void fillTelemetryParameters(TelemetryParameters& tp, uint16_t thetaEncoder) const;
 
         /**
          * Velocity loop period (ISR period) in microseconds

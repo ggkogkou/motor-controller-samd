@@ -28,7 +28,7 @@ namespace PermanentMagnetSynchronousMotor {
 
 SAMD21_FOC::SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz) : SAMD21_FOC(pwmFrequencyKHz, nullptr) {}
 
-SAMD21_FOC::SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz, TelemetryLogger* telemetry) :
+SAMD21_FOC::SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz, TelemetryLogger<TelemetryPayload44>* telemetry) :
     telemetryLogger(telemetry), motor(calculatePWM_PeriodFromFrequency(pwmFrequencyKHz), velocityLoopPeriodUsFromPwm(pwmFrequencyKHz),
                                       currentLoopPeriodUsFromPwm(pwmFrequencyKHz)),
     tccPeriod_PER(calculatePWM_PeriodFromFrequency(pwmFrequencyKHz)) {
@@ -179,7 +179,13 @@ void __attribute__((section(".ramfunc"))) SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_S
                                 motor.runPositionLoop(rotorPosition);
                         }
 
-                        motor.runVelocityLoop(rotorPosition, telemetryLogger);
+                        motor.runVelocityLoop(rotorPosition);
+
+                        if (telemetryLogger) {
+                                TelemetryPayload44 tp{};
+                                motor.fillTelemetryPayload(tp, rotorPosition);
+                                telemetryLogger->updateLatest(tp);
+                        }
                 }
 
                 if (not AS5047P::sensorBusy())

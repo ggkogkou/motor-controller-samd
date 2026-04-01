@@ -46,8 +46,8 @@ public:
          * @param foc Reference to the motor FOC controller
          * @param telemetry Optional telemetry logger (nullptr disables logging)
          */
-        explicit RadiationTestDemo(SAMD21_FOC& foc, TelemetryLogger* telemetry = nullptr)
-                : samd21_FOC(foc), telemetryLogger(telemetry) {}
+        explicit RadiationTestDemo(SAMD21_FOC& foc, TelemetryLogger<TelemetryPayload44>* telemetry = nullptr) :
+            samd21_FOC(foc), telemetryLogger(telemetry) {}
 
         /**
          * Check if logging is enabled for this demo instance
@@ -107,7 +107,7 @@ private:
         /**
          * Optional telemetry logger (nullptr disables logging)
          */
-        TelemetryLogger* telemetryLogger = nullptr;
+        TelemetryLogger<TelemetryPayload44>* telemetryLogger = nullptr;
 
         /**
          * Counter that keeps track of the order of the positions

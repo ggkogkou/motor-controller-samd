@@ -172,7 +172,7 @@ void __attribute__((section(".ramfunc"))) PMSM_Controller::runPositionLoop(uint1
         }
 }
 
-void __attribute__((section(".ramfunc"))) PMSM_Controller::runVelocityLoop(uint16_t thetaEncoder, TelemetryLogger* telemetry) {
+void __attribute__((section(".ramfunc"))) PMSM_Controller::runVelocityLoop(uint16_t thetaEncoder) {
         // BENCHMARK_IO_Set();
         if (not velocityEstimator)
                 return;
@@ -187,14 +187,10 @@ void __attribute__((section(".ramfunc"))) PMSM_Controller::runVelocityLoop(uint1
 
         Iref.Iq_mA.write(pidVelocity.compute(VelocityError)); /// output is Iq,ref in mA
 
+        tlm.angle_mrad = wrapped_mrad;
         tlm.omega_mrad_s = velocityEstimator->angularVelocity;
         tlm.target_velocity_mrad_s = targetVelocity_mrad_s.read();
 
-        if (telemetry) {
-                TelemetryParameters tp;
-                fillTelemetryParameters(tp, thetaEncoder);
-                telemetry->updateLatest(tp);
-        }
         // BENCHMARK_IO_Clear();
 }
 
@@ -243,7 +239,7 @@ void PMSM_Controller::stopMotor(const PhaseDutyCycles& dutyCycles) const {
         dutyCycles.perC = pwmPeriod.read() - perC;
 }
 
-void PMSM_Controller::fillTelemetryParameters(TelemetryParameters& tp, uint16_t thetaEncoder) const {
+void PMSM_Controller::fillTelemetryPayload(TelemetryPayload44& tp, uint16_t thetaEncoder) const {
         tp.dirSign = (dirSign.read() < 0) ? -1 : 1;
         tp.ZeroOffsetElectricalAngle = static_cast<uint32_t>(ZeroOffsetElectricalAngle.read());
         tp.ThetaEl = tlm.theta_el;

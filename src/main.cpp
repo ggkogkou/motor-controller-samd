@@ -54,8 +54,8 @@ void initializePeripherals() {
         static constexpr bool EnableLogging = true;
 
         USART_TxStream logging;
-        TelemetryLogger telemetry;
-        TelemetryLogger* telemetryPtr = nullptr;
+        TelemetryLogger<TelemetryPayload44> telemetry;
+        TelemetryLogger<TelemetryPayload44>* telemetryPtr = nullptr;
         if (EnableLogging)
                 telemetryPtr = &telemetry;
         SAMD21_FOC foc{PWM_Frequency, telemetryPtr};
