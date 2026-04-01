@@ -33,6 +33,18 @@ PMSM_Controller::PMSM_Controller(uint32_t pwmPeriodArg, uint32_t velocityLoopPer
     pidVelocity(1.0f, 10.0f, 0.0f, 4000.0f, static_cast<float>(velocityLoopPeriod) * 1e-6f),
     pidId(0.5f, 100.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit * 1000.0f, static_cast<float>(currentLoopPeriod) * 1e-6f),
     pidIq(0.5f, 100.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit * 1000.0f, static_cast<float>(currentLoopPeriod) * 1e-6f),
+    targetVelocity_mrad_s(tmrCriticalVariables1.targetVelocity_mrad_s, tmrCriticalVariables2.targetVelocity_mrad_s,
+                          tmrCriticalVariables3.targetVelocity_mrad_s),
+    targetPosition_mrad(tmrCriticalVariables1.targetPosition_mrad, tmrCriticalVariables2.targetPosition_mrad,
+                        tmrCriticalVariables3.targetPosition_mrad),
+    positionDirection(tmrCriticalVariables1.positionDirection, tmrCriticalVariables2.positionDirection,
+                      tmrCriticalVariables3.positionDirection),
+    targetRevolutions(tmrCriticalVariables1.targetRevolutions, tmrCriticalVariables2.targetRevolutions,
+                      tmrCriticalVariables3.targetRevolutions),
+    targetUnwrapped_mrad(tmrCriticalVariables1.targetUnwrapped_mrad, tmrCriticalVariables2.targetUnwrapped_mrad,
+                         tmrCriticalVariables3.targetUnwrapped_mrad),
+    targetUnwrappedValid(tmrCriticalVariables1.targetUnwrappedValid, tmrCriticalVariables2.targetUnwrappedValid,
+                         tmrCriticalVariables3.targetUnwrappedValid),
     velocityLoopPeriod_us(tmrCriticalVariables1.velocityLoopPeriod_us, tmrCriticalVariables2.velocityLoopPeriod_us,
                           tmrCriticalVariables3.velocityLoopPeriod_us),
     CurrentLoopPeriod_us(currentLoopPeriod),
@@ -49,9 +61,17 @@ PMSM_Controller::PMSM_Controller(uint32_t pwmPeriodArg, uint32_t velocityLoopPer
         dirSign.write(1);
         lastDirSign.write(1);
 
-        dT = static_cast<float>(velocityLoopPeriod_us.read()) * 1e-6f;
+        targetVelocity_mrad_s.write(std::lroundf(PMSM_Config::TargetVelocity * 1000.0f));
+        targetPosition_mrad.write(0);
+        positionDirection.write(static_cast<int32_t>(PositionDirection::SHORTEST));
+        targetRevolutions.write(0);
+        targetUnwrapped_mrad.write(0);
+        targetUnwrappedValid.write(false);
 
-        targetVelocity_mrad_s = std::lroundf(PMSM_Config::TargetVelocity * 1000.0f);
+        Iref.Iq_mA.write(0);
+        Iref.Id_mA.write(0);
+
+        dT = static_cast<float>(velocityLoopPeriod_us.read()) * 1e-6f;
 }
 
 bool PMSM_Controller::startupCalibration(const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder) {
@@ -83,25 +103,25 @@ void PMSM_Controller::setTargetPosition(int32_t targetAngle_mrad, PositionDirect
                 return angle;
         };
 
-        targetPosition_mrad = wrap_mrad(targetAngle_mrad);
-        positionDirection = direction;
-        targetRevolutions = revolutions < 0 ? 0 : revolutions;
-        targetUnwrappedValid = false;
+        targetPosition_mrad.write(wrap_mrad(targetAngle_mrad));
+        positionDirection.write(static_cast<int32_t>(direction));
+        targetRevolutions.write(revolutions < 0 ? 0 : revolutions);
+        targetUnwrappedValid.write(false);
 }
 
 void __attribute__((section(".ramfunc"))) PMSM_Controller::runPositionLoop(uint16_t thetaEncoder) {
         constexpr int32_t TWO_PI_MRAD = 6'283;
 
         if (dirSign.read() != lastDirSign.read()) {
-                targetUnwrappedValid = false;
+                targetUnwrappedValid.write(false);
                 lastDirSign.write(dirSign.read());
         }
 
         const int32_t current_wrapped_mrad = signedMechanical_mrad(thetaEncoder);
         const int32_t current_unwrapped_mrad = velocityEstimator ? velocityEstimator->unwrappedAngle : current_wrapped_mrad;
 
-        PositionDirection effectiveDirection = positionDirection;
-        int32_t target_wrapped_mrad = targetPosition_mrad;
+        PositionDirection effectiveDirection = static_cast<PositionDirection>(positionDirection.read());
+        int32_t target_wrapped_mrad = targetPosition_mrad.read();
         if (dirSign.read() < 0) {
                 target_wrapped_mrad = TWO_PI_MRAD - target_wrapped_mrad;
                 if (target_wrapped_mrad >= TWO_PI_MRAD)
@@ -121,34 +141,34 @@ void __attribute__((section(".ramfunc"))) PMSM_Controller::runPositionLoop(uint1
 
         const int32_t backward = forward - TWO_PI_MRAD;
 
-        if (not targetUnwrappedValid) {
+        if (not targetUnwrappedValid.read()) {
                 const int32_t delta = [&] {
                         switch (effectiveDirection) {
                         case PositionDirection::CW:
-                                return forward + targetRevolutions * TWO_PI_MRAD;
+                                return forward + targetRevolutions.read() * TWO_PI_MRAD;
                         case PositionDirection::CCW:
-                                return backward - targetRevolutions * TWO_PI_MRAD;
+                                return backward - targetRevolutions.read() * TWO_PI_MRAD;
                         case PositionDirection::SHORTEST:
                         default:
                                 return (forward <= -backward) ? forward : backward;
                         }
                 }();
 
-                targetUnwrapped_mrad = current_unwrapped_mrad + delta;
-                targetUnwrappedValid = true;
+                targetUnwrapped_mrad.write(current_unwrapped_mrad + delta);
+                targetUnwrappedValid.write(true);
         }
 
-        tlm_target_position_mrad = target_wrapped_mrad;
-        tlm_target_unwrapped_mrad = targetUnwrapped_mrad;
+        tlm.target_position_mrad = target_wrapped_mrad;
+        tlm.target_unwrapped_mrad = targetUnwrapped_mrad.read();
 
-        const int32_t error = targetUnwrapped_mrad - current_unwrapped_mrad;
-        targetVelocity_mrad_s = pidPosition.compute(error);
+        const int32_t error = targetUnwrapped_mrad.read() - current_unwrapped_mrad;
+        targetVelocity_mrad_s.write(pidPosition.compute(error));
         if (effectiveDirection == PositionDirection::CW) {
-                if (targetVelocity_mrad_s < 0)
-                        targetVelocity_mrad_s = -targetVelocity_mrad_s;
+                if (targetVelocity_mrad_s.read() < 0)
+                        targetVelocity_mrad_s.write(-targetVelocity_mrad_s.read());
         } else if (effectiveDirection == PositionDirection::CCW) {
-                if (targetVelocity_mrad_s > 0)
-                        targetVelocity_mrad_s = -targetVelocity_mrad_s;
+                if (targetVelocity_mrad_s.read() > 0)
+                        targetVelocity_mrad_s.write(-targetVelocity_mrad_s.read());
         }
 }
 
@@ -163,27 +183,16 @@ void __attribute__((section(".ramfunc"))) PMSM_Controller::runVelocityLoop(uint1
 
         velocityEstimator->update(wrapped_mrad, DeltaTime);
 
-        const int32_t VelocityError = targetVelocity_mrad_s - velocityEstimator->angularVelocity; /// in mrad/s
+        const int32_t VelocityError = targetVelocity_mrad_s.read() - velocityEstimator->angularVelocity; /// in mrad/s
 
-        Iref.Iq_mA = pidVelocity.compute(VelocityError); /// output is Iq,ref in mA
+        Iref.Iq_mA.write(pidVelocity.compute(VelocityError)); /// output is Iq,ref in mA
 
-        tlm_omega_mrad_s = velocityEstimator->angularVelocity;
-        tlm_target_velocity_mrad_s = targetVelocity_mrad_s;
+        tlm.omega_mrad_s = velocityEstimator->angularVelocity;
+        tlm.target_velocity_mrad_s = targetVelocity_mrad_s.read();
 
         if (telemetry) {
                 TelemetryParameters tp;
-                tp.dirSign = (dirSign.read() < 0) ? -1 : 1;
-                tp.ZeroOffsetElectricalAngle = static_cast<uint32_t>(ZeroOffsetElectricalAngle.read());
-                tp.ThetaEl = tlm_theta_el;
-                tp.ia_mA = tlm_ia_mA;
-                tp.ib_mA = tlm_ib_mA;
-                tp.adcOffsetU = tlm_adc_u_off;
-                tp.adcOffsetV = tlm_adc_v_off;
-                tp.iq_ref_mA = tlm_iq_ref_mA;
-                tp.angle_raw = static_cast<uint32_t>(thetaEncoder);
-                tp.runtime_mem_corruption_err = 0;
-                tp.encoder_err = tlm_encoder_error_code;
-
+                fillTelemetryParameters(tp, thetaEncoder);
                 telemetry->updateLatest(tp);
         }
         // BENCHMARK_IO_Clear();
@@ -194,12 +203,12 @@ void __attribute__((section(".ramfunc"))) PMSM_Controller::runCurrentLoop(const 
         // BENCHMARK_IO_Set();
 
         const uint16_t ThetaEl = calculateElectricalAngle(thetaEncoder);
-        tlm_theta_el = ThetaEl;
+        tlm.theta_el = ThetaEl;
 
         const auto dqFrame = MathUtils::performClarkeParkTransforms(phaseCurrents.Ia_mA, phaseCurrents.Ib_mA, ThetaEl);
 
-        const int32_t Id_Error = Iref.Id_mA - dqFrame[0]; /// in mA
-        const int32_t Iq_Error = Iref.Iq_mA - dqFrame[1]; /// in mA
+        const int32_t Id_Error = Iref.Id_mA.read() - dqFrame[0]; /// in mA
+        const int32_t Iq_Error = Iref.Iq_mA.read() - dqFrame[1]; /// in mA
 
         const int32_t Uq_mV = pidIq.compute(Iq_Error); /// in mV
         const int32_t Ud_mV = pidId.compute(Id_Error); /// in mV
@@ -213,12 +222,12 @@ void __attribute__((section(".ramfunc"))) PMSM_Controller::runCurrentLoop(const 
         dutyCycles.perB = pwmPeriod.read() - perB;
         dutyCycles.perC = pwmPeriod.read() - perC;
 
-        tlm_ia_mA = phaseCurrents.Ia_mA;
-        tlm_ib_mA = phaseCurrents.Ib_mA;
-        tlm_id_mA = dqFrame[0];
-        tlm_iq_mA = dqFrame[1];
-        tlm_id_ref_mA = Iref.Id_mA;
-        tlm_iq_ref_mA = Iref.Iq_mA;
+        tlm.ia_mA = phaseCurrents.Ia_mA;
+        tlm.ib_mA = phaseCurrents.Ib_mA;
+        tlm.id_mA = dqFrame[0];
+        tlm.iq_mA = dqFrame[1];
+        tlm.id_ref_mA = Iref.Id_mA.read();
+        tlm.iq_ref_mA = Iref.Iq_mA.read();
 
         // BENCHMARK_IO_Clear();
 }
@@ -232,6 +241,20 @@ void PMSM_Controller::stopMotor(const PhaseDutyCycles& dutyCycles) const {
         dutyCycles.perA = pwmPeriod.read() - perA;
         dutyCycles.perB = pwmPeriod.read() - perB;
         dutyCycles.perC = pwmPeriod.read() - perC;
+}
+
+void PMSM_Controller::fillTelemetryParameters(TelemetryParameters& tp, uint16_t thetaEncoder) const {
+        tp.dirSign = (dirSign.read() < 0) ? -1 : 1;
+        tp.ZeroOffsetElectricalAngle = static_cast<uint32_t>(ZeroOffsetElectricalAngle.read());
+        tp.ThetaEl = tlm.theta_el;
+        tp.ia_mA = tlm.ia_mA;
+        tp.ib_mA = tlm.ib_mA;
+        tp.adcOffsetU = tlm.adc_u_off;
+        tp.adcOffsetV = tlm.adc_v_off;
+        tp.iq_ref_mA = tlm.iq_ref_mA;
+        tp.angle_raw = static_cast<uint32_t>(thetaEncoder);
+        tp.runtime_mem_corruption_err = 0;
+        tp.encoder_err = tlm.encoder_error_code;
 }
 
 } // namespace PermanentMagnetSynchronousMotor

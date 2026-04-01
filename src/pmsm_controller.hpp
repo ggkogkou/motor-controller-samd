@@ -66,9 +66,36 @@ struct PhaseDutyCycles {
         PhaseDutyCycles(uint32_t& a, uint32_t& b, uint32_t& c) : perA(a), perB(b), perC(c) {}
 };
 
+/**
+ * @struct TelemetryCache
+ *
+ * A structure that binds together the cached variables for telemetry -- can be further refactored
+ */
+struct TelemetryCache {
+        volatile int32_t angle_mrad = 0;
+        volatile int32_t omega_mrad_s = 0;
+        volatile int32_t target_velocity_mrad_s = 0;
+        volatile int32_t target_position_mrad = 0;
+        volatile int32_t target_unwrapped_mrad = 0;
+        volatile int32_t ia_mA = 0;
+        volatile int32_t ib_mA = 0;
+        volatile int32_t id_mA = 0;
+        volatile int32_t iq_mA = 0;
+        volatile int32_t id_ref_mA = 0;
+        volatile int32_t iq_ref_mA = 0;
+        volatile uint32_t theta_el = 0;
+        volatile uint32_t adc_seq = 0;
+        volatile uint32_t missed_pairs = 0;
+        volatile uint32_t adc_u_raw = 0;
+        volatile uint32_t adc_v_raw = 0;
+        volatile uint32_t adc_u_off = 0;
+        volatile uint32_t adc_v_off = 0;
+        volatile uint32_t encoder_error_code = 0;
+};
+
 class PMSM_Controller {
 public:
-        enum class PositionDirection {
+        enum class PositionDirection : int32_t {
                 SHORTEST,
                 CW,
                 CCW,
@@ -78,6 +105,7 @@ public:
                 POSITION,
                 VELOCITY,
         };
+
         /**
          * Class constructor
          */
@@ -110,17 +138,17 @@ public:
         __attribute__((always_inline)) void updateTelemetryHardware(uint32_t adcSeq, uint32_t missedPairs, uint16_t adcU_raw,
                                                                     uint16_t adcV_raw, uint16_t adcU_off, uint16_t adcV_off,
                                                                     uint32_t encoderErrorCode) {
-                tlm_adc_seq = adcSeq;
-                tlm_missed_pairs = missedPairs;
-                tlm_adc_u_raw = adcU_raw;
-                tlm_adc_v_raw = adcV_raw;
-                tlm_adc_u_off = adcU_off;
-                tlm_adc_v_off = adcV_off;
-                tlm_encoder_error_code = encoderErrorCode;
+                tlm.adc_seq = adcSeq;
+                tlm.missed_pairs = missedPairs;
+                tlm.adc_u_raw = adcU_raw;
+                tlm.adc_v_raw = adcV_raw;
+                tlm.adc_u_off = adcU_off;
+                tlm.adc_v_off = adcV_off;
+                tlm.encoder_error_code = encoderErrorCode;
         }
 
         __attribute__((always_inline)) void updateEncoderErrorCode(uint32_t encoderErrorCode) {
-                tlm_encoder_error_code = encoderErrorCode;
+                tlm.encoder_error_code = encoderErrorCode;
         }
 
         /**
@@ -200,52 +228,41 @@ private:
         /**
          * The target angular velocity in mrad/s
          */
-        int32_t targetVelocity_mrad_s = 0;
+        TMR<int32_t> targetVelocity_mrad_s;
 
         /**
          * The target position in mrad [0, 2π)
          */
-        int32_t targetPosition_mrad = 0;
+        TMR<int32_t> targetPosition_mrad;
 
         /**
          * Desired path to reach the target position
          */
-        PositionDirection positionDirection = PositionDirection::SHORTEST;
+        TMR<int32_t> positionDirection;
 
         /**
          * Extra full turns to apply in the requested direction
          */
-        int32_t targetRevolutions = 0;
+        TMR<int32_t> targetRevolutions;
 
         /**
          * Unwrapped target position used for multi-turn positioning
          */
-        int32_t targetUnwrapped_mrad = 0;
-        bool targetUnwrappedValid = false;
+        TMR<int32_t> targetUnwrapped_mrad;
+        TMR<bool> targetUnwrappedValid;
 
         /**
          * Cache variables for telemetry usage
          * @note Supposed to be updated in velocity loop only
          */
-        volatile int32_t tlm_angle_mrad = 0;
-        volatile int32_t tlm_omega_mrad_s = 0;
-        volatile int32_t tlm_target_velocity_mrad_s = 0;
-        volatile int32_t tlm_target_position_mrad = 0;
-        volatile int32_t tlm_target_unwrapped_mrad = 0;
-        volatile int32_t tlm_ia_mA = 0;
-        volatile int32_t tlm_ib_mA = 0;
-        volatile int32_t tlm_id_mA = 0;
-        volatile int32_t tlm_iq_mA = 0;
-        volatile int32_t tlm_id_ref_mA = 0;
-        volatile int32_t tlm_iq_ref_mA = 0;
-        volatile uint32_t tlm_theta_el = 0;
-        volatile uint32_t tlm_adc_seq = 0;
-        volatile uint32_t tlm_missed_pairs = 0;
-        volatile uint32_t tlm_adc_u_raw = 0;
-        volatile uint32_t tlm_adc_v_raw = 0;
-        volatile uint32_t tlm_adc_u_off = 0;
-        volatile uint32_t tlm_adc_v_off = 0;
-        volatile uint32_t tlm_encoder_error_code = 0;
+        TelemetryCache tlm{};
+
+        /**
+         * Function that updates the monitored parameters
+         * @param tp
+         * @param thetaEncoder
+         */
+        void fillTelemetryParameters(TelemetryParameters& tp, uint16_t thetaEncoder) const;
 
         /**
          * Velocity loop period (ISR period) in microseconds
@@ -301,8 +318,12 @@ private:
          * @note Typically, only the Iq,ref should be updated
          */
         struct ReferenceCurrents {
-                int32_t Iq_mA = 0;
-                int32_t Id_mA = 0;
+                TMR<int32_t> Iq_mA;
+                TMR<int32_t> Id_mA;
+
+                ReferenceCurrents() :
+                    Iq_mA(tmrCriticalVariables1.iq_ref_mA, tmrCriticalVariables2.iq_ref_mA, tmrCriticalVariables3.iq_ref_mA),
+                    Id_mA(tmrCriticalVariables1.id_ref_mA, tmrCriticalVariables2.id_ref_mA, tmrCriticalVariables3.id_ref_mA) {}
         };
 
         /**

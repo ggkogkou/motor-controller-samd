@@ -29,9 +29,8 @@ namespace PermanentMagnetSynchronousMotor {
 SAMD21_FOC::SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz) : SAMD21_FOC(pwmFrequencyKHz, nullptr) {}
 
 SAMD21_FOC::SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz, TelemetryLogger* telemetry) :
-    telemetryLogger(telemetry),
-    motor(calculatePWM_PeriodFromFrequency(pwmFrequencyKHz), velocityLoopPeriodUsFromPwm(pwmFrequencyKHz),
-          currentLoopPeriodUsFromPwm(pwmFrequencyKHz)),
+    telemetryLogger(telemetry), motor(calculatePWM_PeriodFromFrequency(pwmFrequencyKHz), velocityLoopPeriodUsFromPwm(pwmFrequencyKHz),
+                                      currentLoopPeriodUsFromPwm(pwmFrequencyKHz)),
     tccPeriod_PER(calculatePWM_PeriodFromFrequency(pwmFrequencyKHz)) {
         __disable_irq();
 
@@ -47,8 +46,8 @@ SAMD21_FOC::SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz, TelemetryLogger* telemet
         TCC0_PWM24bitPeriodSet(tccPeriod_PER);
 
         static constexpr uint32_t SampleOffsetTicksFromPeriodEnd = 40;
-        const uint32_t sampleTicks = (tccPeriod_PER > SampleOffsetTicksFromPeriodEnd) ?
-                (tccPeriod_PER - SampleOffsetTicksFromPeriodEnd) : 0U;
+        const uint32_t sampleTicks =
+                (tccPeriod_PER > SampleOffsetTicksFromPeriodEnd) ? (tccPeriod_PER - SampleOffsetTicksFromPeriodEnd) : 0U;
         const uint32_t ccValue = sampleTicks & 0xFFFFFFU;
 
         TCC0_REGS->TCC_CC[3] = ccValue;
