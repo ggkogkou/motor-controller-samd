@@ -1,5 +1,7 @@
 #include "InterruptHandlers.hpp"
 
+#include <plib_port.h>
+
 extern "C" {
 
 [[noreturn]] void DefaultHandler() {

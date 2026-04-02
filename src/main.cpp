@@ -25,9 +25,9 @@
 #include <GenericClockController.hpp>
 
 #include "DeviceStartup.hpp"
+#include "GenericClockController.hpp"
 #include "RadiationTestDemo.hpp"
 #include "SAMD21_FOC.hpp"
-#include "GenericClockController.hpp"
 
 void initializePeripherals() {
         NVMCTRL_REGS->NVMCTRL_CTRLB = NVMCTRL_CTRLB_RWS(3UL);
@@ -49,7 +49,39 @@ void initializePeripherals() {
 }
 
 [[noreturn]] int main() {
+        uint8_t cause = PM_REGS->PM_RCAUSE;
+
+        auto wasItAutomatic = false;
+        auto wasPOR = false;
+
+        if (cause & PM_RCAUSE_BOD12_Msk)
+                wasItAutomatic = true;
+
+        if (cause & PM_RCAUSE_BOD33_Msk)
+                wasItAutomatic = true;
+
+        if (cause & PM_RCAUSE_WDT_Msk)
+                wasItAutomatic = true;
+
+        if (cause & PM_RCAUSE_POR_Msk) {
+                wasPOR = true;
+        }
+
+        if (wasItAutomatic) {
+                __disable_irq();
+        }
+
         initializePeripherals();
+
+        if (wasItAutomatic) {
+                __disable_irq();
+                while (true) {
+                        BENCHMARK_IO_Set();
+                        SYSTICK_DelayMs(100);
+                        BENCHMARK_IO_Clear();
+                }
+        }
+
         SYSTICK_TimerStart();
         SPI_Buffer::init();
 

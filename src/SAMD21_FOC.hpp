@@ -83,8 +83,15 @@ public:
         }
 
 private:
-        static void ADC_Callback(ADC_STATUS status, uintptr_t context);
-        static void TC3_Callback(TC_TIMER_STATUS status, uintptr_t context);
+        static void ADC_Callback(ADC_STATUS status, uintptr_t context) {
+                if (auto* self = reinterpret_cast<SAMD21_FOC*>(context))
+                        self->ADC_Callback(status);
+        }
+
+        static void TC3_Callback(TC_TIMER_STATUS status, uintptr_t context) {
+                if (auto* self = reinterpret_cast<SAMD21_FOC*>(context))
+                        self->TC3_FOC_Handler(status);
+        }
 
         /**
          * Callback function that runs from the ADC ISR and executes the current loop

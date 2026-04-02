@@ -81,16 +81,6 @@ void SAMD21_FOC::stop() const {
         __enable_irq();
 }
 
-void SAMD21_FOC::ADC_Callback(ADC_STATUS status, uintptr_t context) {
-        if (auto* self = reinterpret_cast<SAMD21_FOC*>(context))
-                self->ADC_Callback(status);
-}
-
-void SAMD21_FOC::TC3_Callback(TC_TIMER_STATUS status, uintptr_t context) {
-        if (auto* self = reinterpret_cast<SAMD21_FOC*>(context))
-                self->TC3_FOC_Handler(status);
-}
-
 void SAMD21_FOC::moveToAngle(int32_t targetAngle_mrad, PMSM_Controller::PositionDirection direction, int32_t revolutions) {
         motor.setTargetPosition(targetAngle_mrad, direction, revolutions);
 }
@@ -110,7 +100,7 @@ void __attribute__((section(".ramfunc"))) SAMD21_FOC::ADC_Callback(ADC_STATUS st
                         return;
                 }
 
-                BENCHMARK_IO_Set();
+                // BENCHMARK_IO_Set();
                 // BENCHMARK_IO_Clear();
                 adcResultsReady = true;
 
@@ -125,7 +115,7 @@ void __attribute__((section(".ramfunc"))) SAMD21_FOC::ADC_Callback(ADC_STATUS st
 
                 motor.runCurrentLoop(currents, dutyCycles, rotorPositionCached);
                 setPWM_DutyCycles();
-                BENCHMARK_IO_Clear();
+                // BENCHMARK_IO_Clear();
         }
 
         if (status & ADC_INTFLAG_OVERRUN_Msk)

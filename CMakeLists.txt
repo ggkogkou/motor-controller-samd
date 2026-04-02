@@ -184,6 +184,7 @@ set(SOURCES
         drivers/drv8316.cpp
 
         drivers/samd21_peripherals/GenericClockController.cpp
+        drivers/samd21_peripherals/ADC.cpp
 )
 
 # ------------------------------------------------------------------------------
