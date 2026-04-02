@@ -138,7 +138,8 @@ void initializePeripherals() {
         if (telemetryPtr != nullptr)
                 logging.init();
 
-        RadiationTestDemo radiationTestDemo(foc, telemetryPtr);
+        // RadiationTestDemo radiationTestDemo(foc, telemetryPtr);
+        RadiationTestDemo radiationTestDemo(foc, telemetryPtr, &diagnosticsLogger);
         radiationTestDemo.start();
 
         diagnosticsLogger.writeLiteral("STATE: MAIN_LOOP_ENTERED\r\n");

@@ -26,7 +26,9 @@
 
 #include <array>
 #include <cstdint>
+#include "HardwareDiagnosticsLogger.hpp"
 #include "SAMD21_FOC.hpp"
+#include "TrigonometricLUT.hpp"
 #include "definitions.h"
 
 using namespace PermanentMagnetSynchronousMotor;
@@ -45,9 +47,11 @@ public:
          *
          * @param foc Reference to the motor FOC controller
          * @param telemetry Optional telemetry logger (nullptr disables logging)
+         * @param diagnostics Optional hardware diagnostics logger (nullptr disables diagnostics logging)
          */
-        explicit RadiationTestDemo(SAMD21_FOC& foc, TelemetryLogger<TelemetryPayload44>* telemetry = nullptr) :
-            samd21_FOC(foc), telemetryLogger(telemetry) {}
+        explicit RadiationTestDemo(SAMD21_FOC& foc, TelemetryLogger<TelemetryPayload44>* telemetry = nullptr,
+                                   HardwareDiagnosticsLogger* diagnostics = nullptr) :
+            samd21_FOC(foc), telemetryLogger(telemetry), diagnosticsLogger(diagnostics) {}
 
         /**
          * Check if logging is enabled for this demo instance
@@ -58,12 +62,34 @@ public:
         }
 
         /**
+         * Check whether the LUT self-test has detected a mismatch
+         * @return True if a mismatch has been detected
+         */
+        [[nodiscard]] bool lutFaultDetected() const {
+                return lutMismatchDetected;
+        }
+
+        /**
+         * Return the LUT index where the first mismatch was detected
+         * @return LUT mismatch index
+         */
+        [[nodiscard]] uint32_t lutFaultIndex() const {
+                return lutMismatchIndex;
+        }
+
+        /**
          * Function that starts the TC that will periodically throw an interrupt and apply the initial target angle
          */
         void start() {
+                targetIndex = 0;
+                lutScrubIndex = 0;
+                lutMismatchDetected = false;
+                lutMismatchIndex = 0;
+                lutFaultAlreadyLogged = false;
+                demoState = DemoState::CHECK_SINE_LUT;
+
                 TC4_TimerCallbackRegister(&RadiationTestDemo::TimerCounterCallback, reinterpret_cast<uintptr_t>(this));
                 TC4_TimerStart();
-                samd21_FOC.moveToAngle(TargetAngles_mrad[targetIndex], positionDirection);
         }
 
         void setDirection(PMSM_Controller::PositionDirection direction) {
@@ -72,9 +98,33 @@ public:
 
 private:
         /**
+         * A list of the internal demo states
+         */
+        enum class DemoState : uint8_t {
+                CHECK_SINE_LUT,
+                READY_TO_START,
+                RUN_SEQUENCE,
+                FAULT_LUT_MISMATCH,
+        };
+
+        /**
+         * A list of the return values used by the LUT checker
+         */
+        enum class LutCheckResult : uint8_t {
+                IN_PROGRESS,
+                PASSED,
+                FAILED,
+        };
+
+        /**
          * The array of the fixed angles that the rotor should move to sequentially
          */
         static constexpr std::array<int32_t, 4> TargetAngles_mrad{0, 1571, 3141, 4712};
+
+        /**
+         * Number of LUT entries that are compared per TC4 callback while the startup self-test is running
+         */
+        static constexpr uint32_t LutEntriesPerCheck = 32;
 
         /**
          * Callback
@@ -87,6 +137,47 @@ private:
         }
 
         /**
+         * Compare a small chunk of the sine LUT in RAM against the reference copy in flash
+         *
+         * @return Result of the current scrub chunk
+         */
+        [[nodiscard]] LutCheckResult checkSineLutChunk() {
+                using SineLut = TrigonometricLUT::SineLookUpTableQ15<4096>;
+
+                for (uint32_t i = 0; i < LutEntriesPerCheck; ++i) {
+                        const uint32_t idx = lutScrubIndex;
+
+                        if (SineLut::sineLUT[idx] != SineLut::sineLUT_Flash[idx]) {
+                                lutMismatchDetected = true;
+                                lutMismatchIndex = idx;
+                                return LutCheckResult::FAILED;
+                        }
+
+                        lutScrubIndex++;
+
+                        if (lutScrubIndex >= SineLut::sineLUT.size()) {
+                                lutScrubIndex = 0;
+                                return LutCheckResult::PASSED;
+                        }
+                }
+
+                return LutCheckResult::IN_PROGRESS;
+        }
+
+        /**
+         * Log the LUT mismatch only once
+         */
+        void logLutFaultOnce() {
+                if (lutFaultAlreadyLogged)
+                        return;
+
+                lutFaultAlreadyLogged = true;
+
+                if (diagnosticsLogger != nullptr)
+                        diagnosticsLogger->writeLiteral("FAULT: SINE_LUT_MISMATCH\r\n");
+        }
+
+        /**
          * Function that runs from callback and updates the next target position
          * @param status
          */
@@ -94,9 +185,42 @@ private:
                 if ((status & TC_TIMER_STATUS_OVERFLOW) == 0U)
                         return;
 
-                const uint32_t next = (targetIndex + 1U) % static_cast<uint32_t>(TargetAngles_mrad.size());
-                targetIndex = next;
-                samd21_FOC.moveToAngle(TargetAngles_mrad[targetIndex], positionDirection);
+                switch (demoState) {
+                case DemoState::CHECK_SINE_LUT:
+                        switch (checkSineLutChunk()) {
+                        case LutCheckResult::IN_PROGRESS:
+                                break;
+                        case LutCheckResult::PASSED:
+                                demoState = DemoState::READY_TO_START;
+                                break;
+                        case LutCheckResult::FAILED:
+                        default:
+                                demoState = DemoState::FAULT_LUT_MISMATCH;
+                                logLutFaultOnce();
+                                samd21_FOC.stop();
+                                break;
+                        }
+                        break;
+
+                case DemoState::READY_TO_START:
+                        samd21_FOC.moveToAngle(TargetAngles_mrad[targetIndex], positionDirection);
+                        demoState = DemoState::RUN_SEQUENCE;
+                        break;
+
+                case DemoState::RUN_SEQUENCE:
+                        {
+                                const uint32_t next = (targetIndex + 1U) % static_cast<uint32_t>(TargetAngles_mrad.size());
+                                targetIndex = next;
+                                samd21_FOC.moveToAngle(TargetAngles_mrad[targetIndex], positionDirection);
+                                break;
+                        }
+
+                case DemoState::FAULT_LUT_MISMATCH:
+                default:
+                        logLutFaultOnce();
+                        samd21_FOC.stop();
+                        break;
+                }
         }
 
         /**
@@ -110,9 +234,39 @@ private:
         TelemetryLogger<TelemetryPayload44>* telemetryLogger = nullptr;
 
         /**
+         * Optional hardware diagnostics logger (nullptr disables diagnostics logging)
+         */
+        HardwareDiagnosticsLogger* diagnosticsLogger = nullptr;
+
+        /**
          * Counter that keeps track of the order of the positions
          */
         volatile uint32_t targetIndex = 0;
+
+        /**
+         * Current demo state
+         */
+        volatile DemoState demoState = DemoState::CHECK_SINE_LUT;
+
+        /**
+         * Current LUT scrub index
+         */
+        volatile uint32_t lutScrubIndex = 0;
+
+        /**
+         * Latched LUT fault flag
+         */
+        volatile bool lutMismatchDetected = false;
+
+        /**
+         * LUT index where the first mismatch was detected
+         */
+        volatile uint32_t lutMismatchIndex = 0;
+
+        /**
+         * Ensure the LUT fault is logged only once
+         */
+        volatile bool lutFaultAlreadyLogged = false;
 
         PMSM_Controller::PositionDirection positionDirection = PMSM_Controller::PositionDirection::CW;
 };

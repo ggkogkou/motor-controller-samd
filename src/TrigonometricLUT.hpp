@@ -76,6 +76,7 @@ struct SineLookUpTableQ15 {
                 return lut;
         }
 
+        static constexpr LookUpTable sineLUT_Flash = generateLookUpTable();
         static constexpr LookUpTable sineLUT __attribute__((section(".ram_lut"))) = generateLookUpTable();
 
         /**
