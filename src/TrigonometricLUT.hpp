@@ -77,7 +77,7 @@ struct SineLookUpTableQ15 {
         }
 
         static constexpr LookUpTable sineLUT_Flash = generateLookUpTable();
-        static constexpr LookUpTable sineLUT __attribute__((section(".ram_lut"))) = generateLookUpTable();
+        static constexpr LookUpTable sineLUT __attribute__((section(".ram_lut"), used)) = generateLookUpTable();
 
         /**
          * Operator[] for raw encoder counts (0..16383)
