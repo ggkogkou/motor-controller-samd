@@ -47,6 +47,7 @@ void I2S_Handler(void);
  */
 void DMAC_InterruptHandler(void);
 void SERCOM3_USART_InterruptHandler(void);
+void SERCOM4_USART_InterruptHandler(void);
 void SERCOM5_SPI_InterruptHandler(void);
 void TC3_TimerInterruptHandler(void);
 void TC4_TimerInterruptHandler(void);

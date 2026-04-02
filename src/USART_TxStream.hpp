@@ -35,9 +35,9 @@ class USART_TxStream {
 public:
         static constexpr size_t BufferSize = 1024;
         static constexpr size_t MaxChunkSize = 256;
-        static constexpr DMAC_CHANNEL TxDmaChannel = DMAC_CHANNEL_0;
 
-        USART_TxStream() : ring(std::span<uint8_t>(storage.data(), storage.size())) {}
+        explicit USART_TxStream(DMAC_CHANNEL txDmaChannel = DMAC_CHANNEL_0) :
+            ring(std::span<uint8_t>(storage.data(), storage.size())), TxDmaChannel(txDmaChannel) {}
 
         void init();
 
@@ -52,6 +52,8 @@ private:
         std::array<uint8_t, BufferSize> storage{};
 
         RingBuffer ring;
+
+        const DMAC_CHANNEL TxDmaChannel;
 
         volatile bool inFlight = false;
         volatile size_t inFlightLen = 0;

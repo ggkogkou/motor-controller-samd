@@ -40,6 +40,7 @@
               <logicalFolder name="usart" displayName="usart" projectFiles="true">
                 <itemPath>../src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom3_usart.h</itemPath>
                 <itemPath>../src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom_usart_common.h</itemPath>
+                <itemPath>../src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom4_usart.h</itemPath>
               </logicalFolder>
             </logicalFolder>
             <logicalFolder name="f6" displayName="systick" projectFiles="true">
@@ -202,6 +203,7 @@
               </logicalFolder>
               <logicalFolder name="usart" displayName="usart" projectFiles="true">
                 <itemPath>../src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom3_usart.c</itemPath>
+                <itemPath>../src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom4_usart.c</itemPath>
               </logicalFolder>
             </logicalFolder>
             <logicalFolder name="f6" displayName="systick" projectFiles="true">

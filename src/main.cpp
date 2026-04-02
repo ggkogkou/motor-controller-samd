@@ -25,7 +25,9 @@
 #include <GenericClockController.hpp>
 
 #include "DeviceStartup.hpp"
+#include "definitions.h"
 #include "GenericClockController.hpp"
+#include "HardwareDiagnosticsLogger.hpp"
 #include "RadiationTestDemo.hpp"
 #include "SAMD21_FOC.hpp"
 
@@ -35,6 +37,7 @@ void initializePeripherals() {
         PORT_Initialize();
         GenericClockController::initializePeripheral();
         SERCOM3_USART_Initialize();
+        SERCOM4_USART_Initialize();
         NVMCTRL_Initialize();
         EVSYS_Initialize();
         TCC0_PWMInitialize();
@@ -49,7 +52,7 @@ void initializePeripherals() {
 }
 
 [[noreturn]] int main() {
-        uint8_t cause = PM_REGS->PM_RCAUSE;
+        const uint8_t cause = PM_REGS->PM_RCAUSE;
 
         auto wasItAutomatic = false;
         auto wasPOR = false;
@@ -70,20 +73,53 @@ void initializePeripherals() {
                 wasPOR = true;
         }
 
-        initializePeripherals();
-
+        // initializePeripherals();
+        SYS_Initialize(NULL);
         SYSTICK_TimerStart();
         SPI_Buffer::init();
 
-        if (wasItAutomatic || wasPOR) {
+        USART_TxStream diagnostics{DMAC_CHANNEL_1};
+        diagnostics.init();
+        HardwareDiagnosticsLogger diagnosticsLogger{diagnostics};
+
+        diagnosticsLogger.logBoot();
+
+        if (cause & PM_RCAUSE_POR_Msk)
+                diagnosticsLogger.logResetPOR();
+
+        if (cause & PM_RCAUSE_BOD12_Msk)
+                diagnosticsLogger.writeLiteral("RESET: BOD12\r\n");
+
+        if (cause & PM_RCAUSE_BOD33_Msk)
+                diagnosticsLogger.logResetBOD33();
+
+        if (cause & PM_RCAUSE_WDT_Msk)
+                diagnosticsLogger.logResetWDT();
+
+        if (cause & PM_RCAUSE_EXT_Msk)
+                diagnosticsLogger.logResetExternal();
+
+        if (cause & PM_RCAUSE_SYST_Msk)
+                diagnosticsLogger.logResetSoftware();
+
+        if (cause == 0U)
+                diagnosticsLogger.logResetUnknown();
+
+        if (wasPOR) {
+                diagnosticsLogger.writeLiteral("STATE: POWER_ON_RESET_BOOT\r\n");
+        }
+
+        if (wasItAutomatic) {
+                diagnosticsLogger.writeLiteral("STATE: HALT_AFTER_AUTOMATIC_RESET\r\n");
+
                 __disable_irq();
                 while (true) {
                         BENCHMARK_IO_Set();
-                        for (volatile uint32_t i = 0; i < 300000U; i=i+1) {
+                        for (volatile uint32_t i = 0; i < 300000U; i = i + 1) {
                                 __NOP();
                         }
                         BENCHMARK_IO_Clear();
-                        for (volatile uint32_t i = 0; i < 300000U; i=i+1) {
+                        for (volatile uint32_t i = 0; i < 300000U; i = i + 1) {
                                 __NOP();
                         }
                 }
@@ -92,7 +128,7 @@ void initializePeripherals() {
         static constexpr frequency_kHz_t PWM_Frequency = 18.0f;
         static constexpr bool EnableLogging = true;
 
-        USART_TxStream logging;
+        USART_TxStream logging{DMAC_CHANNEL_0};
         TelemetryLogger<TelemetryPayload44> telemetry;
         TelemetryLogger<TelemetryPayload44>* telemetryPtr = nullptr;
         if (EnableLogging)
@@ -104,6 +140,8 @@ void initializePeripherals() {
 
         RadiationTestDemo radiationTestDemo(foc, telemetryPtr);
         radiationTestDemo.start();
+
+        diagnosticsLogger.writeLiteral("STATE: MAIN_LOOP_ENTERED\r\n");
 
         while (true) {
                 if (radiationTestDemo.loggingEnabled())

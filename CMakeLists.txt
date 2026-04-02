@@ -157,6 +157,7 @@ set(SOURCES
         src/Telemetry.cpp
         src/CriticalVariables.cpp
         src/StartupCalibration.cpp
+        src/HardwareDiagnosticsLogger.cpp
 
         # System initialization and configuration
         src/config/sam_d21_xpro/initialization.c
@@ -166,7 +167,7 @@ set(SOURCES
 
         # Peripheral libraries
         src/config/sam_d21_xpro/peripheral/adc/plib_adc.c
-        #        src/config/sam_d21_xpro/peripheral/clock/plib_clock.c
+        src/config/sam_d21_xpro/peripheral/clock/plib_clock.c
         src/config/sam_d21_xpro/peripheral/dmac/plib_dmac.c
         src/config/sam_d21_xpro/peripheral/eic/plib_eic.c
         src/config/sam_d21_xpro/peripheral/evsys/plib_evsys.c
@@ -175,6 +176,7 @@ set(SOURCES
         src/config/sam_d21_xpro/peripheral/port/plib_port.c
         src/config/sam_d21_xpro/peripheral/systick/plib_systick.c
         src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom3_usart.c
+        src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom4_usart.c
         src/config/sam_d21_xpro/peripheral/sercom/spi_master/plib_sercom5_spi_master.c
         src/config/sam_d21_xpro/peripheral/tc/plib_tc3.c
         src/config/sam_d21_xpro/peripheral/tc/plib_tc4.c
