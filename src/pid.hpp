@@ -26,7 +26,8 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <type_traits>
+#include "CriticalVariables.hpp"
+#include "TMR.hpp"
 
 class Q16_t {
 public:
@@ -37,8 +38,7 @@ public:
 
         explicit Q16_t(float x) : raw(static_cast<int32_t>(x * (1u << Q16_Factor))) {}
 
-        __attribute__((always_inline))
-        [[nodiscard]] inline int32_t getRaw() const {
+        __attribute__((always_inline)) [[nodiscard]] inline int32_t getRaw() const {
                 return raw;
         }
 
@@ -49,8 +49,7 @@ public:
          * @param b
          * @return
          */
-        __attribute__((always_inline))
-        friend inline int32_t operator*(Q16_t k, int32_t x) {
+        __attribute__((always_inline)) friend inline int32_t operator*(Q16_t k, int32_t x) {
                 int64_t p = static_cast<int64_t>(k.getRaw()) * static_cast<int64_t>(x);
 
                 return static_cast<int32_t>(p >> Q16_Factor);
@@ -65,8 +64,7 @@ public:
          * @param b
          * @return
          */
-        __attribute__((always_inline))
-        friend inline int32_t operator*(int32_t x, Q16_t k) {
+        __attribute__((always_inline)) friend inline int32_t operator*(int32_t x, Q16_t k) {
                 return k * x;
         }
 
@@ -77,8 +75,7 @@ public:
          * @param b
          * @return
          */
-        __attribute__((always_inline))
-        friend inline Q16_t operator*(Q16_t a, Q16_t b) {
+        __attribute__((always_inline)) friend inline Q16_t operator*(Q16_t a, Q16_t b) {
                 int64_t p = static_cast<int64_t>(a.getRaw()) * static_cast<int64_t>(b.getRaw());
                 return Q16_t(static_cast<int32_t>(p >> Q16_Factor));
         }
@@ -106,8 +103,7 @@ public:
         /**
          * @brief Default construct with zero gains and zero limits
          */
-        PID() = default;
-        ~PID() = default;
+        PID();
 
         /**
          * @brief Construct with gains and symmetric output limit.
@@ -117,9 +113,25 @@ public:
          * @param limit Absolute output clamp (±limit)
          * @param Ts Sampling time (seconds)
          */
-        PID(float Kp, float Ki, float Kd, float limit, float Ts) {
-                setGainsFloat(Kp, Ki, Kd, limit, Ts);
-        }
+        PID(float Kp, float Ki, float Kd, float limit, float Ts);
+
+        /**
+         * @brief Construct with gains and symmetric output limit using external TMR-protected storage.
+         *
+         * @param bank1 First replicated bank
+         * @param bank2 Second replicated bank
+         * @param bank3 Third replicated bank
+         * @param Kp Proportional gain
+         * @param Ki Integral gain
+         * @param Kd Derivative gain
+         * @param limit Absolute output clamp (±limit)
+         * @param Ts Sampling time (seconds)
+         */
+        PID(PermanentMagnetSynchronousMotor::PID_CriticalVariables& bank1,
+            PermanentMagnetSynchronousMotor::PID_CriticalVariables& bank2,
+            PermanentMagnetSynchronousMotor::PID_CriticalVariables& bank3, float Kp, float Ki, float Kd, float limit, float Ts);
+
+        ~PID() = default;
 
         /**
          * @brief Compute PID output for a given error (fixed dt implied in gains).
@@ -146,17 +158,31 @@ public:
                 return limit;
         }
 
-
 private:
         /**
-         * Proportional, integral, derivative gains
+         * Local fallback banks used when no external TMR-protected storage is provided.
          */
-        Q16_t K_Proportional {0.0f};
-        Q16_t K_Integral {0.0f};
-        Q16_t K_Derivative {0.0f};
+        PermanentMagnetSynchronousMotor::PID_CriticalVariables localCriticalVariables1{};
+        PermanentMagnetSynchronousMotor::PID_CriticalVariables localCriticalVariables2{};
+        PermanentMagnetSynchronousMotor::PID_CriticalVariables localCriticalVariables3{};
 
         /**
-         * Absolute output clamp (±limit)
+         * TMR-protected raw fixed-point gains and output clamp.
+         */
+        TMR<int32_t> K_ProportionalRaw;
+        TMR<int32_t> K_IntegralRaw;
+        TMR<int32_t> K_DerivativeRaw;
+        TMR<int32_t> outputClampLimit;
+
+        /**
+         * Proportional, integral, derivative gains cached locally for the hot compute() path.
+         */
+        Q16_t K_Proportional{int32_t{0}};
+        Q16_t K_Integral{int32_t{0}};
+        Q16_t K_Derivative{int32_t{0}};
+
+        /**
+         * Absolute output clamp (±limit), cached locally for the hot compute() path.
          */
         int32_t limit = 0;
 
@@ -187,4 +213,9 @@ private:
          * @param Ts Sampling time (seconds)
          */
         void setGainsFloat(float Kp, float Ki, float Kd, float limit, float Ts);
+
+        /**
+         * Refresh the locally cached coefficients from the TMR-protected storage.
+         */
+        void refreshCachedCoefficients();
 };

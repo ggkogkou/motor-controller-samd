@@ -29,10 +29,14 @@ namespace PermanentMagnetSynchronousMotor {
 PMSM_Controller::PMSM_Controller(uint32_t pwmPeriodArg) : PMSM_Controller(pwmPeriodArg, 1'000, 1'000) {}
 
 PMSM_Controller::PMSM_Controller(uint32_t pwmPeriodArg, uint32_t velocityLoopPeriod, uint32_t currentLoopPeriod) :
-    pidPosition(1.0f, 0.0f, 0.0f, 50'000.0f, static_cast<float>(velocityLoopPeriod) * 1e-6f),
-    pidVelocity(1.0f, 10.0f, 0.0f, 4000.0f, static_cast<float>(velocityLoopPeriod) * 1e-6f),
-    pidId(0.5f, 100.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit * 1000.0f, static_cast<float>(currentLoopPeriod) * 1e-6f),
-    pidIq(0.5f, 100.0f, 0.0f, PMSM_Config::CloseLoopVoltageLimit * 1000.0f, static_cast<float>(currentLoopPeriod) * 1e-6f),
+    pidPosition(tmrCriticalVariables1.pidPosition, tmrCriticalVariables2.pidPosition, tmrCriticalVariables3.pidPosition, 1.0f, 0.0f,
+                0.0f, 50'000.0f, static_cast<float>(velocityLoopPeriod) * 1e-6f),
+    pidVelocity(tmrCriticalVariables1.pidVelocity, tmrCriticalVariables2.pidVelocity, tmrCriticalVariables3.pidVelocity, 1.0f, 10.0f,
+                0.0f, 4000.0f, static_cast<float>(velocityLoopPeriod) * 1e-6f),
+    pidId(tmrCriticalVariables1.pidId, tmrCriticalVariables2.pidId, tmrCriticalVariables3.pidId, 0.5f, 100.0f, 0.0f,
+          PMSM_Config::CloseLoopVoltageLimit * 1000.0f, static_cast<float>(currentLoopPeriod) * 1e-6f),
+    pidIq(tmrCriticalVariables1.pidIq, tmrCriticalVariables2.pidIq, tmrCriticalVariables3.pidIq, 0.5f, 100.0f, 0.0f,
+          PMSM_Config::CloseLoopVoltageLimit * 1000.0f, static_cast<float>(currentLoopPeriod) * 1e-6f),
     targetVelocity_mrad_s(tmrCriticalVariables1.targetVelocity_mrad_s, tmrCriticalVariables2.targetVelocity_mrad_s,
                           tmrCriticalVariables3.targetVelocity_mrad_s),
     targetPosition_mrad(tmrCriticalVariables1.targetPosition_mrad, tmrCriticalVariables2.targetPosition_mrad,

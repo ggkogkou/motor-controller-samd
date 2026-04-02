@@ -30,4 +30,9 @@ constinit FOC_CriticalVariables tmrCriticalVariables1 __attribute__((section(".t
 constinit FOC_CriticalVariables tmrCriticalVariables2 __attribute__((section(".tmr_bank_2"), used)){};
 constinit FOC_CriticalVariables tmrCriticalVariables3 __attribute__((section(".tmr_bank_3"), used)){};
 
+constinit FOC_CriticalVariables tmrPID_CriticalVariables1 __attribute__((section(".tmr_bank_1"), used)){};
+constinit FOC_CriticalVariables tmrPID_CriticalVariables2 __attribute__((section(".tmr_bank_2"), used)){};
+constinit FOC_CriticalVariables tmrPID_CriticalVariables3 __attribute__((section(".tmr_bank_3"), used)){};
+
+
 } // namespace PermanentMagnetSynchronousMotor

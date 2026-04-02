@@ -28,6 +28,13 @@
 
 namespace PermanentMagnetSynchronousMotor {
 
+struct PID_CriticalVariables {
+        int32_t Kp_raw;
+        int32_t Ki_raw;
+        int32_t Kd_raw;
+        int32_t limit;
+};
+
 /**
  * @struct FOC_CriticalVariables
  * A struct that contains the most important variables of the FOC algorithm
@@ -63,10 +70,19 @@ struct FOC_CriticalVariables {
         int32_t targetUnwrapped_mrad;
         bool targetUnwrappedValid;
         int32_t positionDirection;
+
+        PID_CriticalVariables pidPosition;
+        PID_CriticalVariables pidVelocity;
+        PID_CriticalVariables pidId;
+        PID_CriticalVariables pidIq;
 };
 
 extern constinit FOC_CriticalVariables tmrCriticalVariables1;
 extern constinit FOC_CriticalVariables tmrCriticalVariables2;
 extern constinit FOC_CriticalVariables tmrCriticalVariables3;
+
+extern constinit FOC_CriticalVariables tmrPID_CriticalVariables1;
+extern constinit FOC_CriticalVariables tmrPID_CriticalVariables2;
+extern constinit FOC_CriticalVariables tmrPID_CriticalVariables3;
 
 } // namespace PermanentMagnetSynchronousMotor
