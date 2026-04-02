@@ -45,7 +45,7 @@ set(CMAKE_C_FLAGS
 )
 
 set(CMAKE_CXX_FLAGS
-        "${COMMON_FLAGS} ${OPT_FLAGS} -std=c++20 -fno-exceptions -fno-rtti -fno-threadsafe-statics"
+        "${COMMON_FLAGS} ${OPT_FLAGS} -std=c++20 -fno-exceptions -fno-rtti -fno-threadsafe-statics -fno-unwind-tables -fno-asynchronous-unwind-tables"
         CACHE INTERNAL "C++ compiler flags" FORCE
 )
 
@@ -166,7 +166,7 @@ set(SOURCES
 
         # Peripheral libraries
         src/config/sam_d21_xpro/peripheral/adc/plib_adc.c
-#        src/config/sam_d21_xpro/peripheral/clock/plib_clock.c
+        #        src/config/sam_d21_xpro/peripheral/clock/plib_clock.c
         src/config/sam_d21_xpro/peripheral/dmac/plib_dmac.c
         src/config/sam_d21_xpro/peripheral/eic/plib_eic.c
         src/config/sam_d21_xpro/peripheral/evsys/plib_evsys.c
@@ -214,8 +214,14 @@ add_custom_target(${PROJECT_NAME}.bin ALL
 
 add_custom_target(size ALL
         DEPENDS ${PROJECT_NAME}.elf
-        COMMAND ${CMAKE_SIZE} ${PROJECT_NAME}.elf
+        COMMAND ${CMAKE_SIZE} --format=berkeley ${PROJECT_NAME}.elf
         COMMENT "Size information:"
+)
+
+add_custom_target(size_sections ALL
+        DEPENDS ${PROJECT_NAME}.elf
+        COMMAND ${CMAKE_SIZE} -A ${PROJECT_NAME}.elf
+        COMMENT "Section size information:"
 )
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")

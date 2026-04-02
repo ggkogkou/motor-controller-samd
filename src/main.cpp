@@ -63,29 +63,33 @@ void initializePeripherals() {
         if (cause & PM_RCAUSE_WDT_Msk)
                 wasItAutomatic = true;
 
+        if (cause & PM_RCAUSE_EXT_Msk)
+                wasItAutomatic = true;
+
         if (cause & PM_RCAUSE_POR_Msk) {
                 wasPOR = true;
         }
 
-        if (wasItAutomatic) {
-                __disable_irq();
-        }
-
         initializePeripherals();
-
-        if (wasItAutomatic) {
-                __disable_irq();
-                while (true) {
-                        BENCHMARK_IO_Set();
-                        SYSTICK_DelayMs(100);
-                        BENCHMARK_IO_Clear();
-                }
-        }
 
         SYSTICK_TimerStart();
         SPI_Buffer::init();
 
-        static constexpr frequency_kHz_t PWM_Frequency = 19.0f;
+        if (wasItAutomatic || wasPOR) {
+                __disable_irq();
+                while (true) {
+                        BENCHMARK_IO_Set();
+                        for (volatile uint32_t i = 0; i < 300000U; i=i+1) {
+                                __NOP();
+                        }
+                        BENCHMARK_IO_Clear();
+                        for (volatile uint32_t i = 0; i < 300000U; i=i+1) {
+                                __NOP();
+                        }
+                }
+        }
+
+        static constexpr frequency_kHz_t PWM_Frequency = 18.0f;
         static constexpr bool EnableLogging = true;
 
         USART_TxStream logging;

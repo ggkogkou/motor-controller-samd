@@ -49,20 +49,20 @@ namespace PermanentMagnetSynchronousMotor {
  * @note That test also showcases the name mangling of C++, and this is the reason that startup code must be extern "C"
  */
 struct FOC_CriticalVariables {
-  uint16_t zeroOffsetElectricalAngle;
-  int32_t dirSign;
-  int32_t lastDirSign;
-  uint32_t pwmPeriod;
-  uint32_t velocityLoopPeriod_us;
+        uint16_t zeroOffsetElectricalAngle;
+        int32_t dirSign;
+        int32_t lastDirSign;
+        uint32_t pwmPeriod;
+        uint32_t velocityLoopPeriod_us;
 
-  int32_t targetVelocity_mrad_s;
-  int32_t iq_ref_mA;
-  int32_t id_ref_mA;
-  int32_t targetPosition_mrad;
-  int32_t targetRevolutions;
-  int32_t targetUnwrapped_mrad;
-  bool targetUnwrappedValid;
-  int32_t positionDirection;
+        int32_t targetVelocity_mrad_s;
+        int32_t iq_ref_mA;
+        int32_t id_ref_mA;
+        int32_t targetPosition_mrad;
+        int32_t targetRevolutions;
+        int32_t targetUnwrapped_mrad;
+        bool targetUnwrappedValid;
+        int32_t positionDirection;
 };
 
 extern constinit FOC_CriticalVariables tmrCriticalVariables1;

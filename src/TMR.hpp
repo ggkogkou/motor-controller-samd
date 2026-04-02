@@ -40,6 +40,14 @@ public:
                 if (variable2 == variable3)
                         return variable2;
 
+                __disable_irq();
+                while (true) {
+                        BENCHMARK_IO_Set();
+                        SYSTICK_DelayMs(100);
+                        BENCHMARK_IO_Clear();
+                        SYSTICK_DelayMs(100);
+                }
+
                 NVIC_SystemReset();
 
                 while (true) {

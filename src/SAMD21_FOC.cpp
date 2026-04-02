@@ -26,18 +26,72 @@
 
 namespace PermanentMagnetSynchronousMotor {
 
+constinit ApplicationCriticalVariables appCriticalVariables1{
+        .focState = FOC_State::PRIME_ENCODER,
+        .switchToCloseLoop = false,
+        .encoderFaulted = false,
+        .encoderErrorCode = 0,
+        .adcOffsetU = 0,
+        .adcOffsetV = 0,
+        .offsetsReady = false,
+        .positionLoopDivider = 1,
+};
+
+constinit ApplicationCriticalVariables appCriticalVariables2{
+        .focState = FOC_State::PRIME_ENCODER,
+        .switchToCloseLoop = false,
+        .encoderFaulted = false,
+        .encoderErrorCode = 0,
+        .adcOffsetU = 0,
+        .adcOffsetV = 0,
+        .offsetsReady = false,
+        .positionLoopDivider = 1,
+};
+
+constinit ApplicationCriticalVariables appCriticalVariables3{
+        .focState = FOC_State::PRIME_ENCODER,
+        .switchToCloseLoop = false,
+        .encoderFaulted = false,
+        .encoderErrorCode = 0,
+        .adcOffsetU = 0,
+        .adcOffsetV = 0,
+        .offsetsReady = false,
+        .positionLoopDivider = 1,
+};
+
 SAMD21_FOC::SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz) : SAMD21_FOC(pwmFrequencyKHz, nullptr) {}
 
 SAMD21_FOC::SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz, TelemetryLogger<TelemetryPayload44>* telemetry) :
     telemetryLogger(telemetry), motor(calculatePWM_PeriodFromFrequency(pwmFrequencyKHz), velocityLoopPeriodUsFromPwm(pwmFrequencyKHz),
                                       currentLoopPeriodUsFromPwm(pwmFrequencyKHz)),
+    adcOffsetU(appCriticalVariables1.adcOffsetU, appCriticalVariables2.adcOffsetU, appCriticalVariables3.adcOffsetU),
+    adcOffsetV(appCriticalVariables1.adcOffsetV, appCriticalVariables2.adcOffsetV, appCriticalVariables3.adcOffsetV),
+    offsetsReady(appCriticalVariables1.offsetsReady, appCriticalVariables2.offsetsReady, appCriticalVariables3.offsetsReady),
+    focState(appCriticalVariables1.focState, appCriticalVariables2.focState, appCriticalVariables3.focState),
+    switchToCloseLoop(appCriticalVariables1.switchToCloseLoop, appCriticalVariables2.switchToCloseLoop,
+                      appCriticalVariables3.switchToCloseLoop),
+    encoderFaulted(appCriticalVariables1.encoderFaulted, appCriticalVariables2.encoderFaulted, appCriticalVariables3.encoderFaulted),
+    encoderErrorCode(appCriticalVariables1.encoderErrorCode, appCriticalVariables2.encoderErrorCode,
+                     appCriticalVariables3.encoderErrorCode),
+    positionLoopDivider(appCriticalVariables1.positionLoopDivider, appCriticalVariables2.positionLoopDivider,
+                        appCriticalVariables3.positionLoopDivider),
     tccPeriod_PER(calculatePWM_PeriodFromFrequency(pwmFrequencyKHz)) {
         __disable_irq();
 
         const uint32_t velocityLoopFrequencyHz = velocityLoopFrequencyHzFromPwm(pwmFrequencyKHz);
-        positionLoopDivider = (velocityLoopFrequencyHz + PositionLoopFrequencyHz / 2) / PositionLoopFrequencyHz;
-        if (positionLoopDivider == 0u)
-                positionLoopDivider = 1u;
+        positionLoopDivider.write((velocityLoopFrequencyHz + PositionLoopFrequencyHz / 2) / PositionLoopFrequencyHz);
+        if (positionLoopDivider.read() == 0u)
+                positionLoopDivider.write(1u);
+
+        positionLoopDividerCounter = 0u;
+
+        adcOffsetU.write(0u);
+        adcOffsetV.write(0u);
+        offsetsReady.write(false);
+        focState.write(FOC_State::PRIME_ENCODER);
+        switchToCloseLoop.write(false);
+        encoderFaulted.write(false);
+        encoderErrorCode.write(0u);
 
         TC3_TimerFrequencyHz = TC3_TimerFrequencyGet();
         TC3_TOP_RegisterValue = TC3_TimerFrequencyHz / velocityLoopFrequencyHz - 1;
@@ -104,14 +158,15 @@ void __attribute__((section(".ramfunc"))) SAMD21_FOC::ADC_Callback(ADC_STATUS st
                 // BENCHMARK_IO_Clear();
                 adcResultsReady = true;
 
-                if (focState == FOC_State::FAULT_DETECTED || not switchToCloseLoop || not offsetsReady || not rotorPositionValid)
+                if (focState.read() == FOC_State::FAULT_DETECTED || not switchToCloseLoop.read() || not offsetsReady.read() ||
+                    not rotorPositionValid)
                         return;
 
-                currents.Ia_mA = adcRawToCurrent(adcResult[PhaseIndexU], adcOffsetU);
-                currents.Ib_mA = adcRawToCurrent(adcResult[PhaseIndexV], adcOffsetV);
+                currents.Ia_mA = adcRawToCurrent(adcResult[PhaseIndexU], adcOffsetU.read());
+                currents.Ib_mA = adcRawToCurrent(adcResult[PhaseIndexV], adcOffsetV.read());
 
-                motor.updateTelemetryHardware(0, missedPairs, adcResult[PhaseIndexU], adcResult[PhaseIndexV], adcOffsetU, adcOffsetV,
-                                              encoderErrorCode);
+                motor.updateTelemetryHardware(0, missedPairs, adcResult[PhaseIndexU], adcResult[PhaseIndexV], adcOffsetU.read(),
+                                              adcOffsetV.read(), encoderErrorCode.read());
 
                 motor.runCurrentLoop(currents, dutyCycles, rotorPositionCached);
                 setPWM_DutyCycles();
@@ -133,16 +188,16 @@ void __attribute__((section(".ramfunc"))) SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_S
 
                 if (not RotorResult.has_value()) {
                         const auto EncoderError = RotorResult.error();
-                        encoderErrorCode = static_cast<uint32_t>(EncoderError);
+                        encoderErrorCode.write(static_cast<uint32_t>(EncoderError));
                         if (EncoderError == AS5047P::ReadError::PARITY_ERROR || EncoderError == AS5047P::ReadError::ERROR_FLAG_SET) {
-                                encoderFaulted = true;
+                                encoderFaulted.write(true);
                                 motor.stopMotor(dutyCycles);
                                 setPWM_DutyCycles();
-                                focState = FOC_State::FAULT_DETECTED;
+                                focState.write(FOC_State::FAULT_DETECTED);
                                 return false;
                         }
                 } else {
-                        encoderErrorCode = 0;
+                        encoderErrorCode.write(0u);
                         angle = static_cast<uint16_t>(RotorResult.value() & EncoderMask);
                         rotorPositionCached = angle;
                         rotorPositionValid = true;
@@ -153,19 +208,23 @@ void __attribute__((section(".ramfunc"))) SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_S
                 return true;
         };
 
-        if (focState == FOC_State::CLOSED_LOOP) {
+        if (focState.read() == FOC_State::CLOSED_LOOP) {
                 uint16_t rotorPosition = 0;
 
                 if (updateEncoder(rotorPosition)) {
-                        motor.updateEncoderErrorCode(encoderErrorCode);
-                        if (++positionLoopDividerCounter >= positionLoopDivider) {
+                        motor.updateEncoderErrorCode(encoderErrorCode.read());
+
+                        const uint32_t nextDividerCounter = positionLoopDividerCounter + 1u;
+                        positionLoopDividerCounter = nextDividerCounter;
+
+                        if (positionLoopDividerCounter >= positionLoopDivider.read()) {
                                 const auto ALU_HealthCheckPrevious = aluHealthCheckCounter;
                                 aluHealthCheckCounter = aluHealthCheckCounter + 1;
 
                                 if (aluHealthCheckCounter != static_cast<uint32_t>(ALU_HealthCheckPrevious + 1))
                                         NVIC_SystemReset();
 
-                                positionLoopDividerCounter = 0;
+                                positionLoopDividerCounter = 0u;
                                 motor.runPositionLoop(rotorPosition);
                         }
 
@@ -186,19 +245,19 @@ void __attribute__((section(".ramfunc"))) SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_S
                 return;
         }
 
-        switch (focState) {
+        switch (focState.read()) {
         case FOC_State::PRIME_ENCODER:
                 (void)encoder.request(AS5047P::RegisterAddress::ANGLECOM);
-                focState = FOC_State::CALIBRATE_ADC_ZERO_OFFSETS;
+                focState.write(FOC_State::CALIBRATE_ADC_ZERO_OFFSETS);
                 break;
         case FOC_State::CALIBRATE_ADC_ZERO_OFFSETS:
-                if (not offsetsReady) {
+                if (not offsetsReady.read()) {
                         motor.stopMotor(dutyCycles);
                         setPWM_DutyCycles();
                         adcZeroOffsetCalibration();
                         break;
                 }
-                focState = FOC_State::STARTUP_CALIBRATIONS;
+                focState.write(FOC_State::STARTUP_CALIBRATIONS);
                 [[fallthrough]];
         case FOC_State::STARTUP_CALIBRATIONS:
                 {
@@ -206,15 +265,15 @@ void __attribute__((section(".ramfunc"))) SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_S
                         if (not updateEncoder(rotorPosition))
                                 break;
 
-                        if (not switchToCloseLoop) {
-                                switchToCloseLoop = motor.startupCalibration(dutyCycles, rotorPosition);
+                        if (not switchToCloseLoop.read()) {
+                                switchToCloseLoop.write(motor.startupCalibration(dutyCycles, rotorPosition));
                                 setPWM_DutyCycles();
-                                if (switchToCloseLoop)
-                                        focState = FOC_State::CLOSED_LOOP;
+                                if (switchToCloseLoop.read())
+                                        focState.write(FOC_State::CLOSED_LOOP);
                                 break;
                         }
 
-                        focState = FOC_State::CLOSED_LOOP;
+                        focState.write(FOC_State::CLOSED_LOOP);
                         break;
                 }
         case FOC_State::FAULT_DETECTED:
@@ -244,7 +303,7 @@ void SAMD21_FOC::adcZeroOffsetCalibration() {
         const uint16_t V = adcResult[PhaseIndexV];
         adcResultsReady = false;
 
-        if (offsetsReady)
+        if (offsetsReady.read())
                 return;
 
         offsetAccU += U;
@@ -252,10 +311,10 @@ void SAMD21_FOC::adcZeroOffsetCalibration() {
         offsetCount++;
 
         if (offsetCount >= ADC_ScanCount) {
-                adcOffsetU = static_cast<uint16_t>((offsetAccU + offsetCount / 2) / offsetCount);
-                adcOffsetV = static_cast<uint16_t>((offsetAccV + offsetCount / 2) / offsetCount);
+                adcOffsetU.write(static_cast<uint16_t>((offsetAccU + offsetCount / 2) / offsetCount));
+                adcOffsetV.write(static_cast<uint16_t>((offsetAccV + offsetCount / 2) / offsetCount));
 
-                offsetsReady = true;
+                offsetsReady.write(true);
 
                 offsetAccU = 0;
                 offsetAccV = 0;
