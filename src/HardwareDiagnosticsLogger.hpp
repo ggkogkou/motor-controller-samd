@@ -29,6 +29,7 @@
 #include <span>
 #include "USART_TxStream.hpp"
 
+namespace HardwareDiagnostics {
 class HardwareDiagnosticsLogger {
 public:
         /**
@@ -85,3 +86,8 @@ private:
          */
         USART_TxStream& usart;
 };
+
+inline USART_TxStream diagnostics{DMAC_CHANNEL_1};
+inline HardwareDiagnosticsLogger diagnosticsLogger{diagnostics};
+
+} // namespace HardwareDiagnostics

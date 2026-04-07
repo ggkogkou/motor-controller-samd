@@ -5,8 +5,8 @@
 extern "C" {
 
 [[noreturn]] void DefaultHandler() {
-        BENCHMARK_IO_Set();
-        while (true) {}
+        __disable_irq();
+        NVIC_SystemReset();
 }
 
 [[noreturn]] void NonMaskableInt_Handler(void) __attribute__((weak, alias("DefaultHandler")));

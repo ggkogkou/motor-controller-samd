@@ -24,6 +24,8 @@
 
 #include "HardwareDiagnosticsLogger.hpp"
 
+namespace HardwareDiagnostics {
+
 std::size_t HardwareDiagnosticsLogger::stringLength(const char* message) {
         if (message == nullptr)
                 return 0;
@@ -106,3 +108,5 @@ bool HardwareDiagnosticsLogger::logClosedLoopEntered() {
 bool HardwareDiagnosticsLogger::logMotorStopped() {
         return writeLiteral("STATE: MOTOR_STOPPED\r\n");
 }
+
+} // namespace HardwareDiagnostics

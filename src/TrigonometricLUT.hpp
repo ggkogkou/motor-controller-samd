@@ -76,19 +76,30 @@ struct SineLookUpTableQ15 {
                 return lut;
         }
 
+        /**
+         * Compile-time/reference LUT in flash
+         */
         static constexpr LookUpTable sineLUT_Flash = generateLookUpTable();
-        static constexpr LookUpTable sineLUT __attribute__((section(".ram_lut"), used)) = generateLookUpTable();
+
+        /**
+         * Runtime working LUT in RAM
+         */
+        static inline constinit LookUpTable sineLUT_RAM __attribute__((section(".ram_lut"), used)) = generateLookUpTable();
 
         /**
          * Operator[] for raw encoder counts (0..16383)
+         *
+         * @note This operator uses the compile-time/reference LUT in flash so that static_assert tests remain valid.
          */
         constexpr int16_t operator[](uint16_t encoder14) const noexcept {
                 const uint32_t idx = (static_cast<uint32_t>(encoder14) * static_cast<uint32_t>(N)) >> 14;
-                return sineLUT[static_cast<std::size_t>(idx) & (N - 1)];
+                return sineLUT_Flash[static_cast<std::size_t>(idx) & (N - 1)];
         }
 
         /**
          * Operator[] for milli-radians (mrad)
+         *
+         * @note This operator uses the compile-time/reference LUT in flash so that static_assert tests remain valid.
          */
         constexpr int16_t operator[](int32_t theta_mrad) const noexcept {
                 int32_t w = theta_mrad % TWO_PI_MRAD;
@@ -99,7 +110,34 @@ struct SineLookUpTableQ15 {
                                                           static_cast<int64_t>(TWO_PI_MRAD)) &
                         (N - 1);
 
-                return sineLUT[idx];
+                return sineLUT_Flash[idx];
+        }
+
+        /**
+         * Runtime lookup for raw encoder counts (0..16383)
+         *
+         * @note This uses the working LUT in RAM.
+         */
+        static int16_t lookupRuntime(uint16_t encoder14) noexcept {
+                const uint32_t idx = (static_cast<uint32_t>(encoder14) * static_cast<uint32_t>(N)) >> 14;
+                return sineLUT_RAM[static_cast<std::size_t>(idx) & (N - 1)];
+        }
+
+        /**
+         * Runtime lookup for milli-radians (mrad)
+         *
+         * @note This uses the working LUT in RAM.
+         */
+        static int16_t lookupRuntime(int32_t theta_mrad) noexcept {
+                int32_t w = theta_mrad % TWO_PI_MRAD;
+                if (w < 0)
+                        w += TWO_PI_MRAD;
+
+                const auto idx = static_cast<std::size_t>((static_cast<int64_t>(w) * static_cast<int64_t>(N)) /
+                                                          static_cast<int64_t>(TWO_PI_MRAD)) &
+                        (N - 1);
+
+                return sineLUT_RAM[idx];
         }
 };
 
@@ -110,11 +148,17 @@ template <std::size_t N = 4096>
 struct CosineLookUpTableQ15 : private SineLookUpTableQ15<N> {
         using Base = SineLookUpTableQ15<N>;
 
+        /**
+         * Compile-time/reference cosine access via flash sine LUT
+         */
         constexpr int16_t operator[](uint16_t encoder14) const noexcept {
                 const uint32_t idx = (static_cast<uint32_t>(encoder14) * static_cast<uint32_t>(N)) >> 14;
-                return Base::sineLUT[(static_cast<std::size_t>(idx) + Base::QUARTER) & (N - 1)];
+                return Base::sineLUT_Flash[(static_cast<std::size_t>(idx) + Base::QUARTER) & (N - 1)];
         }
 
+        /**
+         * Compile-time/reference cosine access via flash sine LUT
+         */
         constexpr int16_t operator[](int32_t theta_mrad) const noexcept {
                 int32_t w = theta_mrad % Base::TWO_PI_MRAD;
                 if (w < 0)
@@ -123,7 +167,33 @@ struct CosineLookUpTableQ15 : private SineLookUpTableQ15<N> {
                 const auto idx = static_cast<std::size_t>((static_cast<int64_t>(w) * static_cast<int64_t>(N)) /
                                                           static_cast<int64_t>(Base::TWO_PI_MRAD));
 
-                return Base::sineLUT[(idx + Base::QUARTER) & (N - 1)];
+                return Base::sineLUT_Flash[(idx + Base::QUARTER) & (N - 1)];
+        }
+
+        /**
+         * Runtime cosine lookup for raw encoder counts (0..16383)
+         *
+         * @note This uses the working LUT in RAM
+         */
+        static int16_t lookupRuntime(uint16_t encoder14) noexcept {
+                const uint32_t idx = (static_cast<uint32_t>(encoder14) * static_cast<uint32_t>(N)) >> 14;
+                return Base::sineLUT_RAM[(static_cast<std::size_t>(idx) + Base::QUARTER) & (N - 1)];
+        }
+
+        /**
+         * Runtime cosine lookup for milli-radians (mrad)
+         *
+         * @note This uses the working LUT in RAM
+         */
+        static int16_t lookupRuntime(int32_t theta_mrad) noexcept {
+                int32_t w = theta_mrad % Base::TWO_PI_MRAD;
+                if (w < 0)
+                        w += Base::TWO_PI_MRAD;
+
+                const auto idx = static_cast<std::size_t>((static_cast<int64_t>(w) * static_cast<int64_t>(N)) /
+                                                          static_cast<int64_t>(Base::TWO_PI_MRAD));
+
+                return Base::sineLUT_RAM[(idx + Base::QUARTER) & (N - 1)];
         }
 };
 

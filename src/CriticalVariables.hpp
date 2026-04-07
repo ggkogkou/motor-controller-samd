@@ -18,13 +18,13 @@
 
 /**
  * @file   CriticalVariables.hpp
- * @brief  A struct definition of the most important FOC variables that are subject to TMR
+ * @brief  Definitions of the most important variables that are subject to TMR
  * @author Georgios Gkogkou <ggkogkou125@gmail.com>
  */
 
 #pragma once
 
-#include "cstdint"
+#include <cstdint>
 
 namespace PermanentMagnetSynchronousMotor {
 
@@ -47,7 +47,7 @@ struct PID_CriticalVariables {
  * script and aligning them in a way that they are always pre-allocated at 1024 bytes and their size is not affected/shrinked.
  *
  * Testing the result:
- * Run (e.g.in bash): arm-none-eabi-nm -n build/g18a/motor-controller-samd21.elf | grep tmrCriticalVariables
+ * Run (e.g. in bash): arm-none-eabi-nm -n build/g18a/motor-controller-samd21.elf | grep tmrCriticalVariables
  * Output should be:
  *      20002000 B _ZN31PermanentMagnetSynchronousMotor21tmrCriticalVariables1E
  *      20002400 B _ZN31PermanentMagnetSynchronousMotor21tmrCriticalVariables2E
@@ -77,12 +77,26 @@ struct FOC_CriticalVariables {
         PID_CriticalVariables pidIq;
 };
 
+/**
+ * @struct DemoStateMachine
+ * TMR-protected state variables for RadiationTestDemo
+ */
+struct DemoStateMachine {
+        uint32_t targetIndex;
+        uint32_t demoState;
+        int32_t positionDirection;
+};
+
 extern constinit FOC_CriticalVariables tmrCriticalVariables1;
 extern constinit FOC_CriticalVariables tmrCriticalVariables2;
 extern constinit FOC_CriticalVariables tmrCriticalVariables3;
 
-extern constinit FOC_CriticalVariables tmrPID_CriticalVariables1;
-extern constinit FOC_CriticalVariables tmrPID_CriticalVariables2;
-extern constinit FOC_CriticalVariables tmrPID_CriticalVariables3;
+extern constinit PID_CriticalVariables tmrPID_CriticalVariables1;
+extern constinit PID_CriticalVariables tmrPID_CriticalVariables2;
+extern constinit PID_CriticalVariables tmrPID_CriticalVariables3;
+
+extern constinit DemoStateMachine tmrDemoStateMachine1;
+extern constinit DemoStateMachine tmrDemoStateMachine2;
+extern constinit DemoStateMachine tmrDemoStateMachine3;
 
 } // namespace PermanentMagnetSynchronousMotor

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <type_traits>
+#include "HardwareDiagnosticsLogger.hpp"
 #include "definitions.h"
 
 template <typename T>
@@ -40,13 +41,10 @@ public:
                 if (variable2 == variable3)
                         return variable2;
 
-                __disable_irq();
-                while (true) {
-                        BENCHMARK_IO_Set();
-                        SYSTICK_DelayMs(100);
-                        BENCHMARK_IO_Clear();
-                        SYSTICK_DelayMs(100);
-                }
+                HardwareDiagnostics::diagnosticsLogger.writeLiteral("RESET REQUESTED: TMR FAILED\r\n");
+
+                for (uint32_t i = 0; i < 3000000U; i++)
+                        __NOP();
 
                 NVIC_SystemReset();
 
@@ -124,7 +122,7 @@ public:
          *
          * @param value
          */
-        void write(const T& value) {
+        void write(T value) {
                 variable1 = value;
                 variable2 = value;
                 variable3 = value;
