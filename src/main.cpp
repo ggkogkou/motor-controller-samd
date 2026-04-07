@@ -63,6 +63,6 @@ inline constexpr bool EnableLogging = true;
                 if (radiationTestDemo.loggingEnabled())
                         telemetry.writeFrame(logging);
 
-                SYSTICK_DelayMs(3);
+                // SYSTICK_DelayMs(1);
         }
 }
