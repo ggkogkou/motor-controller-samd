@@ -54,11 +54,11 @@ bool HardwareDiagnosticsLogger::writeLiteral(const char* message) {
                 return false;
 
         const auto* bytes = reinterpret_cast<const uint8_t*>(message);
-        return write(std::span<const uint8_t>(bytes, length));
+        return write(std::span(bytes, length));
 }
 
 bool HardwareDiagnosticsLogger::logBoot() {
-        return writeLiteral("BOOT\r\n");
+        return writeLiteral("\n\r\n\rBOOT\r\n");
 }
 
 bool HardwareDiagnosticsLogger::logResetPOR() {

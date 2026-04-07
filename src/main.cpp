@@ -25,34 +25,16 @@
 #include <GenericClockController.hpp>
 
 #include "DeviceStartup.hpp"
-#include "GenericClockController.hpp"
 #include "HardwareDiagnosticsLogger.hpp"
 #include "RadiationTestDemo.hpp"
+#include "ResetEventMonitor.hpp"
 #include "SAMD21_FOC.hpp"
 #include "definitions.h"
 
+inline constexpr frequency_kHz_t PWM_Frequency = 17.0f;
+inline constexpr bool EnableLogging = true;
+
 [[noreturn]] int main() {
-        const uint8_t cause = PM_REGS->PM_RCAUSE;
-
-        auto wasItAutomatic = false;
-        auto wasPOR = false;
-
-        if (cause & PM_RCAUSE_BOD12_Msk)
-                wasItAutomatic = true;
-
-        if (cause & PM_RCAUSE_BOD33_Msk)
-                wasItAutomatic = true;
-
-        if (cause & PM_RCAUSE_WDT_Msk)
-                wasItAutomatic = true;
-
-        if (cause & PM_RCAUSE_EXT_Msk)
-                wasItAutomatic = true;
-
-        if (cause & PM_RCAUSE_POR_Msk)
-                wasPOR = true;
-
-        // initializePeripherals();
         SYS_Initialize(NULL);
         SYSTICK_TimerStart();
         SPI_Buffer::init();
@@ -60,39 +42,11 @@
         HardwareDiagnostics::diagnostics.init();
         HardwareDiagnostics::diagnosticsLogger.logBoot();
 
-        if (cause & PM_RCAUSE_POR_Msk)
-                HardwareDiagnostics::diagnosticsLogger.logResetPOR();
-
-        if (cause & PM_RCAUSE_BOD12_Msk)
-                HardwareDiagnostics::diagnosticsLogger.writeLiteral("RESET: BOD12\r\n");
-
-        if (cause & PM_RCAUSE_BOD33_Msk)
-                HardwareDiagnostics::diagnosticsLogger.logResetBOD33();
-
-        if (cause & PM_RCAUSE_WDT_Msk)
-                HardwareDiagnostics::diagnosticsLogger.logResetWDT();
-
-        if (cause & PM_RCAUSE_EXT_Msk)
-                HardwareDiagnostics::diagnosticsLogger.logResetExternal();
-
-        if (cause & PM_RCAUSE_SYST_Msk)
-                HardwareDiagnostics::diagnosticsLogger.logResetSoftware();
-
-        if (cause == 0U)
-                HardwareDiagnostics::diagnosticsLogger.logResetUnknown();
-
-        if (wasPOR)
-                HardwareDiagnostics::diagnosticsLogger.writeLiteral("STATE: POWER-ON RESET HAPPENED\r\n");
-
-        if (wasItAutomatic)
-                HardwareDiagnostics::diagnosticsLogger.writeLiteral("STATE: AUTOMATIC RESET HAPPENED\r\n");
-
-        static constexpr frequency_kHz_t PWM_Frequency = 18.0f;
-        static constexpr bool EnableLogging = true;
+        ResetEventMonitor::determineResetCause();
 
         USART_TxStream logging{DMAC_CHANNEL_0};
-        TelemetryLogger<TelemetryPayload44> telemetry;
-        TelemetryLogger<TelemetryPayload44>* telemetryPtr = nullptr;
+        TelemetryLogger<TelemetryPayload12> telemetry;
+        TelemetryLogger<TelemetryPayload12>* telemetryPtr = nullptr;
         if (EnableLogging)
                 telemetryPtr = &telemetry;
         SAMD21_FOC foc{PWM_Frequency, telemetryPtr};
@@ -100,11 +54,10 @@
         if (telemetryPtr != nullptr)
                 logging.init();
 
-        // RadiationTestDemo radiationTestDemo(foc, telemetryPtr);
         RadiationTestDemo radiationTestDemo(foc, telemetryPtr);
         radiationTestDemo.start();
 
-        HardwareDiagnostics::diagnosticsLogger.writeLiteral("STATE: MAIN_LOOP_ENTERED\r\n");
+        HardwareDiagnostics::diagnosticsLogger.writeLiteral("STATE: MAIN-LOOP ENTERED\r\n");
 
         while (true) {
                 if (radiationTestDemo.loggingEnabled())

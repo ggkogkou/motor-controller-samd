@@ -49,6 +49,17 @@ struct TelemetryPayload44 {
 };
 
 /**
+ * @struct TelemetryPayload12
+ *
+ * A collection of the parameters that can be monitored during the algorithm execution
+ */
+struct TelemetryPayload12 {
+        int32_t ia_mA = 0;
+        int32_t ib_mA = 0;
+        uint32_t angle_raw = 0;
+};
+
+/**
  * A set of compile-time checks verifying whether the TelemetryParameters struct is aligned correctly
  */
 namespace Tests {
@@ -56,6 +67,10 @@ namespace Tests {
 static_assert(std::is_trivially_copyable_v<TelemetryPayload44>);
 static_assert(sizeof(TelemetryPayload44) == 44, "TelemetryParameters size changed");
 static_assert(sizeof(TelemetryPayload44) % 4 == 0);
+
+static_assert(std::is_trivially_copyable_v<TelemetryPayload12>);
+static_assert(sizeof(TelemetryPayload12) == 12, "TelemetryParameters size changed");
+static_assert(sizeof(TelemetryPayload12) % 4 == 0);
 
 } // namespace Tests
 } // namespace Telemetry

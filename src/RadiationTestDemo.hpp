@@ -48,7 +48,7 @@ public:
          * @param foc Reference to the motor FOC controller
          * @param telemetry Optional telemetry logger (nullptr disables logging)
          */
-        explicit RadiationTestDemo(SAMD21_FOC& foc, TelemetryLogger<TelemetryPayload44>* telemetry = nullptr) :
+        explicit RadiationTestDemo(SAMD21_FOC& foc, TelemetryLogger<TelemetryPayload12>* telemetry = nullptr) :
             samd21_FOC(foc), telemetryLogger(telemetry),
             targetIndex(tmrDemoStateMachine1.targetIndex, tmrDemoStateMachine2.targetIndex, tmrDemoStateMachine3.targetIndex),
             demoState(tmrDemoStateMachine1.demoState, tmrDemoStateMachine2.demoState, tmrDemoStateMachine3.demoState),
@@ -144,7 +144,7 @@ private:
         /**
          * Optional telemetry logger (nullptr disables logging)
          */
-        TelemetryLogger<TelemetryPayload44>* telemetryLogger = nullptr;
+        TelemetryLogger<TelemetryPayload12>* telemetryLogger = nullptr;
 
         /**
          * TMR-backed demo variables stored in CriticalVariables.{hpp,cpp}

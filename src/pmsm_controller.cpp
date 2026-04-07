@@ -243,18 +243,4 @@ void PMSM_Controller::stopMotor(const PhaseDutyCycles& dutyCycles) const {
         dutyCycles.perC = pwmPeriod.read() - perC;
 }
 
-void PMSM_Controller::fillTelemetryPayload(TelemetryPayload44& tp, uint16_t thetaEncoder) const {
-        tp.dirSign = (dirSign.read() < 0) ? -1 : 1;
-        tp.ZeroOffsetElectricalAngle = static_cast<uint32_t>(ZeroOffsetElectricalAngle.read());
-        tp.ThetaEl = tlm.theta_el;
-        tp.ia_mA = tlm.ia_mA;
-        tp.ib_mA = tlm.ib_mA;
-        tp.adcOffsetU = tlm.adc_u_off;
-        tp.adcOffsetV = tlm.adc_v_off;
-        tp.iq_ref_mA = tlm.iq_ref_mA;
-        tp.angle_raw = static_cast<uint32_t>(thetaEncoder);
-        tp.runtime_mem_corruption_err = 0;
-        tp.encoder_err = tlm.encoder_error_code;
-}
-
 } // namespace PermanentMagnetSynchronousMotor

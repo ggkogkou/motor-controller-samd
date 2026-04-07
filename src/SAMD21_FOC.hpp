@@ -29,6 +29,7 @@
 #include "as5047p.hpp"
 #include "definitions.h"
 #include "pmsm_controller.hpp"
+#include "HardwareDiagnosticsLogger.hpp"
 
 namespace PermanentMagnetSynchronousMotor {
 
@@ -84,7 +85,7 @@ public:
          */
         explicit SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz);
 
-        explicit SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz, TelemetryLogger<TelemetryPayload44>* telemetry = nullptr);
+        explicit SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz, TelemetryLogger<TelemetryPayload12>* telemetry = nullptr);
 
         /**
          * Compiler generated default destructor
@@ -147,7 +148,7 @@ private:
          */
         void setPWM_DutyCycles() const;
 
-        TelemetryLogger<TelemetryPayload44>* telemetryLogger = nullptr;
+        TelemetryLogger<TelemetryPayload12>* telemetryLogger = nullptr;
 
         /**
          * The ADC reference voltage in mV (1/1.48*Vdd)
@@ -177,7 +178,7 @@ private:
          * @param adcRawValue The 12-bit ADC raw word from RESRDY register
          * @return The corresponding voltage in mV
          */
-        static inline int32_t rawToMilliVolts(int32_t adcRawValue) {
+        static int32_t rawToMilliVolts(int32_t adcRawValue) {
                 if (adcRawValue >= 0)
                         return (adcRawValue * ADC_VREF_mV + ADC_MaximumRawValue / 2) / ADC_MaximumRawValue;
 

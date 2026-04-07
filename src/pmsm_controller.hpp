@@ -201,10 +201,27 @@ public:
 
         /**
          * Function that updates the monitored parameters
+         *
          * @param tp
          * @param thetaEncoder
          */
-        void fillTelemetryPayload(TelemetryPayload44& tp, uint16_t thetaEncoder) const;
+        template <typename TelemetryPayloadType>
+        void fillTelemetryPayload(TelemetryPayloadType& tp, uint16_t thetaEncoder) const {
+                tp.ia_mA = tlm.ia_mA;
+                tp.ib_mA = tlm.ib_mA;
+                tp.angle_raw = static_cast<uint32_t>(thetaEncoder);
+
+                if constexpr (std::is_same_v<TelemetryPayloadType, TelemetryPayload44>) {
+                        tp.dirSign = (dirSign.read() < 0) ? -1 : 1;
+                        tp.ZeroOffsetElectricalAngle = static_cast<uint32_t>(ZeroOffsetElectricalAngle.read());
+                        tp.ThetaEl = tlm.theta_el;
+                        tp.adcOffsetU = tlm.adc_u_off;
+                        tp.adcOffsetV = tlm.adc_v_off;
+                        tp.iq_ref_mA = tlm.iq_ref_mA;
+                        tp.runtime_mem_corruption_err = 0;
+                        tp.encoder_err = tlm.encoder_error_code;
+                }
+        }
 
 private:
         /**

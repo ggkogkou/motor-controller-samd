@@ -61,7 +61,7 @@ constinit ApplicationCriticalVariables appCriticalVariables3{
 
 SAMD21_FOC::SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz) : SAMD21_FOC(pwmFrequencyKHz, nullptr) {}
 
-SAMD21_FOC::SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz, TelemetryLogger<TelemetryPayload44>* telemetry) :
+SAMD21_FOC::SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz, TelemetryLogger<TelemetryPayload12>* telemetry) :
     telemetryLogger(telemetry), motor(calculatePWM_PeriodFromFrequency(pwmFrequencyKHz), velocityLoopPeriodUsFromPwm(pwmFrequencyKHz),
                                       currentLoopPeriodUsFromPwm(pwmFrequencyKHz)),
     adcOffsetU(appCriticalVariables1.adcOffsetU, appCriticalVariables2.adcOffsetU, appCriticalVariables3.adcOffsetU),
@@ -194,6 +194,7 @@ void __attribute__((section(".ramfunc"))) SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_S
                                 motor.stopMotor(dutyCycles);
                                 setPWM_DutyCycles();
                                 focState.write(FOC_State::FAULT_DETECTED);
+                                HardwareDiagnostics::diagnosticsLogger.writeLiteral("ENCODER FAUL DETECTED\r\n");
                                 return false;
                         }
                 } else {
@@ -231,7 +232,7 @@ void __attribute__((section(".ramfunc"))) SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_S
                         motor.runVelocityLoop(rotorPosition);
 
                         if (telemetryLogger) {
-                                TelemetryPayload44 tp{};
+                                TelemetryPayload12 tp{};
                                 motor.fillTelemetryPayload(tp, rotorPosition);
                                 telemetryLogger->updateLatest(tp);
                         }
