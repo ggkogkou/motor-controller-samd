@@ -25,15 +25,53 @@
 #pragma once
 
 #include <cstdint>
+#include "TMR.hpp"
 #include "as5047p.hpp"
 #include "definitions.h"
 #include "pmsm_controller.hpp"
+#include "HardwareDiagnosticsLogger.hpp"
 
 namespace PermanentMagnetSynchronousMotor {
 
 using microseconds_t = uint32_t;
 using frequency_kHz_t = float;
 using counter_ticks_t = uint32_t;
+
+/**
+ * @enum FOC_State
+ *
+ * A list of the FSM states used by the hardware-specific FOC implementation
+ */
+enum class FOC_State : uint8_t {
+        PRIME_ENCODER,
+        CALIBRATE_ADC_ZERO_OFFSETS,
+        STARTUP_CALIBRATIONS,
+        CLOSED_LOOP,
+        FAULT_DETECTED,
+};
+
+/**
+ * @struct ApplicationCriticalVariables
+ * A struct that contains the most important application-level variables of the hardware-specific FOC implementation
+ *
+ * The idea behind this is to store the most important variables in three separate banks in memory. Then, when reading the variables
+ * from RAM, a simple majority voting procedure happens to select the value that appears to be in >2 banks the same. By doing this the
+ * SEU/SEFI should have less effect to drive the algorithm to instability.
+ */
+struct ApplicationCriticalVariables {
+        FOC_State focState;
+        bool switchToCloseLoop;
+        bool encoderFaulted;
+        uint32_t encoderErrorCode;
+        uint16_t adcOffsetU;
+        uint16_t adcOffsetV;
+        bool offsetsReady;
+        uint32_t positionLoopDivider;
+};
+
+extern constinit ApplicationCriticalVariables appCriticalVariables1;
+extern constinit ApplicationCriticalVariables appCriticalVariables2;
+extern constinit ApplicationCriticalVariables appCriticalVariables3;
 
 /**
  * Hardware-specific Field-Oriented Control implementation for brushless DC motors
@@ -47,7 +85,7 @@ public:
          */
         explicit SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz);
 
-        explicit SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz, TelemetryLogger* telemetry = nullptr);
+        explicit SAMD21_FOC(frequency_kHz_t pwmFrequencyKHz, TelemetryLogger<TelemetryPayload12>* telemetry = nullptr);
 
         /**
          * Compiler generated default destructor
@@ -83,8 +121,15 @@ public:
         }
 
 private:
-        static void ADC_Callback(ADC_STATUS status, uintptr_t context);
-        static void TC3_Callback(TC_TIMER_STATUS status, uintptr_t context);
+        static void ADC_Callback(ADC_STATUS status, uintptr_t context) {
+                if (auto* self = reinterpret_cast<SAMD21_FOC*>(context))
+                        self->ADC_Callback(status);
+        }
+
+        static void TC3_Callback(TC_TIMER_STATUS status, uintptr_t context) {
+                if (auto* self = reinterpret_cast<SAMD21_FOC*>(context))
+                        self->TC3_FOC_Handler(status);
+        }
 
         /**
          * Callback function that runs from the ADC ISR and executes the current loop
@@ -103,7 +148,7 @@ private:
          */
         void setPWM_DutyCycles() const;
 
-        TelemetryLogger* telemetryLogger = nullptr;
+        TelemetryLogger<TelemetryPayload12>* telemetryLogger = nullptr;
 
         /**
          * The ADC reference voltage in mV (1/1.48*Vdd)
@@ -121,12 +166,19 @@ private:
         static constexpr int32_t ADC_MaximumRawValue = ADC_Resolution - 1;
 
         /**
+         * @brief Counter variable to check the ALU health status
+         *
+         * At each execution of position loop increment the counter and check if the value was actually incremented
+         */
+        uint32_t aluHealthCheckCounter = 0;
+
+        /**
          * Helper function that converts the raw 12-bit ADC reading to the corresponding voltage (in mV)
          *
          * @param adcRawValue The 12-bit ADC raw word from RESRDY register
          * @return The corresponding voltage in mV
          */
-        static inline int32_t rawToMilliVolts(int32_t adcRawValue) {
+        static int32_t rawToMilliVolts(int32_t adcRawValue) {
                 if (adcRawValue >= 0)
                         return (adcRawValue * ADC_VREF_mV + ADC_MaximumRawValue / 2) / ADC_MaximumRawValue;
 
@@ -205,15 +257,15 @@ private:
         volatile bool adcResultsReady = false;
         volatile uint8_t adcScanIndex = 0;
 
-        uint16_t adcOffsetU = 0;
-        uint16_t adcOffsetV = 0;
+        TMR<uint16_t> adcOffsetU;
+        TMR<uint16_t> adcOffsetV;
         uint16_t adcOffsetW = 0;
 
         uint32_t offsetAccU = 0;
         uint32_t offsetAccV = 0;
         uint32_t offsetAccW = 0;
         uint16_t offsetCount = 0;
-        bool offsetsReady = false;
+        TMR<bool> offsetsReady;
 
         static constexpr int32_t R_Shunt_mOhm = 100;
 
@@ -221,19 +273,11 @@ private:
 
         int32_t opAmpOffset_mV = 1'100;
 
-        enum class FOC_State : uint8_t {
-                PRIME_ENCODER,
-                CALIBRATE_ADC_ZERO_OFFSETS,
-                STARTUP_CALIBRATIONS,
-                CLOSED_LOOP,
-                FAULT_DETECTED,
-        };
+        TMR<FOC_State> focState;
 
-        FOC_State focState = FOC_State::PRIME_ENCODER;
-
-        bool switchToCloseLoop = false;
-        bool encoderFaulted = false;
-        uint32_t encoderErrorCode = 0;
+        TMR<bool> switchToCloseLoop;
+        TMR<bool> encoderFaulted;
+        TMR<uint32_t> encoderErrorCode;
 
         /**
          * Cached timing
@@ -295,7 +339,7 @@ private:
          * Position loop
          */
         static constexpr uint32_t PositionLoopFrequencyHz = 1'000;
-        uint32_t positionLoopDivider = 1;
+        TMR<uint32_t> positionLoopDivider;
 
         uint32_t positionLoopDividerCounter = 0;
 

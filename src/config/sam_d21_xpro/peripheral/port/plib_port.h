@@ -65,10 +65,6 @@
 // *****************************************************************************
 // *****************************************************************************
 
-/*** Macros for ADC_AIN2 pin ***/
-#define ADC_AIN2_Get()               (((PORT_REGS->GROUP[1].PORT_IN >> 8U)) & 0x01U)
-#define ADC_AIN2_PIN                  PORT_PIN_PB08
-
 /*** Macros for ADC_AIN3 pin ***/
 #define ADC_AIN3_Get()               (((PORT_REGS->GROUP[1].PORT_IN >> 9U)) & 0x01U)
 #define ADC_AIN3_PIN                  PORT_PIN_PB09
@@ -98,9 +94,17 @@
 #define TCC0_WO2_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 10U)) & 0x01U)
 #define TCC0_WO2_PIN                  PORT_PIN_PA10
 
+/*** Macros for TCC0_WO3 pin ***/
+#define TCC0_WO3_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 11U)) & 0x01U)
+#define TCC0_WO3_PIN                  PORT_PIN_PA11
+
 /*** Macros for TCC0_WO5 pin ***/
 #define TCC0_WO5_Get()               (((PORT_REGS->GROUP[1].PORT_IN >> 11U)) & 0x01U)
 #define TCC0_WO5_PIN                  PORT_PIN_PB11
+
+/*** Macros for TCC0_WO7 pin ***/
+#define TCC0_WO7_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 13U)) & 0x01U)
+#define TCC0_WO7_PIN                  PORT_PIN_PA13
 
 /*** Macros for BENCHMARK_IO pin ***/
 #define BENCHMARK_IO_Set()               (PORT_REGS->GROUP[0].PORT_OUTSET = ((uint32_t)1U << 17U))

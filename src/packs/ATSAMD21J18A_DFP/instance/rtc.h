@@ -26,13 +26,13 @@
 
 
 /* ========== Instance Parameter definitions for RTC peripheral ========== */
-#define RTC_ALARM_NUM (1) /* Number of Alarms */
-#define RTC_COMP16_NUM (2) /* Number of 16-bit Comparators */
-#define RTC_COMP32_NUM (1) /* Number of 32-bit Comparators */
-#define RTC_GCLK_ID (4) /* Index of Generic Clock */
-#define RTC_NUM_OF_ALARMS (1) /* Number of Alarms (obsolete) */
-#define RTC_NUM_OF_COMP16 (2) /* Number of 16-bit Comparators (obsolete) */
-#define RTC_NUM_OF_COMP32 (1) /* Number of 32-bit Comparators (obsolete) */
-#define RTC_INSTANCE_ID (5)
+#define RTC_ALARM_NUM                            (1)        /* Number of Alarms */
+#define RTC_COMP16_NUM                           (2)        /* Number of 16-bit Comparators */
+#define RTC_COMP32_NUM                           (1)        /* Number of 32-bit Comparators */
+#define RTC_GCLK_ID                              (4)        /* Index of Generic Clock */
+#define RTC_NUM_OF_ALARMS                        (1)        /* Number of Alarms (obsolete) */
+#define RTC_NUM_OF_COMP16                        (2)        /* Number of 16-bit Comparators (obsolete) */
+#define RTC_NUM_OF_COMP32                        (1)        /* Number of 32-bit Comparators (obsolete) */
+#define RTC_INSTANCE_ID                          (5)        
 
 #endif /* _SAMD21_RTC_INSTANCE_ */

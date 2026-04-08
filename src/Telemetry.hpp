@@ -25,46 +25,22 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <cstdint>
 #include <span>
 #include <type_traits>
 #include "USART_TxStream.hpp"
 #include "definitions.h"
+#include "TelemetryPayloads.hpp"
 
 namespace Telemetry {
 
-/**
- * @struct TelemetryParameters
- *
- * A collection of the parameters that can be monitored during the algorithm execution
- */
-struct TelemetryParameters {
-        int32_t dirSign = 0;
-        uint32_t ZeroOffsetElectricalAngle = 0;
-        uint32_t ThetaEl = 0;
-        int32_t ia_mA = 0;
-        int32_t ib_mA = 0;
-        uint32_t adcOffsetU = 0;
-        uint32_t adcOffsetV = 0;
-        int32_t iq_ref_mA = 0;
-        uint32_t angle_raw = 0;
-        uint32_t runtime_mem_corruption_err = 0;
-        uint32_t encoder_err = 0;
-};
-
-/**
- * A set of compile-time checks verifying whether the TelemetryParameters struct is aligned correctly
- */
-namespace Tests {
-
-static_assert(std::is_trivially_copyable_v<TelemetryParameters>);
-static_assert(sizeof(TelemetryParameters) == 44, "TelemetryParameters size changed");
-static_assert(sizeof(TelemetryParameters) % 4 == 0);
-
-} // namespace Tests
-
+template <typename TelemetryParameters>
 class TelemetryLogger {
 public:
+        static_assert(std::is_trivially_copyable_v<TelemetryParameters>);
+        static_assert(sizeof(TelemetryParameters) % 4 == 0);
+
         /**
          * Constructor is the default compiler-generated
          */
@@ -76,7 +52,7 @@ public:
          * @param sample The TelemetryParameters snapshot
          */
         __attribute__((always_inline)) void updateLatest(const TelemetryParameters& sample) {
-                const uint32_t NextSample = 1 - latestBufferIndex;
+                const uint32_t NextSample = 1U - latestBufferIndex;
 
                 buffers[NextSample] = sample;
 
@@ -120,14 +96,55 @@ public:
          * @param encodedFrame The encoded binary frame
          * @return Number of bytes encoded
          */
-        size_t encodeFrame(const TelemetryParameters& tp, std::span<uint8_t> encodedFrame);
+        size_t encodeFrame(const TelemetryParameters& tp, std::span<uint8_t> encodedFrame) {
+                if (encodedFrame.size() < FrameSizeBytes)
+                        return 0;
+
+                size_t i = 0;
+
+                encodedFrame[i++] = SyncByte0;
+                encodedFrame[i++] = SyncByte1;
+                encodedFrame[i++] = Length;
+                encodedFrame[i++] = TypeOfTelemetry;
+
+                // std::memcpy(&encodedFrame[i], &tp, PayloadSize);
+
+                const auto* src = reinterpret_cast<const uint8_t*>(&tp);
+                std::copy_n(src, static_cast<std::ptrdiff_t>(PayloadSize), encodedFrame.data() + i);
+
+                i += PayloadSize;
+
+                const uint16_t CRC =
+                        crc16_ccitt(std::span<const uint8_t>(&encodedFrame[3], TypeOfTelemetrySizeBytes + PayloadSize), 0xFFFF);
+
+                encodedFrame[i++] = static_cast<uint8_t>(CRC & 0xFF);
+                encodedFrame[i++] = static_cast<uint8_t>((CRC >> 8) & 0xFF);
+
+                return i;
+        }
 
         /**
          * Function that takes care of writing to the USART TX after encoding the struct
          * @param usart The USART handle implementation
          * @return True if succeeded to place the process
          */
-        bool writeFrame(USART_TxStream& usart);
+        bool writeFrame(USART_TxStream& usart) {
+                TelemetryParameters TelemetryParams{};
+
+                if (not tryTakeLatest(TelemetryParams))
+                        return false;
+
+                std::array<uint8_t, FrameSizeBytes> txEncodedBuffer{};
+
+                const auto FrameWrittenBytes = encodeFrame(TelemetryParams, std::span(txEncodedBuffer.data(), txEncodedBuffer.size()));
+
+                if (FrameWrittenBytes == 0)
+                        return false;
+
+                usart.write(std::span<const uint8_t>(txEncodedBuffer.data(), FrameWrittenBytes));
+
+                return true;
+        }
 
 private:
         /**
@@ -136,12 +153,21 @@ private:
          * @param crc
          * @return
          */
-        [[nodiscard]] uint16_t crc16_ccitt(std::span<const uint8_t> data, uint16_t crc);
+        [[nodiscard]] uint16_t crc16_ccitt(std::span<const uint8_t> data, uint16_t crc) {
+                for (const auto b : data) {
+                        crc ^= static_cast<uint16_t>(b) << 8;
+
+                        for (int i = 0; i < 8; ++i)
+                                crc = (crc & 0x8000) ? static_cast<uint16_t>((crc << 1) ^ 0x1021) : static_cast<uint16_t>(crc << 1);
+                }
+
+                return crc;
+        }
 
         /**
          * An array of TelemetryParameters objects used to store and manage telemetry data
          */
-        TelemetryParameters buffers[2]{};
+        std::array<TelemetryParameters, 2> buffers {};
 
         /**
          * The index of the most recently buffered snapshot/sample
@@ -192,7 +218,7 @@ private:
         /**
          * The total length of the payload and type information
          */
-        static constexpr uint8_t Length = TypeOfTelemetrySizeBytes + PayloadSize;
+        static constexpr size_t Length = static_cast<uint8_t>(TypeOfTelemetrySizeBytes + PayloadSize);
 
         /**
          * The total frame size in bytes
@@ -200,4 +226,5 @@ private:
         static constexpr size_t FrameSizeBytes =
                 SyncSizeBytes + LengthSizeBytes + TypeOfTelemetrySizeBytes + PayloadSize + CRC_SizeBytes;
 };
+
 } // namespace Telemetry

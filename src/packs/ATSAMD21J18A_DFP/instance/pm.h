@@ -26,11 +26,11 @@
 
 
 /* ========== Instance Parameter definitions for PM peripheral ========== */
-#define PM_CTRL_MCSEL_DFLL48M (3)
-#define PM_CTRL_MCSEL_GCLK (0)
-#define PM_CTRL_MCSEL_OSC8M (1)
-#define PM_CTRL_MCSEL_XOSC (2)
-#define PM_CLK_APB_NUM (2)
-#define PM_INSTANCE_ID (1)
+#define PM_CTRL_MCSEL_DFLL48M                    (3)        
+#define PM_CTRL_MCSEL_GCLK                       (0)        
+#define PM_CTRL_MCSEL_OSC8M                      (1)        
+#define PM_CTRL_MCSEL_XOSC                       (2)        
+#define PM_CLK_APB_NUM                           (2)        
+#define PM_INSTANCE_ID                           (1)        
 
 #endif /* _SAMD21_PM_INSTANCE_ */

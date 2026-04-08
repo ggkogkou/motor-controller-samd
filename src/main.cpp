@@ -22,20 +22,31 @@
  * @author Georgios Gkogkou <ggkogkou125@gmail.com>
  */
 
+#include <GenericClockController.hpp>
+
+#include "DeviceStartup.hpp"
+#include "HardwareDiagnosticsLogger.hpp"
 #include "RadiationTestDemo.hpp"
+#include "ResetEventMonitor.hpp"
 #include "SAMD21_FOC.hpp"
+#include "definitions.h"
+
+inline constexpr frequency_kHz_t PWM_Frequency = 17.0f;
+inline constexpr bool EnableLogging = true;
 
 [[noreturn]] int main() {
-        SYS_Initialize(nullptr);
+        SYS_Initialize(NULL);
         SYSTICK_TimerStart();
         SPI_Buffer::init();
 
-        static constexpr frequency_kHz_t PWM_Frequency = 19.0f;
-        static constexpr bool EnableLogging = true;
+        HardwareDiagnostics::diagnostics.init();
+        HardwareDiagnostics::diagnosticsLogger.logBoot();
 
-        USART_TxStream logging;
-        TelemetryLogger telemetry;
-        TelemetryLogger* telemetryPtr = nullptr;
+        ResetEventMonitor::determineResetCause();
+
+        USART_TxStream logging{DMAC_CHANNEL_0};
+        TelemetryLogger<TelemetryPayload12> telemetry;
+        TelemetryLogger<TelemetryPayload12>* telemetryPtr = nullptr;
         if (EnableLogging)
                 telemetryPtr = &telemetry;
         SAMD21_FOC foc{PWM_Frequency, telemetryPtr};
@@ -46,10 +57,12 @@
         RadiationTestDemo radiationTestDemo(foc, telemetryPtr);
         radiationTestDemo.start();
 
+        HardwareDiagnostics::diagnosticsLogger.writeLiteral("STATE: MAIN-LOOP ENTERED\r\n");
+
         while (true) {
                 if (radiationTestDemo.loggingEnabled())
                         telemetry.writeFrame(logging);
 
-                SYSTICK_DelayMs(3);
+                // SYSTICK_DelayMs(1);
         }
 }

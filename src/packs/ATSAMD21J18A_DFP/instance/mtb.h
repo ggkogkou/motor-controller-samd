@@ -26,6 +26,6 @@
 
 
 /* ========== Instance Parameter definitions for MTB peripheral ========== */
-#define MTB_INSTANCE_ID (38)
+#define MTB_INSTANCE_ID                          (38)       
 
 #endif /* _SAMD21_MTB_INSTANCE_ */

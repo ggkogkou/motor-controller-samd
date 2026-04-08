@@ -24,6 +24,29 @@
 
 #include "pid.hpp"
 
+PID::PID() :
+    K_ProportionalRaw(localCriticalVariables1.Kp_raw, localCriticalVariables2.Kp_raw, localCriticalVariables3.Kp_raw),
+    K_IntegralRaw(localCriticalVariables1.Ki_raw, localCriticalVariables2.Ki_raw, localCriticalVariables3.Ki_raw),
+    K_DerivativeRaw(localCriticalVariables1.Kd_raw, localCriticalVariables2.Kd_raw, localCriticalVariables3.Kd_raw),
+    outputClampLimit(localCriticalVariables1.limit, localCriticalVariables2.limit, localCriticalVariables3.limit) {
+        setGainsFloat(0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+}
+
+PID::PID(float Kp, float Ki, float Kd, float clampLimit, float Ts) :
+    K_ProportionalRaw(localCriticalVariables1.Kp_raw, localCriticalVariables2.Kp_raw, localCriticalVariables3.Kp_raw),
+    K_IntegralRaw(localCriticalVariables1.Ki_raw, localCriticalVariables2.Ki_raw, localCriticalVariables3.Ki_raw),
+    K_DerivativeRaw(localCriticalVariables1.Kd_raw, localCriticalVariables2.Kd_raw, localCriticalVariables3.Kd_raw),
+    outputClampLimit(localCriticalVariables1.limit, localCriticalVariables2.limit, localCriticalVariables3.limit) {
+        setGainsFloat(Kp, Ki, Kd, clampLimit, Ts);
+}
+
+PID::PID(PermanentMagnetSynchronousMotor::PID_CriticalVariables& bank1, PermanentMagnetSynchronousMotor::PID_CriticalVariables& bank2,
+         PermanentMagnetSynchronousMotor::PID_CriticalVariables& bank3, float Kp, float Ki, float Kd, float clampLimit, float Ts) :
+    K_ProportionalRaw(bank1.Kp_raw, bank2.Kp_raw, bank3.Kp_raw), K_IntegralRaw(bank1.Ki_raw, bank2.Ki_raw, bank3.Ki_raw),
+    K_DerivativeRaw(bank1.Kd_raw, bank2.Kd_raw, bank3.Kd_raw), outputClampLimit(bank1.limit, bank2.limit, bank3.limit) {
+        setGainsFloat(Kp, Ki, Kd, clampLimit, Ts);
+}
+
 int32_t __attribute__((section(".ramfunc"))) PID::compute(int32_t error) {
         const int32_t ProportionalTerm = K_Proportional * error;
         const int32_t DerivativeTerm = K_Derivative * (error - previousError);
@@ -48,12 +71,21 @@ int32_t __attribute__((section(".ramfunc"))) PID::compute(int32_t error) {
 }
 
 void PID::setGainsFloat(float Kp, float Ki, float Kd, float clampLimit, float Ts) {
-        limit = static_cast<int32_t>(clampLimit);
         dT = Ts;
 
-        K_Proportional = Q16_t(Kp);
-        K_Integral = Q16_t(Ki * 0.5f * Ts);
-        K_Derivative = (Ts > 0.0f) ? Q16_t(Kd / Ts) : Q16_t(0.0f);
+        K_ProportionalRaw.write(Q16_t(Kp).getRaw());
+        K_IntegralRaw.write(Q16_t(Ki * 0.5f * Ts).getRaw());
+        K_DerivativeRaw.write((Ts > 0.0f) ? Q16_t(Kd / Ts).getRaw() : Q16_t(0.0f).getRaw());
+        outputClampLimit.write(static_cast<int32_t>(clampLimit));
+
+        refreshCachedCoefficients();
+}
+
+void PID::refreshCachedCoefficients() {
+        K_Proportional = Q16_t(K_ProportionalRaw.read());
+        K_Integral = Q16_t(K_IntegralRaw.read());
+        K_Derivative = Q16_t(K_DerivativeRaw.read());
+        limit = outputClampLimit.read();
 }
 
 void PID::reset() {

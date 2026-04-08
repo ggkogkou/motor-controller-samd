@@ -26,6 +26,9 @@
 
 #include <cstdint>
 #include <optional>
+#include "CriticalVariables.hpp"
+#include "StartupCalibration.hpp"
+#include "TMR.hpp"
 #include "Telemetry.hpp"
 #include "VelocityEstimator.hpp"
 #include "definitions.h"
@@ -63,9 +66,36 @@ struct PhaseDutyCycles {
         PhaseDutyCycles(uint32_t& a, uint32_t& b, uint32_t& c) : perA(a), perB(b), perC(c) {}
 };
 
+/**
+ * @struct TelemetryCache
+ *
+ * A structure that binds together the cached variables for telemetry -- can be further refactored
+ */
+struct TelemetryCache {
+        volatile int32_t angle_mrad = 0;
+        volatile int32_t omega_mrad_s = 0;
+        volatile int32_t target_velocity_mrad_s = 0;
+        volatile int32_t target_position_mrad = 0;
+        volatile int32_t target_unwrapped_mrad = 0;
+        volatile int32_t ia_mA = 0;
+        volatile int32_t ib_mA = 0;
+        volatile int32_t id_mA = 0;
+        volatile int32_t iq_mA = 0;
+        volatile int32_t id_ref_mA = 0;
+        volatile int32_t iq_ref_mA = 0;
+        volatile uint32_t theta_el = 0;
+        volatile uint32_t adc_seq = 0;
+        volatile uint32_t missed_pairs = 0;
+        volatile uint32_t adc_u_raw = 0;
+        volatile uint32_t adc_v_raw = 0;
+        volatile uint32_t adc_u_off = 0;
+        volatile uint32_t adc_v_off = 0;
+        volatile uint32_t encoder_error_code = 0;
+};
+
 class PMSM_Controller {
 public:
-        enum class PositionDirection {
+        enum class PositionDirection : int32_t {
                 SHORTEST,
                 CW,
                 CCW,
@@ -75,6 +105,7 @@ public:
                 POSITION,
                 VELOCITY,
         };
+
         /**
          * Class constructor
          */
@@ -86,9 +117,8 @@ public:
          * Function that runs the velocity loop
          *
          * @param thetaEncoder
-         * @param telemetry Optional telemetry logger (nullptr disables logging)
          */
-        void runVelocityLoop(uint16_t thetaEncoder, TelemetryLogger* telemetry = nullptr);
+        void runVelocityLoop(uint16_t thetaEncoder);
 
         /**
          * Function that runs the inner current control loop (Iq, Id)
@@ -107,17 +137,17 @@ public:
         __attribute__((always_inline)) void updateTelemetryHardware(uint32_t adcSeq, uint32_t missedPairs, uint16_t adcU_raw,
                                                                     uint16_t adcV_raw, uint16_t adcU_off, uint16_t adcV_off,
                                                                     uint32_t encoderErrorCode) {
-                tlm_adc_seq = adcSeq;
-                tlm_missed_pairs = missedPairs;
-                tlm_adc_u_raw = adcU_raw;
-                tlm_adc_v_raw = adcV_raw;
-                tlm_adc_u_off = adcU_off;
-                tlm_adc_v_off = adcV_off;
-                tlm_encoder_error_code = encoderErrorCode;
+                tlm.adc_seq = adcSeq;
+                tlm.missed_pairs = missedPairs;
+                tlm.adc_u_raw = adcU_raw;
+                tlm.adc_v_raw = adcV_raw;
+                tlm.adc_u_off = adcU_off;
+                tlm.adc_v_off = adcV_off;
+                tlm.encoder_error_code = encoderErrorCode;
         }
 
         __attribute__((always_inline)) void updateEncoderErrorCode(uint32_t encoderErrorCode) {
-                tlm_encoder_error_code = encoderErrorCode;
+                tlm.encoder_error_code = encoderErrorCode;
         }
 
         /**
@@ -169,11 +199,35 @@ public:
          */
         void runPositionLoop(uint16_t thetaEncoder);
 
+        /**
+         * Function that updates the monitored parameters
+         *
+         * @param tp
+         * @param thetaEncoder
+         */
+        template <typename TelemetryPayloadType>
+        void fillTelemetryPayload(TelemetryPayloadType& tp, uint16_t thetaEncoder) const {
+                tp.ia_mA = tlm.ia_mA;
+                tp.ib_mA = tlm.ib_mA;
+                tp.angle_raw = static_cast<uint32_t>(thetaEncoder);
+
+                if constexpr (std::is_same_v<TelemetryPayloadType, TelemetryPayload44>) {
+                        tp.dirSign = (dirSign.read() < 0) ? -1 : 1;
+                        tp.ZeroOffsetElectricalAngle = static_cast<uint32_t>(ZeroOffsetElectricalAngle.read());
+                        tp.ThetaEl = tlm.theta_el;
+                        tp.adcOffsetU = tlm.adc_u_off;
+                        tp.adcOffsetV = tlm.adc_v_off;
+                        tp.iq_ref_mA = tlm.iq_ref_mA;
+                        tp.runtime_mem_corruption_err = 0;
+                        tp.encoder_err = tlm.encoder_error_code;
+                }
+        }
+
 private:
         /**
          * The Space Vector PWM block
          */
-        SVPWM pwm{20'000, ZeroSequenceModulationType::MIDPOINT_CLAMP};
+        SVPWM pwm{14'000, ZeroSequenceModulationType::MIDPOINT_CLAMP};
 
         /**
          * Position PI: error in mrad, output in mrad/s
@@ -195,94 +249,41 @@ private:
         PID pidIq;
 
         /**
-         * @enum CalibrationState
-         *
-         * Enum class that represents the possible states during the startup calibration process.
-         * The values are used to flag when one process is done for the next one to begin.
-         */
-        enum class CalibrationState {
-                IDLE, /// Calibration has not started yet
-                PREPARING, /// Bring the rotor in the [0, π/4] interval
-                DIRECTION_CALIBRATION, /// Ongoing direction calibration
-                OFFSET_CALIBRATION, /// Ongoing encoder offset calibration
-                DONE, /// Calibration procedure has finished
-        };
-
-        enum class DirectionCalibrationState {
-                INIT,
-                MOVING,
-        };
-
-        enum class OffsetCalibrationState {
-                LOCKING,
-                DONE,
-        };
-
-        /**
-         * The calibration state.
-         * @note This variable is used to communicate the stage of the calibration between functions.
-         */
-        CalibrationState calibrationState = CalibrationState::PREPARING;
-
-        /**
-         * Open-loop step in encoder counts per tick (computed once in ctor)
-         */
-        uint16_t openLoopStepCounts14 = 1u;
-
-        /**
          * The target angular velocity in mrad/s
          */
-        int32_t targetVelocity_mrad_s = 0;
+        TMR<int32_t> targetVelocity_mrad_s;
 
         /**
          * The target position in mrad [0, 2π)
          */
-        int32_t targetPosition_mrad = 0;
+        TMR<int32_t> targetPosition_mrad;
 
         /**
          * Desired path to reach the target position
          */
-        PositionDirection positionDirection = PositionDirection::SHORTEST;
+        TMR<int32_t> positionDirection;
 
         /**
          * Extra full turns to apply in the requested direction
          */
-        int32_t targetRevolutions = 0;
+        TMR<int32_t> targetRevolutions;
 
         /**
          * Unwrapped target position used for multi-turn positioning
          */
-        int32_t targetUnwrapped_mrad = 0;
-        bool targetUnwrappedValid = false;
+        TMR<int32_t> targetUnwrapped_mrad;
+        TMR<bool> targetUnwrappedValid;
 
         /**
          * Cache variables for telemetry usage
          * @note Supposed to be updated in velocity loop only
          */
-        volatile int32_t tlm_angle_mrad = 0;
-        volatile int32_t tlm_omega_mrad_s = 0;
-        volatile int32_t tlm_target_velocity_mrad_s = 0;
-        volatile int32_t tlm_target_position_mrad = 0;
-        volatile int32_t tlm_target_unwrapped_mrad = 0;
-        volatile int32_t tlm_ia_mA = 0;
-        volatile int32_t tlm_ib_mA = 0;
-        volatile int32_t tlm_id_mA = 0;
-        volatile int32_t tlm_iq_mA = 0;
-        volatile int32_t tlm_id_ref_mA = 0;
-        volatile int32_t tlm_iq_ref_mA = 0;
-        volatile uint32_t tlm_theta_el = 0;
-        volatile uint32_t tlm_adc_seq = 0;
-        volatile uint32_t tlm_missed_pairs = 0;
-        volatile uint32_t tlm_adc_u_raw = 0;
-        volatile uint32_t tlm_adc_v_raw = 0;
-        volatile uint32_t tlm_adc_u_off = 0;
-        volatile uint32_t tlm_adc_v_off = 0;
-        volatile uint32_t tlm_encoder_error_code = 0;
+        TelemetryCache tlm{};
 
         /**
          * Velocity loop period (ISR period) in microseconds
          */
-        const uint32_t velocityLoopPeriod_us = 1'000;
+        TMR<uint32_t> velocityLoopPeriod_us;
 
         /**
          * Current (Iq, Id) loop period (ISR period) in microseconds
@@ -292,26 +293,7 @@ private:
         /**
          * The PWM period, either in counter-ticks or μs
          */
-        const uint32_t pwmPeriod = 1'000;
-
-        /**
-         * Helper variable to count the number of ISRs that have been executed.
-         *
-         * That keeps track of the position in a very inefficient and inaccurate way.
-         *
-         * @note Find a better alternative for this
-         */
-        uint32_t timerCounter = 0;
-
-        /**
-         * How many ticks to run direction calibration in open-loop
-         */
-        static constexpr uint32_t MoveDuringCalibrationTicks = 200;
-
-        /**
-         * How many ticks to keep rotor locked during encoder offset calibration
-         */
-        static constexpr uint32_t KeepRotorLockedTicks = 2000;
+        TMR<uint32_t> pwmPeriod;
 
         /**
          * @var velocityEstimator
@@ -325,24 +307,24 @@ private:
         /**
          * Loop time step in seconds (derived from velocityLoopPeriod_us)
          */
-        float dT = static_cast<float>(velocityLoopPeriod_us) * 1e-6f;
+        float dT;
 
         /**
          * Zero-offset electrical angle in raw 14-bit format
          */
-        uint16_t ZeroOffsetElectricalAngle = 0;
-
-        /**
-         * The mechanical angle measured by the encoder as a 14-bit raw value
-         */
-        uint32_t thetaMechanical = 0;
+        TMR<uint16_t> ZeroOffsetElectricalAngle;
 
         /**
          * Auto-calibrated encoder direction sign relative to control coordinates.
          * +1 means raw encoder increases with positive electrical rotation.
          */
-        int8_t dirSign = 1;
-        int8_t lastDirSign = 1;
+        TMR<int32_t> dirSign;
+        TMR<int32_t> lastDirSign;
+
+        /**
+         * Startup calibration helper
+         */
+        StartupCalibration startupCalibrator;
 
         /**
          * @struct ReferenceCurrents
@@ -352,57 +334,18 @@ private:
          * @note Typically, only the Iq,ref should be updated
          */
         struct ReferenceCurrents {
-                int32_t Iq_mA = 0;
-                int32_t Id_mA = 0;
+                TMR<int32_t> Iq_mA;
+                TMR<int32_t> Id_mA;
+
+                ReferenceCurrents() :
+                    Iq_mA(tmrCriticalVariables1.iq_ref_mA, tmrCriticalVariables2.iq_ref_mA, tmrCriticalVariables3.iq_ref_mA),
+                    Id_mA(tmrCriticalVariables1.id_ref_mA, tmrCriticalVariables2.id_ref_mA, tmrCriticalVariables3.id_ref_mA) {}
         };
 
         /**
          * The ReferenceCurrents object that is used to communicate data between control loops
          */
         ReferenceCurrents Iref{};
-
-        /**
-         * Encoder angle at the moment we start the direction check
-         */
-        uint16_t directionCalibrationThetaStart = 0;
-
-        /**
-         * Direction calibration sub-state
-         */
-        DirectionCalibrationState directionCalibrationState = DirectionCalibrationState::INIT;
-
-        /**
-         * Encoder offset calibration sub-state
-         */
-        OffsetCalibrationState offsetCalibrationState = OffsetCalibrationState::LOCKING;
-
-        /**
-         * Function that performs the direction calibration. The logic followed to achieve this is:
-         *
-         * 1. The startupCalibration() function has already brought the rotor in the [0, π/4] interval, so this is taken
-         * for granted
-         *
-         * 2. Move the rotor at open-loop for a small period of time, neededTicks
-         *
-         * 3. If the rotor is now in the interval [π/2, 3π/2], then the winding excitation used is CW. Else, the
-         * direction of movement is CCW
-         *
-         * @param dutyCycles
-         * @param thetaEncoder
-         */
-        void directionCalibration(const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder);
-
-        /**
-         * Function that performs the zero-offset calibration. Its goal is to find the zero-offset electrical angle. The
-         * procedure followed is:
-         *
-         * 1. Inject to the motor windings only d-axis current to lock it to a position
-         *
-         *
-         * @param dutyCycles
-         * @param thetaEncoder
-         */
-        void encoderOffsetCalibration(const PhaseDutyCycles& dutyCycles, uint16_t thetaEncoder);
 
         /**
          * Helper function that wraps the angle inside the [0, 2π] interval. Since the angles are read in raw, it wraps in [0, 16383].
@@ -428,7 +371,7 @@ private:
         [[nodiscard]] inline uint16_t signedMechanicalRaw(uint16_t rawAngle) const noexcept {
                 constexpr uint16_t EncoderResolution = 16384u;
                 const uint16_t wrapped = wrapAngle(rawAngle);
-                const int8_t encoderDir = (dirSign >= 0) ? 1 : -1;
+                const int8_t encoderDir = (dirSign.read() >= 0) ? 1 : -1;
                 return encoderDir >= 0 ? wrapped : wrapAngle(EncoderResolution - wrapped);
         }
 
@@ -439,7 +382,7 @@ private:
         [[nodiscard]] inline uint16_t calculateElectricalAngle(uint16_t thetaMech) const {
                 const uint16_t thetaSigned = signedMechanicalRaw(thetaMech);
                 const uint16_t thetaElectrical = wrapAngle(thetaSigned * PMSM_Config::MotorPolePairs);
-                return wrapAngle(thetaElectrical - ZeroOffsetElectricalAngle);
+                return wrapAngle(thetaElectrical - ZeroOffsetElectricalAngle.read());
         }
 
         /**

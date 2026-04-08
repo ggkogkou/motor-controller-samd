@@ -26,7 +26,7 @@
 
 
 /* ========== Instance Parameter definitions for PAC1 peripheral ========== */
-#define PAC1_WPROT_DEFAULT_VAL (0x00000002) /* PAC protection mask at reset */
-#define PAC1_INSTANCE_ID (32)
+#define PAC1_WPROT_DEFAULT_VAL                   (0x00000002) /* PAC protection mask at reset */
+#define PAC1_INSTANCE_ID                         (32)       
 
 #endif /* _SAMD21_PAC1_INSTANCE_ */

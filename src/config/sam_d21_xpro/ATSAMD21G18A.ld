@@ -1,209 +1,206 @@
-__ROM_BASE = 0x00000000;
-__ROM_SIZE = 0x00040000;    /* SAMD21J18A: 256KB Flash */
-__RAM_BASE = 0x20000000;
-__RAM_SIZE = 0x00008000;    /* SAMD21J18A: 32KB RAM */
-__STACK_SIZE = 0x00002000;  /* 8KB Stack (generous for M0+) */
-__HEAP_SIZE  = 0x00001000;  /* 4KB Heap (adjust as needed) */
+/*
+ * Source: https://github.com/wntrblm/Castor_and_Pollux/blob/main/firmware/scripts/samd21g18a.ld
+ * Source: https://github.com/ARM-software/CMSIS_6/blob/main/CMSIS/Core/Template/Device_M/Config/Device_gcc.ld
+ * Source: https://arm-software.github.io/CMSIS_6/v6.0.0/Core/using_pg.html
+ */
 
-MEMORY
-{
-  FLASH (rx)  : ORIGIN = __ROM_BASE, LENGTH = __ROM_SIZE
-  RAM   (rwx) : ORIGIN = __RAM_BASE, LENGTH = __RAM_SIZE
-}
+/* Output Format */
+OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
+
+/* SAMD21x18A: 256KB Flash */
+__ROM_BASE = 0x00000000;
+__ROM_SIZE = 0x00040000;
+
+/* SAMD21x18A: 32KB RAM */
+__RAM_BASE = 0x20000000;
+__RAM_SIZE = 0x00008000;
+
+/* 8KB Stack */
+__STACK_SIZE = 0x00002000;
+
+/* 4KB Heap */
+__HEAP_SIZE  = 0x00001000;
 
 ENTRY(Reset_Handler)
 
+MEMORY
+{
+    flash (rx)  : ORIGIN = __ROM_BASE, LENGTH = __ROM_SIZE
+    ram   (rwx) : ORIGIN = __RAM_BASE, LENGTH = __RAM_SIZE
+}
+
 SECTIONS
 {
-  .text :
-  {
-    KEEP(*(.vectors))
-    *(.text*)
+    /*
+     * FLASH SECTIONS
+     */
+    .text :
+    {
 
-    KEEP(*(.init))
-    KEEP(*(.fini))
+        KEEP(*(.vectors))
+        *(.text*)
 
-    /* .ctors */
-    *crtbegin.o(.ctors)
-    *crtbegin?.o(.ctors)
-    *(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
-    *(SORT(.ctors.*))
-    *(.ctors)
+        KEEP(*(.init))
+        KEEP(*(.fini))
 
-    /* .dtors */
-    *crtbegin.o(.dtors)
-    *crtbegin?.o(.dtors)
-    *(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
-    *(SORT(.dtors.*))
-    *(.dtors)
+        /* Constructors -- needed for C++ */
+        *crtbegin.o(.ctors)
+        *crtbegin?.o(.ctors)
+        *(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
+        *(SORT(.ctors.*))
+        *(.ctors)
 
-    *(.rodata*)
+        /* Destructors -- needed for C++ */
+        *crtbegin.o(.dtors)
+        *crtbegin?.o(.dtors)
+        *(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
+        *(SORT(.dtors.*))
+        *(.dtors)
 
-    KEEP(*(.eh_frame*))
-  } > FLASH
+        /* Read-only data */
+        *(.rodata*)
 
-  .ARM.extab :
-  {
-    *(.ARM.extab* .gnu.linkonce.armextab.*)
-  } > FLASH
+        KEEP(*(.eh_frame*))
+    } > flash
 
-  __exidx_start = .;
-  .ARM.exidx :
-  {
-    *(.ARM.exidx* .gnu.linkonce.armexidx.*)
-  } > FLASH
-  __exidx_end = .;
+    .ARM.extab :
+    {
+        *(.ARM.extab* .gnu.linkonce.armextab.*)
+    } > flash
 
-  .copy.table :
-  {
-    . = ALIGN(4);
-    __copy_table_start__ = .;
+    __exidx_start = .;
+    .ARM.exidx :
+    {
+        *(.ARM.exidx* .gnu.linkonce.armexidx.*)
+    } > flash
+    __exidx_end = .;
 
-    /* Data section copy info */
-    LONG (__etext)
-    LONG (__data_start__)
-    LONG ((__data_end__ - __data_start__) / 4)
+    .copy.table :
+    {
+        . = ALIGN(4);
+        __copy_table_start__ = .;
 
-    /* RAM functions section copy info */
-    LONG (__etext2)
-    LONG (__ramfunc_start__)
-    LONG ((__ramfunc_end__ - __ramfunc_start__) / 4)
+        /* .data section copy */
+        LONG (LOADADDR(.data))
+        LONG (ADDR(.data))
+        LONG (SIZEOF(.data) / 4)
 
-    /* RAM LUT section copy info */
-    LONG (__ram_lut_load__)
-    LONG (__ram_lut_start__)
-    LONG ((__ram_lut_end__ - __ram_lut_start__) / 4)
+        /* RAM functions section copy info */
+        LONG (LOADADDR(.ramfunc))
+        LONG (ADDR(.ramfunc))
+        LONG (SIZEOF(.ramfunc) / 4)
 
-    __copy_table_end__ = .;
-  } > FLASH
+        /* RAM LUT section copy info */
+        LONG (LOADADDR(.ram_lut))
+        LONG (ADDR(.ram_lut))
+        LONG (SIZEOF(.ram_lut) / 4)
 
-  .zero.table :
-  {
-    . = ALIGN(4);
-    __zero_table_start__ = .;
+        __copy_table_end__ = .;
+    } > flash
 
-    /* BSS section zero info */
-    LONG (__bss_start__)
-    LONG ((__bss_end__ - __bss_start__) / 4)
+    .zero.table :
+    {
+        . = ALIGN(4);
+        __zero_table_start__ = .;
 
-    __zero_table_end__ = .;
-  } > FLASH
+        /* .bss section zeroing */
+        LONG (ADDR(.bss))
+        LONG (SIZEOF(.bss) / 4)
 
-  /**
-   * Location counter can end up 2byte aligned with narrow Thumb code but
-   * __etext is assumed by startup code to be the LMA of a section in RAM
-   * which must be 4byte aligned
-   */
-  __etext = ALIGN (4);
+        __zero_table_end__ = .;
+    } > flash
 
-  .data : AT (__etext)
-  {
-    __data_start__ = .;
-    *(vtable)
-    *(.data)
-    *(.data.*)
+    /*
+     * RAM SECTIONS
+     */
+    PROVIDE(__etext = LOADADDR(.data));
 
-    . = ALIGN(4);
-    /* preinit data */
-    PROVIDE_HIDDEN (__preinit_array_start = .);
-    KEEP(*(.preinit_array))
-    PROVIDE_HIDDEN (__preinit_array_end = .);
+    .stack (ORIGIN(ram)) (NOLOAD) :
+    {
+        . = ALIGN(8);
+        __StackLimit = .;
+        . = . + __STACK_SIZE;
+        . = ALIGN(8);
+        __StackTop = .;
+    } > ram
+    PROVIDE(__stack = __StackTop);
 
-    . = ALIGN(4);
-    /* init data */
-    PROVIDE_HIDDEN (__init_array_start = .);
-    KEEP(*(SORT(.init_array.*)))
-    KEEP(*(.init_array))
-    PROVIDE_HIDDEN (__init_array_end = .);
+    .data : ALIGN(4)
+    {
+        __data_start__ = .;
+        *(vtable)
+        *(.data)
+        *(.data.*)
 
-    . = ALIGN(4);
-    /* finit data */
-    PROVIDE_HIDDEN (__fini_array_start = .);
-    KEEP(*(SORT(.fini_array.*)))
-    KEEP(*(.fini_array))
-    PROVIDE_HIDDEN (__fini_array_end = .);
+        . = ALIGN(4);
+        /* preinit data */
+        PROVIDE_HIDDEN (__preinit_array_start = .);
+        KEEP(*(.preinit_array))
+        PROVIDE_HIDDEN (__preinit_array_end = .);
 
-    KEEP(*(.jcr*))
-    . = ALIGN(4);
-    /* All data end */
-    __data_end__ = .;
+        . = ALIGN(4);
+        /* init data */
+        PROVIDE_HIDDEN (__init_array_start = .);
+        KEEP(*(SORT(.init_array.*)))
+        KEEP(*(.init_array))
+        PROVIDE_HIDDEN (__init_array_end = .);
 
-  } > RAM
+        . = ALIGN(4);
+        /* finit data */
+        PROVIDE_HIDDEN (__fini_array_start = .);
+        KEEP(*(SORT(.fini_array.*)))
+        KEEP(*(.fini_array))
+        PROVIDE_HIDDEN (__fini_array_end = .);
 
-  /*
-   * RAM functions section - for time-critical code
-   * (e.g., flash programming routines, interrupt handlers)
-   */
-  __etext2 = __etext + SIZEOF(.data);
-  __ramfunc_load__ = __etext2;
+        KEEP(*(.jcr*))
+        . = ALIGN(4);
+        /* All data end */
+        __data_end__ = .;
 
-  .ramfunc : AT (__ramfunc_load__)
-  {
-    . = ALIGN(4);
-    __ramfunc_start__ = .;
-    *(.ramfunc)
-    *(.ramfunc.*)
-    . = ALIGN(4);
-    __ramfunc_end__ = .;
-  } > RAM
+    } > ram AT > flash
 
-  __etext3 = __ramfunc_load__ + SIZEOF(.ramfunc);
-  __ram_lut_load__ = __etext3;
+    .ramfunc : ALIGN(4)
+    {
+        . = ALIGN(4);
+        __ramfunc_start__ = .;
+        *(.ramfunc)
+        *(.ramfunc.*)
+        . = ALIGN(4);
+        __ramfunc_end__ = .;
+    } > ram AT > flash
 
-  .ram_lut : AT (__ram_lut_load__)
-  {
-    . = ALIGN(4);
-    __ram_lut_start__ = .;
-    *(.ram_lut)
-    *(.ram_lut.*)
-    . = ALIGN(4);
-    __ram_lut_end__ = .;
-  } > RAM
+    .ram_lut : ALIGN(4)
+    {
+        . = ALIGN(4);
+        __ram_lut_start__ = .;
+        *(.ram_lut)
+        *(.ram_lut.*)
+        . = ALIGN(4);
+        __ram_lut_end__ = .;
+    } > ram AT > flash
 
-  .bss :
-  {
-    . = ALIGN(4);
-    __bss_start__ = .;
-    *(.bss)
-    *(.bss.*)
-    *(COMMON)
-    . = ALIGN(4);
-    __bss_end__ = .;
-  } > RAM AT > RAM
+    .bss :
+    {
+        . = ALIGN(4);
+        __bss_start__ = .;
+        *(.bss)
+        *(.bss.*)
+        *(COMMON)
+        . = ALIGN(4);
+        __bss_end__ = .;
+    } > ram AT > ram
 
-  .heap (COPY) :
-  {
-    . = ALIGN(8);
-    __end__ = .;
-    PROVIDE(end = .);
-    PROVIDE(_end = __end__);
-    . = . + __HEAP_SIZE;
-    . = ALIGN(8);
-    __HeapLimit = .;
-  } > RAM
+    .heap (NOLOAD) :
+    {
+        . = ALIGN(8);
+        __end__ = .;
+        PROVIDE(end = .);
+        PROVIDE(_end = __end__);
+        . = . + __HEAP_SIZE;
+        . = ALIGN(8);
+        __HeapLimit = .;
+    } > ram
 
-  .stack (ORIGIN(RAM) + LENGTH(RAM) - __STACK_SIZE) (COPY) :
-  {
-    . = ALIGN(8);
-    __StackLimit = .;
-    . = . + __STACK_SIZE;
-    . = ALIGN(8);
-    __StackTop = .;
-  } > RAM
-  PROVIDE(__stack = __StackTop);
-
-  /* Legacy SAMD21 symbol compatibility */
-  PROVIDE(_sfixed = ADDR(.text));
-  PROVIDE(_efixed = ADDR(.text) + SIZEOF(.text));
-  PROVIDE(_etext = __etext);
-  PROVIDE(_srelocate = __data_start__);
-  PROVIDE(_erelocate = __data_end__);
-  PROVIDE(_szero = __bss_start__);
-  PROVIDE(_ezero = __bss_end__);
-  PROVIDE(_sstack = __StackLimit);
-  PROVIDE(_estack = __StackTop);
-  PROVIDE(_stack = __StackTop);
-
-  /* Check if data + heap + stack exceeds RAM limit */
-  ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
+    /* Check if data + heap + stack exceeds RAM limit */
+    ASSERT(__StackTop <= __data_start__, "32kB RAM is not enough!!!")
 }

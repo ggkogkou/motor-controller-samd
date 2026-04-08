@@ -61,17 +61,19 @@
 // *****************************************************************************
 
 /* MISRA C-2012 Rule 8.6 deviated below. Deviation record ID -  H3_MISRAC_2012_R_8_6_DR_1 */
-extern uint32_t _stack;
+extern uint32_t __stack;
 extern const H3DeviceVectors exception_table;
 
-extern void Dummy_Handler(void);
+extern void DefaultHandler();
 
-/* Brief default interrupt handler for unused IRQs.*/
-void __attribute__((optimize("-O1"), long_call, noreturn, used))Dummy_Handler(void)
-{
-    while (true)
-    {
-    }
+/**
+ * A default interrupt handler that is assigned to the peripherals that are not configured in interrupt mode
+ *
+ * Under normal circumstances this will never be executed
+ */
+extern __attribute__((used)) void DefaultHandler() {
+        __disable_irq();
+        NVIC_SystemReset();
 }
 
 /* MISRAC 2012 deviation block start */
@@ -90,7 +92,6 @@ extern void EVSYS_Handler              ( void ) __attribute__((weak, alias("Dumm
 extern void SERCOM0_Handler            ( void ) __attribute__((weak, alias("Dummy_Handler")));
 extern void SERCOM1_Handler            ( void ) __attribute__((weak, alias("Dummy_Handler")));
 extern void SERCOM2_Handler            ( void ) __attribute__((weak, alias("Dummy_Handler")));
-extern void SERCOM4_Handler            ( void ) __attribute__((weak, alias("Dummy_Handler")));
 extern void TCC0_Handler               ( void ) __attribute__((weak, alias("Dummy_Handler")));
 extern void TCC1_Handler               ( void ) __attribute__((weak, alias("Dummy_Handler")));
 extern void TCC2_Handler               ( void ) __attribute__((weak, alias("Dummy_Handler")));
@@ -113,7 +114,7 @@ __attribute__ ((section(".vectors"), used))
 const H3DeviceVectors exception_table=
 {
     /* Configure Initial Stack Pointer, using linker-generated symbols */
-    .pvStack = &_stack,
+    .pvStack = &__stack,
 
     .pfnReset_Handler              = Reset_Handler,
     .pfnNonMaskableInt_Handler     = NonMaskableInt_Handler,
@@ -134,7 +135,7 @@ const H3DeviceVectors exception_table=
     .pfnSERCOM1_Handler            = SERCOM1_Handler,
     .pfnSERCOM2_Handler            = SERCOM2_Handler,
     .pfnSERCOM3_Handler            = SERCOM3_USART_InterruptHandler,
-    .pfnSERCOM4_Handler            = SERCOM4_Handler,
+    .pfnSERCOM4_Handler            = SERCOM4_USART_InterruptHandler,
     .pfnSERCOM5_Handler            = SERCOM5_SPI_InterruptHandler,
     .pfnTCC0_Handler               = TCC0_Handler,
     .pfnTCC1_Handler               = TCC1_Handler,

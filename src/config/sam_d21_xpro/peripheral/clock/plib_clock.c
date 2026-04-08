@@ -142,6 +142,8 @@ void CLOCK_Initialize (void)
     GCLK_REGS->GCLK_CLKCTRL = GCLK_CLKCTRL_ID(7U) | GCLK_CLKCTRL_GEN(0x0U)  | GCLK_CLKCTRL_CLKEN_Msk;
     /* Selection of the Generator and write Lock for SERCOM3_CORE */
     GCLK_REGS->GCLK_CLKCTRL = GCLK_CLKCTRL_ID(23U) | GCLK_CLKCTRL_GEN(0x0U)  | GCLK_CLKCTRL_CLKEN_Msk;
+    /* Selection of the Generator and write Lock for SERCOM4_CORE */
+    GCLK_REGS->GCLK_CLKCTRL = GCLK_CLKCTRL_ID(24U) | GCLK_CLKCTRL_GEN(0x0U)  | GCLK_CLKCTRL_CLKEN_Msk;
     /* Selection of the Generator and write Lock for SERCOM5_CORE */
     GCLK_REGS->GCLK_CLKCTRL = GCLK_CLKCTRL_ID(25U) | GCLK_CLKCTRL_GEN(0x0U)  | GCLK_CLKCTRL_CLKEN_Msk;
     /* Selection of the Generator and write Lock for TCC0 TCC1 */
@@ -154,7 +156,7 @@ void CLOCK_Initialize (void)
     GCLK_REGS->GCLK_CLKCTRL = GCLK_CLKCTRL_ID(30U) | GCLK_CLKCTRL_GEN(0x2U)  | GCLK_CLKCTRL_CLKEN_Msk;
 
     /* Configure the APBC Bridge Clocks */
-    PM_REGS->PM_APBCMASK = 0x139a2U;
+    PM_REGS->PM_APBCMASK = 0x139e2U;
 
 
     /*Disable RC oscillator*/
