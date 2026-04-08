@@ -26,18 +26,18 @@
 
 
 /* ========== Instance Parameter definitions for TC6 peripheral ========== */
-#define TC6_CC8_NUM (2) /* Number of 8-bit Counters */
-#define TC6_CC16_NUM (2) /* Number of 16-bit Counters */
-#define TC6_CC32_NUM (2) /* Number of 32-bit Counters */
-#define TC6_DITHERING_EXT (0) /* Dithering feature implemented */
-#define TC6_DMAC_ID_OVF (33) /* Indexes of DMA Overflow trigger */
-#define TC6_DMAC_ID_MC0 (34) /* Indexes of DMA Match/Compare 0 trigger */
-#define TC6_DMAC_ID_MC1 (35) /* Indexes of DMA Match/Compare 1 trigger */
-#define TC6_GCLK_ID (29) /* Index of Generic Clock */
-#define TC6_MASTER (1)
-#define TC6_OW_NUM (2) /* Number of Output Waveforms */
-#define TC6_PERIOD_EXT (0) /* Period feature implemented */
-#define TC6_SHADOW_EXT (0) /* Shadow feature implemented */
-#define TC6_INSTANCE_ID (78)
+#define TC6_CC8_NUM                              (2)        /* Number of 8-bit Counters */
+#define TC6_CC16_NUM                             (2)        /* Number of 16-bit Counters */
+#define TC6_CC32_NUM                             (2)        /* Number of 32-bit Counters */
+#define TC6_DITHERING_EXT                        (0)        /* Dithering feature implemented */
+#define TC6_DMAC_ID_OVF                          (33)       /* Indexes of DMA Overflow trigger */
+#define TC6_DMAC_ID_MC0                          (34)       /* Indexes of DMA Match/Compare 0 trigger */
+#define TC6_DMAC_ID_MC1                          (35)       /* Indexes of DMA Match/Compare 1 trigger */
+#define TC6_GCLK_ID                              (29)       /* Index of Generic Clock */
+#define TC6_MASTER                               (1)        
+#define TC6_OW_NUM                               (2)        /* Number of Output Waveforms */
+#define TC6_PERIOD_EXT                           (0)        /* Period feature implemented */
+#define TC6_SHADOW_EXT                           (0)        /* Shadow feature implemented */
+#define TC6_INSTANCE_ID                          (78)       
 
 #endif /* _SAMD21_TC6_INSTANCE_ */

@@ -26,21 +26,21 @@
 
 
 /* ========== Instance Parameter definitions for GCLK peripheral ========== */
-#define GCLK_GENDIV_BITS (16)
-#define GCLK_GEN_NUM (9) /* Number of Generic Clock Generators */
-#define GCLK_GEN_NUM_MSB (8) /* Number of Generic Clock Generators - 1 */
-#define GCLK_GEN_SOURCE_NUM_MSB (8) /* Number of Generic Clock Sources - 1 */
-#define GCLK_NUM (37) /* Number of Generic Clock Users */
-#define GCLK_SOURCE_DFLL48M (7)
-#define GCLK_SOURCE_DPLL96M (8)
-#define GCLK_SOURCE_GCLKGEN1 (2)
-#define GCLK_SOURCE_GCLKIN (1)
-#define GCLK_SOURCE_NUM (9) /* Number of Generic Clock Sources */
-#define GCLK_SOURCE_OSCULP32K (3)
-#define GCLK_SOURCE_OSC8M (6)
-#define GCLK_SOURCE_OSC32K (4)
-#define GCLK_SOURCE_XOSC (0)
-#define GCLK_SOURCE_XOSC32K (5)
-#define GCLK_INSTANCE_ID (3)
+#define GCLK_GENDIV_BITS                         (16)       
+#define GCLK_GEN_NUM                             (9)        /* Number of Generic Clock Generators */
+#define GCLK_GEN_NUM_MSB                         (8)        /* Number of Generic Clock Generators - 1 */
+#define GCLK_GEN_SOURCE_NUM_MSB                  (8)        /* Number of Generic Clock Sources - 1 */
+#define GCLK_NUM                                 (37)       /* Number of Generic Clock Users */
+#define GCLK_SOURCE_DFLL48M                      (7)        
+#define GCLK_SOURCE_DPLL96M                      (8)        
+#define GCLK_SOURCE_GCLKGEN1                     (2)        
+#define GCLK_SOURCE_GCLKIN                       (1)        
+#define GCLK_SOURCE_NUM                          (9)        /* Number of Generic Clock Sources */
+#define GCLK_SOURCE_OSCULP32K                    (3)        
+#define GCLK_SOURCE_OSC8M                        (6)        
+#define GCLK_SOURCE_OSC32K                       (4)        
+#define GCLK_SOURCE_XOSC                         (0)        
+#define GCLK_SOURCE_XOSC32K                      (5)        
+#define GCLK_INSTANCE_ID                         (3)        
 
 #endif /* _SAMD21_GCLK_INSTANCE_ */

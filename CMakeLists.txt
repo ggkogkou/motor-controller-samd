@@ -24,11 +24,11 @@ string(TOUPPER "${MCU}" MCU_U)
 if (MCU_U STREQUAL "G18A")
     set(MCU_MODEL "ATSAMD21G18A")
     set(DEVICE_DEFINE "__SAMD21G18A__")
-    set(LD_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/src/config/sam_d21_xpro/ATSAMD21G18A.ld")
+    set(LD_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/device_startup/ATSAMD21G18A.ld")
 elseif (MCU_U STREQUAL "J18A")
     set(MCU_MODEL "ATSAMD21J18A")
     set(DEVICE_DEFINE "__SAMD21J18A__")
-    set(LD_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/src/config/sam_d21_xpro/ATSAMD21J18A.ld")
+    set(LD_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/device_startup/ATSAMD21J18A.ld")
 else ()
     message(FATAL_ERROR "Set -DMCU=G18A or -DMCU=J18A (or use presets).")
 endif ()
@@ -45,7 +45,7 @@ set(CMAKE_C_FLAGS
 )
 
 set(CMAKE_CXX_FLAGS
-        "${COMMON_FLAGS} ${OPT_FLAGS} -std=c++20 -fno-exceptions -fno-rtti -fno-threadsafe-statics"
+        "${COMMON_FLAGS} ${OPT_FLAGS} -std=c++20 -fno-exceptions -fno-rtti -fno-threadsafe-statics -fno-unwind-tables -fno-asynchronous-unwind-tables"
         CACHE INTERNAL "C++ compiler flags" FORCE
 )
 
@@ -133,7 +133,10 @@ include_directories(
 
         src/packs/CMSIS/CMSIS/Core/Include
 
+        device_startup
+
         drivers
+        drivers/samd21_peripherals
 
         ${ETL_INCLUDE_DIR}
         ${GCEM_INCLUDE_DIR}
@@ -152,13 +155,15 @@ set(SOURCES
         src/USART_TxStream.cpp
         src/SAMD21_FOC.cpp
         src/Telemetry.cpp
+        src/CriticalVariables.cpp
+        src/StartupCalibration.cpp
+        src/HardwareDiagnosticsLogger.cpp
 
         # System initialization and configuration
         src/config/sam_d21_xpro/initialization.c
-        src/config/sam_d21_xpro/exceptions.c
-        src/config/sam_d21_xpro/interrupts.c
-        src/config/sam_d21_xpro/startup_gcc.c
-        src/config/sam_d21_xpro/libc_syscalls.c
+        device_startup/InterruptHandlers.cpp
+        device_startup/DeviceStartup.cpp
+        device_startup/libc_syscalls.cpp
 
         # Peripheral libraries
         src/config/sam_d21_xpro/peripheral/adc/plib_adc.c
@@ -171,6 +176,7 @@ set(SOURCES
         src/config/sam_d21_xpro/peripheral/port/plib_port.c
         src/config/sam_d21_xpro/peripheral/systick/plib_systick.c
         src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom3_usart.c
+        src/config/sam_d21_xpro/peripheral/sercom/usart/plib_sercom4_usart.c
         src/config/sam_d21_xpro/peripheral/sercom/spi_master/plib_sercom5_spi_master.c
         src/config/sam_d21_xpro/peripheral/tc/plib_tc3.c
         src/config/sam_d21_xpro/peripheral/tc/plib_tc4.c
@@ -178,6 +184,9 @@ set(SOURCES
 
         drivers/as5047p.cpp
         drivers/drv8316.cpp
+
+        drivers/samd21_peripherals/GenericClockController.cpp
+        drivers/samd21_peripherals/ADC.cpp
 )
 
 # ------------------------------------------------------------------------------
@@ -207,8 +216,14 @@ add_custom_target(${PROJECT_NAME}.bin ALL
 
 add_custom_target(size ALL
         DEPENDS ${PROJECT_NAME}.elf
-        COMMAND ${CMAKE_SIZE} ${PROJECT_NAME}.elf
+        COMMAND ${CMAKE_SIZE} --format=berkeley ${PROJECT_NAME}.elf
         COMMENT "Size information:"
+)
+
+add_custom_target(size_sections ALL
+        DEPENDS ${PROJECT_NAME}.elf
+        COMMAND ${CMAKE_SIZE} -A ${PROJECT_NAME}.elf
+        COMMENT "Section size information:"
 )
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")

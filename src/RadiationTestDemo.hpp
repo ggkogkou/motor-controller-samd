@@ -26,7 +26,9 @@
 
 #include <array>
 #include <cstdint>
+#include "CriticalVariables.hpp"
 #include "SAMD21_FOC.hpp"
+#include "TMR.hpp"
 #include "definitions.h"
 
 using namespace PermanentMagnetSynchronousMotor;
@@ -46,8 +48,12 @@ public:
          * @param foc Reference to the motor FOC controller
          * @param telemetry Optional telemetry logger (nullptr disables logging)
          */
-        explicit RadiationTestDemo(SAMD21_FOC& foc, TelemetryLogger* telemetry = nullptr)
-                : samd21_FOC(foc), telemetryLogger(telemetry) {}
+        explicit RadiationTestDemo(SAMD21_FOC& foc, TelemetryLogger<TelemetryPayload12>* telemetry = nullptr) :
+            samd21_FOC(foc), telemetryLogger(telemetry),
+            targetIndex(tmrDemoStateMachine1.targetIndex, tmrDemoStateMachine2.targetIndex, tmrDemoStateMachine3.targetIndex),
+            demoState(tmrDemoStateMachine1.demoState, tmrDemoStateMachine2.demoState, tmrDemoStateMachine3.demoState),
+            positionDirectionTMR(tmrDemoStateMachine1.positionDirection, tmrDemoStateMachine2.positionDirection,
+                                 tmrDemoStateMachine3.positionDirection) {}
 
         /**
          * Check if logging is enabled for this demo instance
@@ -61,16 +67,27 @@ public:
          * Function that starts the TC that will periodically throw an interrupt and apply the initial target angle
          */
         void start() {
+                targetIndex.write(0U);
+                demoState.write(static_cast<uint32_t>(DemoState::READY_TO_START));
+                positionDirectionTMR.write(static_cast<int32_t>(PMSM_Controller::PositionDirection::CW));
+
                 TC4_TimerCallbackRegister(&RadiationTestDemo::TimerCounterCallback, reinterpret_cast<uintptr_t>(this));
                 TC4_TimerStart();
-                samd21_FOC.moveToAngle(TargetAngles_mrad[targetIndex], positionDirection);
         }
 
         void setDirection(PMSM_Controller::PositionDirection direction) {
-                positionDirection = direction;
+                positionDirectionTMR.write(static_cast<int32_t>(direction));
         }
 
 private:
+        /**
+         * A list of the internal demo states
+         */
+        enum class DemoState : uint32_t {
+                READY_TO_START = 0,
+                RUN_SEQUENCE = 1,
+        };
+
         /**
          * The array of the fixed angles that the rotor should move to sequentially
          */
@@ -94,9 +111,29 @@ private:
                 if ((status & TC_TIMER_STATUS_OVERFLOW) == 0U)
                         return;
 
-                const uint32_t next = (targetIndex + 1U) % static_cast<uint32_t>(TargetAngles_mrad.size());
-                targetIndex = next;
-                samd21_FOC.moveToAngle(TargetAngles_mrad[targetIndex], positionDirection);
+                const auto state = static_cast<DemoState>(demoState.readAndRepair());
+                const auto direction = static_cast<PMSM_Controller::PositionDirection>(positionDirectionTMR.readAndRepair());
+
+                switch (state) {
+                case DemoState::READY_TO_START:
+                        samd21_FOC.moveToAngle(TargetAngles_mrad[targetIndex.readAndRepair()], direction);
+                        demoState.write(static_cast<uint32_t>(DemoState::RUN_SEQUENCE));
+                        break;
+
+                case DemoState::RUN_SEQUENCE:
+                        {
+                                const uint32_t currentIndex = targetIndex.readAndRepair();
+                                const uint32_t next = (currentIndex + 1U) % static_cast<uint32_t>(TargetAngles_mrad.size());
+                                targetIndex.write(next);
+                                samd21_FOC.moveToAngle(TargetAngles_mrad[next], direction);
+                                break;
+                        }
+
+                default:
+                        demoState.write(static_cast<uint32_t>(DemoState::READY_TO_START));
+                        targetIndex.write(0U);
+                        break;
+                }
         }
 
         /**
@@ -107,12 +144,12 @@ private:
         /**
          * Optional telemetry logger (nullptr disables logging)
          */
-        TelemetryLogger* telemetryLogger = nullptr;
+        TelemetryLogger<TelemetryPayload12>* telemetryLogger = nullptr;
 
         /**
-         * Counter that keeps track of the order of the positions
+         * TMR-backed demo variables stored in CriticalVariables.{hpp,cpp}
          */
-        volatile uint32_t targetIndex = 0;
-
-        PMSM_Controller::PositionDirection positionDirection = PMSM_Controller::PositionDirection::CW;
+        TMR<uint32_t> targetIndex;
+        TMR<uint32_t> demoState;
+        TMR<int32_t> positionDirectionTMR;
 };

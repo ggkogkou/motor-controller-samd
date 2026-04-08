@@ -35,7 +35,7 @@ struct PMSM_Config {
         /**
          * The DC link voltage
          */
-        static constexpr float DCLinkVoltage = 20.0f;
+        static constexpr float DCLinkVoltage = 14.0f;
 
         /**
          * The voltage limit -- DC bus utilization
