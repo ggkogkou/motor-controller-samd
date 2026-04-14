@@ -34,6 +34,8 @@
 
 using namespace ATSAMD21_GGKOGKOU;
 
+inline constexpr PORT_PIN DRV8316_CS_PIN = PORT_PIN_NONE;
+
 class DRV8316 {
 public:
         using RegisterAddress_t = uint8_t;

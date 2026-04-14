@@ -26,7 +26,7 @@ __attribute__((section(".vectors"), used)) const DeviceVectorsSAMD21 deviceVecto
         .pfnSYSCTRL_Handler = SYSCTRL_Handler,
         .pfnWDT_Handler = WDT_Handler,
         .pfnRTC_Handler = RTC_Handler,
-        .pfnEIC_Handler = EIC_Handler,
+        .pfnEIC_Handler = EIC_InterruptHandler,
         .pfnNVMCTRL_Handler = NVMCTRL_Handler,
         .pfnDMAC_Handler = DMAC_InterruptHandler,
         .pfnUSB_Handler = USB_Handler,

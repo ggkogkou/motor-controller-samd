@@ -147,15 +147,10 @@ void __attribute__((section(".ramfunc"))) SAMD21_FOC::ADC_Callback(ADC_STATUS st
                 adcScanIndex ^= 1u;
 
                 if (adcScanIndex != 0) {
-                        // BENCHMARK_IO_Set();
-                        // BENCHMARK_IO_Clear();
-
                         ADC_ConversionStart();
                         return;
                 }
 
-                // BENCHMARK_IO_Set();
-                // BENCHMARK_IO_Clear();
                 adcResultsReady = true;
 
                 if (focState.read() == FOC_State::FAULT_DETECTED || not switchToCloseLoop.read() || not offsetsReady.read() ||
@@ -240,8 +235,6 @@ void __attribute__((section(".ramfunc"))) SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_S
 
                 if (not AS5047P::sensorBusy())
                         (void)encoder.request(AS5047P::RegisterAddress::ANGLECOM);
-
-                BENCHMARK_IO_Clear();
 
                 return;
         }

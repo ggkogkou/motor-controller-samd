@@ -158,6 +158,7 @@ set(SOURCES
         src/CriticalVariables.cpp
         src/StartupCalibration.cpp
         src/HardwareDiagnosticsLogger.cpp
+        src/HealthMonitor.cpp
 
         # System initialization and configuration
         src/config/sam_d21_xpro/initialization.c

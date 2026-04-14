@@ -30,6 +30,7 @@
 #include "definitions.h"
 #include "pmsm_controller.hpp"
 #include "HardwareDiagnosticsLogger.hpp"
+#include "HealthMonitor.hpp"
 
 namespace PermanentMagnetSynchronousMotor {
 
@@ -267,9 +268,9 @@ private:
         uint16_t offsetCount = 0;
         TMR<bool> offsetsReady;
 
-        static constexpr int32_t R_Shunt_mOhm = 100;
+        static constexpr int32_t R_Shunt_mOhm = 10;
 
-        static constexpr int32_t SenseGain = 12;
+        static constexpr int32_t SenseGain = 100;
 
         int32_t opAmpOffset_mV = 1'100;
 

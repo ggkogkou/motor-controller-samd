@@ -32,7 +32,13 @@
 #include "definitions.h"
 
 inline constexpr frequency_kHz_t PWM_Frequency = 17.0f;
-inline constexpr bool EnableLogging = true;
+inline constexpr bool EnableLogging = false;
+
+static volatile bool extWdtWakeFlag = true;
+
+static void extWdtWakeCallback(uintptr_t) {
+        extWdtWakeFlag = true;
+}
 
 [[noreturn]] int main() {
         SYS_Initialize(NULL);
@@ -43,6 +49,9 @@ inline constexpr bool EnableLogging = true;
         HardwareDiagnostics::diagnosticsLogger.logBoot();
 
         ResetEventMonitor::determineResetCause();
+
+        EIC_CallbackRegister(EIC_PIN_7, extWdtWakeCallback, 0);
+        EIC_InterruptEnable(EIC_PIN_7);
 
         USART_TxStream logging{DMAC_CHANNEL_0};
         TelemetryLogger<TelemetryPayload12> telemetry;
@@ -57,11 +66,21 @@ inline constexpr bool EnableLogging = true;
         RadiationTestDemo radiationTestDemo(foc, telemetryPtr);
         radiationTestDemo.start();
 
-        HardwareDiagnostics::diagnosticsLogger.writeLiteral("STATE: MAIN-LOOP ENTERED\r\n");
+        HardwareDiagnostics::diagnosticsLogger.writeLiteral("\r\nSTATE: MAIN-LOOP ENTERED\r\n");
+
+        EXT_WDT_DONE_Clear();
 
         while (true) {
-                if (radiationTestDemo.loggingEnabled())
+                if constexpr (EnableLogging)
                         telemetry.writeFrame(logging);
+
+                if (extWdtWakeFlag) {
+                        extWdtWakeFlag = false;
+                        EXT_WDT_DONE_Set();
+                        SYSTICK_DelayMs(100);
+                        EXT_WDT_DONE_Clear();
+                        HardwareDiagnostics::diagnosticsLogger.writeLiteral("EXT WDT KICKED\r\n");
+                }
 
                 // SYSTICK_DelayMs(1);
         }

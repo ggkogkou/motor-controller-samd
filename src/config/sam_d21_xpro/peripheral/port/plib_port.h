@@ -65,22 +65,17 @@
 // *****************************************************************************
 // *****************************************************************************
 
-/*** Macros for ADC_AIN3 pin ***/
-#define ADC_AIN3_Get()               (((PORT_REGS->GROUP[1].PORT_IN >> 9U)) & 0x01U)
-#define ADC_AIN3_PIN                  PORT_PIN_PB09
-
 /*** Macros for ADC_AIN4 pin ***/
 #define ADC_AIN4_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 4U)) & 0x01U)
 #define ADC_AIN4_PIN                  PORT_PIN_PA04
 
-/*** Macros for FEATHER_CS pin ***/
-#define FEATHER_CS_Set()               (PORT_REGS->GROUP[0].PORT_OUTSET = ((uint32_t)1U << 5U))
-#define FEATHER_CS_Clear()             (PORT_REGS->GROUP[0].PORT_OUTCLR = ((uint32_t)1U << 5U))
-#define FEATHER_CS_Toggle()            (PORT_REGS->GROUP[0].PORT_OUTTGL = ((uint32_t)1U << 5U))
-#define FEATHER_CS_OutputEnable()      (PORT_REGS->GROUP[0].PORT_DIRSET = ((uint32_t)1U << 5U))
-#define FEATHER_CS_InputEnable()       (PORT_REGS->GROUP[0].PORT_DIRCLR = ((uint32_t)1U << 5U))
-#define FEATHER_CS_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 5U)) & 0x01U)
-#define FEATHER_CS_PIN                  PORT_PIN_PA05
+/*** Macros for ADC_AIN5 pin ***/
+#define ADC_AIN5_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 5U)) & 0x01U)
+#define ADC_AIN5_PIN                  PORT_PIN_PA05
+
+/*** Macros for ADC_AIN6 pin ***/
+#define ADC_AIN6_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 6U)) & 0x01U)
+#define ADC_AIN6_PIN                  PORT_PIN_PA06
 
 /*** Macros for TCC0_WO0 pin ***/
 #define TCC0_WO0_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 8U)) & 0x01U)
@@ -94,26 +89,40 @@
 #define TCC0_WO2_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 10U)) & 0x01U)
 #define TCC0_WO2_PIN                  PORT_PIN_PA10
 
-/*** Macros for TCC0_WO3 pin ***/
-#define TCC0_WO3_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 11U)) & 0x01U)
-#define TCC0_WO3_PIN                  PORT_PIN_PA11
-
 /*** Macros for TCC0_WO5 pin ***/
 #define TCC0_WO5_Get()               (((PORT_REGS->GROUP[1].PORT_IN >> 11U)) & 0x01U)
 #define TCC0_WO5_PIN                  PORT_PIN_PB11
 
-/*** Macros for TCC0_WO7 pin ***/
-#define TCC0_WO7_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 13U)) & 0x01U)
-#define TCC0_WO7_PIN                  PORT_PIN_PA13
+/*** Macros for BENCHMARK_IO1 pin ***/
+#define BENCHMARK_IO1_Set()               (PORT_REGS->GROUP[0].PORT_OUTSET = ((uint32_t)1U << 14U))
+#define BENCHMARK_IO1_Clear()             (PORT_REGS->GROUP[0].PORT_OUTCLR = ((uint32_t)1U << 14U))
+#define BENCHMARK_IO1_Toggle()            (PORT_REGS->GROUP[0].PORT_OUTTGL = ((uint32_t)1U << 14U))
+#define BENCHMARK_IO1_OutputEnable()      (PORT_REGS->GROUP[0].PORT_DIRSET = ((uint32_t)1U << 14U))
+#define BENCHMARK_IO1_InputEnable()       (PORT_REGS->GROUP[0].PORT_DIRCLR = ((uint32_t)1U << 14U))
+#define BENCHMARK_IO1_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 14U)) & 0x01U)
+#define BENCHMARK_IO1_PIN                  PORT_PIN_PA14
 
-/*** Macros for BENCHMARK_IO pin ***/
-#define BENCHMARK_IO_Set()               (PORT_REGS->GROUP[0].PORT_OUTSET = ((uint32_t)1U << 17U))
-#define BENCHMARK_IO_Clear()             (PORT_REGS->GROUP[0].PORT_OUTCLR = ((uint32_t)1U << 17U))
-#define BENCHMARK_IO_Toggle()            (PORT_REGS->GROUP[0].PORT_OUTTGL = ((uint32_t)1U << 17U))
-#define BENCHMARK_IO_OutputEnable()      (PORT_REGS->GROUP[0].PORT_DIRSET = ((uint32_t)1U << 17U))
-#define BENCHMARK_IO_InputEnable()       (PORT_REGS->GROUP[0].PORT_DIRCLR = ((uint32_t)1U << 17U))
-#define BENCHMARK_IO_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 17U)) & 0x01U)
-#define BENCHMARK_IO_PIN                  PORT_PIN_PA17
+/*** Macros for BENCHMARK_IO2 pin ***/
+#define BENCHMARK_IO2_Set()               (PORT_REGS->GROUP[0].PORT_OUTSET = ((uint32_t)1U << 15U))
+#define BENCHMARK_IO2_Clear()             (PORT_REGS->GROUP[0].PORT_OUTCLR = ((uint32_t)1U << 15U))
+#define BENCHMARK_IO2_Toggle()            (PORT_REGS->GROUP[0].PORT_OUTTGL = ((uint32_t)1U << 15U))
+#define BENCHMARK_IO2_OutputEnable()      (PORT_REGS->GROUP[0].PORT_DIRSET = ((uint32_t)1U << 15U))
+#define BENCHMARK_IO2_InputEnable()       (PORT_REGS->GROUP[0].PORT_DIRCLR = ((uint32_t)1U << 15U))
+#define BENCHMARK_IO2_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 15U)) & 0x01U)
+#define BENCHMARK_IO2_PIN                  PORT_PIN_PA15
+
+/*** Macros for BENCHMARK_IO3 pin ***/
+#define BENCHMARK_IO3_Set()               (PORT_REGS->GROUP[0].PORT_OUTSET = ((uint32_t)1U << 16U))
+#define BENCHMARK_IO3_Clear()             (PORT_REGS->GROUP[0].PORT_OUTCLR = ((uint32_t)1U << 16U))
+#define BENCHMARK_IO3_Toggle()            (PORT_REGS->GROUP[0].PORT_OUTTGL = ((uint32_t)1U << 16U))
+#define BENCHMARK_IO3_OutputEnable()      (PORT_REGS->GROUP[0].PORT_DIRSET = ((uint32_t)1U << 16U))
+#define BENCHMARK_IO3_InputEnable()       (PORT_REGS->GROUP[0].PORT_DIRCLR = ((uint32_t)1U << 16U))
+#define BENCHMARK_IO3_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 16U)) & 0x01U)
+#define BENCHMARK_IO3_PIN                  PORT_PIN_PA16
+
+/*** Macros for SERCOM3_USART_TX pin ***/
+#define SERCOM3_USART_TX_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 18U)) & 0x01U)
+#define SERCOM3_USART_TX_PIN                  PORT_PIN_PA18
 
 /*** Macros for ENCODER_CS pin ***/
 #define ENCODER_CS_Set()               (PORT_REGS->GROUP[0].PORT_OUTSET = ((uint32_t)1U << 24U))
@@ -124,31 +133,18 @@
 #define ENCODER_CS_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 24U)) & 0x01U)
 #define ENCODER_CS_PIN                  PORT_PIN_PA24
 
-/*** Macros for DRV8316_CS pin ***/
-#define DRV8316_CS_Set()               (PORT_REGS->GROUP[1].PORT_OUTSET = ((uint32_t)1U << 23U))
-#define DRV8316_CS_Clear()             (PORT_REGS->GROUP[1].PORT_OUTCLR = ((uint32_t)1U << 23U))
-#define DRV8316_CS_Toggle()            (PORT_REGS->GROUP[1].PORT_OUTTGL = ((uint32_t)1U << 23U))
-#define DRV8316_CS_OutputEnable()      (PORT_REGS->GROUP[1].PORT_DIRSET = ((uint32_t)1U << 23U))
-#define DRV8316_CS_InputEnable()       (PORT_REGS->GROUP[1].PORT_DIRCLR = ((uint32_t)1U << 23U))
-#define DRV8316_CS_Get()               (((PORT_REGS->GROUP[1].PORT_IN >> 23U)) & 0x01U)
-#define DRV8316_CS_PIN                  PORT_PIN_PB23
+/*** Macros for EXT_WDT_WAKE pin ***/
+#define EXT_WDT_WAKE_Get()               (((PORT_REGS->GROUP[1].PORT_IN >> 23U)) & 0x01U)
+#define EXT_WDT_WAKE_PIN                  PORT_PIN_PB23
 
-/*** Macros for DBG_LED pin ***/
-#define DBG_LED_Set()               (PORT_REGS->GROUP[0].PORT_OUTSET = ((uint32_t)1U << 27U))
-#define DBG_LED_Clear()             (PORT_REGS->GROUP[0].PORT_OUTCLR = ((uint32_t)1U << 27U))
-#define DBG_LED_Toggle()            (PORT_REGS->GROUP[0].PORT_OUTTGL = ((uint32_t)1U << 27U))
-#define DBG_LED_OutputEnable()      (PORT_REGS->GROUP[0].PORT_DIRSET = ((uint32_t)1U << 27U))
-#define DBG_LED_InputEnable()       (PORT_REGS->GROUP[0].PORT_DIRCLR = ((uint32_t)1U << 27U))
-#define DBG_LED_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 27U)) & 0x01U)
-#define DBG_LED_PIN                  PORT_PIN_PA27
-
-/*** Macros for ADC_AIN10 pin ***/
-#define ADC_AIN10_Get()               (((PORT_REGS->GROUP[1].PORT_IN >> 2U)) & 0x01U)
-#define ADC_AIN10_PIN                  PORT_PIN_PB02
-
-/*** Macros for ADC_AIN11 pin ***/
-#define ADC_AIN11_Get()               (((PORT_REGS->GROUP[1].PORT_IN >> 3U)) & 0x01U)
-#define ADC_AIN11_PIN                  PORT_PIN_PB03
+/*** Macros for EXT_WDT_DONE pin ***/
+#define EXT_WDT_DONE_Set()               (PORT_REGS->GROUP[0].PORT_OUTSET = ((uint32_t)1U << 27U))
+#define EXT_WDT_DONE_Clear()             (PORT_REGS->GROUP[0].PORT_OUTCLR = ((uint32_t)1U << 27U))
+#define EXT_WDT_DONE_Toggle()            (PORT_REGS->GROUP[0].PORT_OUTTGL = ((uint32_t)1U << 27U))
+#define EXT_WDT_DONE_OutputEnable()      (PORT_REGS->GROUP[0].PORT_DIRSET = ((uint32_t)1U << 27U))
+#define EXT_WDT_DONE_InputEnable()       (PORT_REGS->GROUP[0].PORT_DIRCLR = ((uint32_t)1U << 27U))
+#define EXT_WDT_DONE_Get()               (((PORT_REGS->GROUP[0].PORT_IN >> 27U)) & 0x01U)
+#define EXT_WDT_DONE_PIN                  PORT_PIN_PA27
 
 // *****************************************************************************
 /* PORT Group
