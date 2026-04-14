@@ -26,6 +26,7 @@
 
 #include "DeviceStartup.hpp"
 #include "HardwareDiagnosticsLogger.hpp"
+#include "HealthMonitor.hpp"
 #include "RadiationTestDemo.hpp"
 #include "ResetEventMonitor.hpp"
 #include "SAMD21_FOC.hpp"
@@ -36,12 +37,33 @@ inline constexpr bool EnableLogging = false;
 
 static volatile bool extWdtWakeFlag = true;
 
+static HealthSnapshot previousHealthSnapshot{};
+static bool healthSnapshotInitialized = false;
+
+static SupervisionMode currentSupervisionMode(PermanentMagnetSynchronousMotor::FOC_State state) {
+        using PermanentMagnetSynchronousMotor::FOC_State;
+
+        switch (state) {
+        case FOC_State::PRIME_ENCODER:
+        case FOC_State::CALIBRATE_ADC_ZERO_OFFSETS:
+        case FOC_State::STARTUP_CALIBRATIONS:
+                return SupervisionMode::STARTUP;
+
+        case FOC_State::CLOSED_LOOP:
+                return SupervisionMode::CLOSED_LOOP;
+
+        case FOC_State::FAULT_DETECTED:
+        default:
+                return SupervisionMode::FAULTED;
+        }
+}
+
 static void extWdtWakeCallback(uintptr_t) {
         extWdtWakeFlag = true;
 }
 
 [[noreturn]] int main() {
-        SYS_Initialize(NULL);
+        SYS_Initialize(nullptr);
         SYSTICK_TimerStart();
         SPI_Buffer::init();
 
@@ -68,20 +90,34 @@ static void extWdtWakeCallback(uintptr_t) {
 
         HardwareDiagnostics::diagnosticsLogger.writeLiteral("\r\nSTATE: MAIN-LOOP ENTERED\r\n");
 
-        EXT_WDT_DONE_Clear();
-
         while (true) {
                 if constexpr (EnableLogging)
                         telemetry.writeFrame(logging);
 
                 if (extWdtWakeFlag) {
                         extWdtWakeFlag = false;
-                        EXT_WDT_DONE_Set();
-                        SYSTICK_DelayMs(100);
-                        EXT_WDT_DONE_Clear();
-                        HardwareDiagnostics::diagnosticsLogger.writeLiteral("EXT WDT KICKED\r\n");
-                }
 
-                // SYSTICK_DelayMs(1);
+                        const HealthSnapshot now = takeHealthSnapshot();
+
+                        if (not healthSnapshotInitialized) {
+                                previousHealthSnapshot = now;
+                                healthSnapshotInitialized = true;
+                        } else {
+                                const SupervisionMode mode = currentSupervisionMode(foc.currentState());
+                                const HealthDecision decision = evaluateHealthWindow(now, previousHealthSnapshot, mode);
+
+                                previousHealthSnapshot = now;
+
+                                if (decision.healthy) {
+                                        EXT_WDT_DONE_Set();
+                                        SYSTICK_DelayMs(50);
+                                        EXT_WDT_DONE_Clear();
+                                        HardwareDiagnostics::diagnosticsLogger.writeLiteral("EXT WDT KICKED\r\n");
+                                } else {
+                                        HardwareDiagnostics::diagnosticsLogger.writeLiteral(
+                                                "EXT WDT NOT KICKED - HEALTH CHECK FAILED\r\n");
+                                }
+                        }
+                }
         }
 }

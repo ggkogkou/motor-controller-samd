@@ -25,12 +25,12 @@
 #pragma once
 
 #include <cstdint>
+#include "HardwareDiagnosticsLogger.hpp"
+#include "HealthMonitor.hpp"
 #include "TMR.hpp"
 #include "as5047p.hpp"
 #include "definitions.h"
 #include "pmsm_controller.hpp"
-#include "HardwareDiagnosticsLogger.hpp"
-#include "HealthMonitor.hpp"
 
 namespace PermanentMagnetSynchronousMotor {
 
@@ -121,6 +121,10 @@ public:
                 return encoder.lastErrflStatus();
         }
 
+        [[nodiscard]] FOC_State currentState() const {
+                return focState.read();
+        }
+
 private:
         static void ADC_Callback(ADC_STATUS status, uintptr_t context) {
                 if (auto* self = reinterpret_cast<SAMD21_FOC*>(context))
@@ -167,13 +171,6 @@ private:
         static constexpr int32_t ADC_MaximumRawValue = ADC_Resolution - 1;
 
         /**
-         * @brief Counter variable to check the ALU health status
-         *
-         * At each execution of position loop increment the counter and check if the value was actually incremented
-         */
-        uint32_t aluHealthCheckCounter = 0;
-
-        /**
          * Helper function that converts the raw 12-bit ADC reading to the corresponding voltage (in mV)
          *
          * @param adcRawValue The 12-bit ADC raw word from RESRDY register
@@ -195,7 +192,7 @@ private:
          *
          * @note The current equation is I_mA = (vSense_mV * 1000) / (Gain * R_shunt_mOhm)
          */
-        static inline int32_t adcRawToCurrent(uint16_t adcRawValue, uint16_t adcOffsetRawValue) {
+        static int32_t adcRawToCurrent(uint16_t adcRawValue, uint16_t adcOffsetRawValue) {
                 const int32_t Raw = static_cast<int32_t>(adcRawValue) - static_cast<int32_t>(adcOffsetRawValue);
                 const int32_t ShuntVoltage_mV = rawToMilliVolts(Raw);
 

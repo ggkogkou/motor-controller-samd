@@ -111,6 +111,10 @@ private:
                 if ((status & TC_TIMER_STATUS_OVERFLOW) == 0U)
                         return;
 
+                healthMonitor.tc4EnterCounter = healthMonitor.tc4EnterCounter + 1;
+
+                bool tc4CycleValid = false;
+
                 const auto state = static_cast<DemoState>(demoState.readAndRepair());
                 const auto direction = static_cast<PMSM_Controller::PositionDirection>(positionDirectionTMR.readAndRepair());
 
@@ -118,6 +122,7 @@ private:
                 case DemoState::READY_TO_START:
                         samd21_FOC.moveToAngle(TargetAngles_mrad[targetIndex.readAndRepair()], direction);
                         demoState.write(static_cast<uint32_t>(DemoState::RUN_SEQUENCE));
+                        tc4CycleValid = true;
                         break;
 
                 case DemoState::RUN_SEQUENCE:
@@ -126,6 +131,7 @@ private:
                                 const uint32_t next = (currentIndex + 1U) % static_cast<uint32_t>(TargetAngles_mrad.size());
                                 targetIndex.write(next);
                                 samd21_FOC.moveToAngle(TargetAngles_mrad[next], direction);
+                                tc4CycleValid = true;
                                 break;
                         }
 
@@ -134,6 +140,9 @@ private:
                         targetIndex.write(0U);
                         break;
                 }
+
+                if (tc4CycleValid)
+                        healthMonitor.tc4ValidCounter = healthMonitor.tc4ValidCounter + 1;
         }
 
         /**
