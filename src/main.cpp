@@ -35,7 +35,7 @@
 inline constexpr frequency_kHz_t PWM_Frequency = 17.0f;
 inline constexpr bool EnableLogging = false;
 
-static volatile bool extWdtWakeFlag = true;
+static volatile bool extWdtWakeFlag = false;
 
 static HealthSnapshot previousHealthSnapshot{};
 static bool healthSnapshotInitialized = false;
@@ -90,12 +90,18 @@ static void extWdtWakeCallback(uintptr_t) {
 
         HardwareDiagnostics::diagnosticsLogger.writeLiteral("\r\nSTATE: MAIN-LOOP ENTERED\r\n");
 
+        EXT_WDT_DONE_Set();
+        SYSTICK_DelayMs(50);
+        EXT_WDT_DONE_Clear();
+
         while (true) {
                 if constexpr (EnableLogging)
                         telemetry.writeFrame(logging);
 
                 if (extWdtWakeFlag) {
                         extWdtWakeFlag = false;
+
+                        HardwareDiagnostics::diagnosticsLogger.writeLiteral("The WDT ISR was executed\r\n");
 
                         const HealthSnapshot now = takeHealthSnapshot();
 

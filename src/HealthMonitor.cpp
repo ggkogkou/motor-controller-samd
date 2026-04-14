@@ -31,18 +31,30 @@ HealthSnapshot takeHealthSnapshot() {
 HealthDecision evaluateHealthWindow(const HealthSnapshot& now, const HealthSnapshot& prev, SupervisionMode mode) {
         HealthDecision d{};
 
-        d.tc3Complete = (now.tc3EnterCounter == now.tc3ValidCounter);
-        d.tc3Progress = (delta32(now.tc3ValidCounter, prev.tc3ValidCounter) > 0u);
+        const uint32_t tc3EnterDelta = delta32(now.tc3EnterCounter, prev.tc3EnterCounter);
+        const uint32_t tc3ValidDelta = delta32(now.tc3ValidCounter, prev.tc3ValidCounter);
 
-        d.tc4Complete = (now.tc4EnterCounter == now.tc4ValidCounter);
-        d.tc4Progress = (delta32(now.tc4ValidCounter, prev.tc4ValidCounter) > 0u);
+        const uint32_t tc4EnterDelta = delta32(now.tc4EnterCounter, prev.tc4EnterCounter);
+        const uint32_t tc4ValidDelta = delta32(now.tc4ValidCounter, prev.tc4ValidCounter);
 
-        d.adcComplete = (now.adcPairsReadyCounter == now.adcValidCounter);
-        d.adcProgress = (delta32(now.adcValidCounter, prev.adcValidCounter) > 0u);
+        const uint32_t adcReadyDelta = delta32(now.adcPairsReadyCounter, prev.adcPairsReadyCounter);
+        const uint32_t adcValidDelta = delta32(now.adcValidCounter, prev.adcValidCounter);
 
-        d.encoderProgress = (delta32(now.encoderUpdatesCounter, prev.encoderUpdatesCounter) > 0u);
+        const uint32_t encoderDelta = delta32(now.encoderUpdatesCounter, prev.encoderUpdatesCounter);
+        const uint32_t faultDelta = delta32(now.faultCounter, prev.faultCounter);
 
-        d.noFaults = (delta32(now.faultCounter, prev.faultCounter) == 0u);
+        d.tc3Complete = (tc3EnterDelta == tc3ValidDelta);
+        d.tc3Progress = (tc3ValidDelta > 0u);
+
+        d.tc4Complete = (tc4EnterDelta == tc4ValidDelta);
+        d.tc4Progress = (tc4ValidDelta > 0u);
+
+        d.adcComplete = (adcReadyDelta == adcValidDelta);
+        d.adcProgress = (adcValidDelta > 0u);
+
+        d.encoderProgress = (encoderDelta > 0u);
+
+        d.noFaults = (faultDelta == 0u);
 
         switch (mode) {
         case SupervisionMode::STARTUP:

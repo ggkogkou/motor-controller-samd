@@ -52,11 +52,11 @@ void NVIC_Initialize(void) {
         __disable_irq();
 
         NVIC_SetPriority(ADC_IRQn, 0);
+        NVIC_SetPriority(EIC_IRQn, 0);
         NVIC_SetPriority(SERCOM5_IRQn, 1);
         NVIC_SetPriority(TC3_IRQn, 2);
         NVIC_SetPriority(DMAC_IRQn, 3);
         NVIC_SetPriority(TC4_IRQn, 3);
-        NVIC_SetPriority(EIC_IRQn, 0);
 
         NVIC_EnableIRQ(ADC_IRQn);
         NVIC_EnableIRQ(SERCOM5_IRQn);
