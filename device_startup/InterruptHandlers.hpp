@@ -45,6 +45,7 @@ void I2S_Handler(void);
 /**
  * SAMD21 peripheral handlers
  */
+void EIC_InterruptHandler(void);
 void DMAC_InterruptHandler(void);
 void SERCOM3_USART_InterruptHandler(void);
 void SERCOM4_USART_InterruptHandler(void);

@@ -102,15 +102,15 @@ void ADC_Initialize(void) {
         ADC_REGS->ADC_REFCTRL = ADC_REFCTRL_REFSEL_INTVCC0;
 
         /*
-         * Scan only AIN10 and AIN11:
-         * - Start at PIN10
-         * - INPUTSCAN = 1 means total channels = 1+1 = 2 => PIN10, PIN11
+         * Scan AIN4 and AIN5:
+         * - Start at PIN4
+         * - INPUTSCAN = 1 means total channels = 1+1 = 2 => PIN4, PIN5
          */
-        ADC_REGS->ADC_INPUTCTRL = (uint32_t)ADC_POSINPUT_PIN10 | (uint32_t)ADC_NEGINPUT_GND | ADC_INPUTCTRL_INPUTSCAN(1U) |
+        ADC_REGS->ADC_INPUTCTRL = (uint32_t)ADC_POSINPUT_PIN4 | (uint32_t)ADC_NEGINPUT_GND | ADC_INPUTCTRL_INPUTSCAN(1U) |
                 ADC_INPUTCTRL_INPUTOFFSET(0U) | ADC_INPUTCTRL_GAIN_1X;
 
         /* No hardware averaging */
-        ADC_REGS->ADC_AVGCTRL  = ADC_AVGCTRL_SAMPLENUM(0U) | ADC_AVGCTRL_ADJRES(0U);
+        ADC_REGS->ADC_AVGCTRL = ADC_AVGCTRL_SAMPLENUM(0U) | ADC_AVGCTRL_ADJRES(0U);
 
         while ((ADC_REGS->ADC_STATUS & ADC_STATUS_SYNCBUSY_Msk) != 0U) {
                 /* Wait for Synchronization */
@@ -223,8 +223,8 @@ void ADC_CallbackRegister(ADC_CALLBACK callback, uintptr_t context) {
 void __attribute__((used)) ADC_InterruptHandler(void) {
         ADC_STATUS status;
         status = (ADC_STATUS)(ADC_REGS->ADC_INTFLAG);
-        /* Clear interrupt flag */
-        ADC_REGS->ADC_INTFLAG = ADC_INTENSET_RESRDY_Msk;
+        /* Clear active interrupt flags */
+        ADC_REGS->ADC_INTFLAG = status;
         if (ADC_CallbackObject.callback != NULL) {
                 uintptr_t context = ADC_CallbackObject.context;
                 ADC_CallbackObject.callback(status, context);

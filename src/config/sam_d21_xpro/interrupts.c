@@ -61,23 +61,21 @@
 // *****************************************************************************
 
 /* MISRA C-2012 Rule 8.6 deviated below. Deviation record ID -  H3_MISRAC_2012_R_8_6_DR_1 */
-extern uint32_t __stack;
+extern uint32_t _stack;
 extern const H3DeviceVectors exception_table;
 
-extern void DefaultHandler();
+extern void Dummy_Handler(void);
 
-/**
- * A default interrupt handler that is assigned to the peripherals that are not configured in interrupt mode
- *
- * Under normal circumstances this will never be executed
- */
-extern __attribute__((used)) void DefaultHandler() {
-        __disable_irq();
-        NVIC_SystemReset();
+/* Brief default interrupt handler for unused IRQs.*/
+void __attribute__((optimize("-O1"), long_call, noreturn, used))Dummy_Handler(void)
+{
+    while (true)
+    {
+    }
 }
 
 /* MISRAC 2012 deviation block start */
-/* MISRA C-2012 Rule 8.6 deviated 24 times.  Deviation record ID -  H3_MISRAC_2012_R_8_6_DR_1 */
+/* MISRA C-2012 Rule 8.6 deviated 22 times.  Deviation record ID -  H3_MISRAC_2012_R_8_6_DR_1 */
 /* Device vectors list dummy definition*/
 extern void SVCall_Handler             ( void ) __attribute__((weak, alias("Dummy_Handler")));
 extern void PendSV_Handler             ( void ) __attribute__((weak, alias("Dummy_Handler")));
@@ -85,7 +83,6 @@ extern void PM_Handler                 ( void ) __attribute__((weak, alias("Dumm
 extern void SYSCTRL_Handler            ( void ) __attribute__((weak, alias("Dummy_Handler")));
 extern void WDT_Handler                ( void ) __attribute__((weak, alias("Dummy_Handler")));
 extern void RTC_Handler                ( void ) __attribute__((weak, alias("Dummy_Handler")));
-extern void EIC_Handler                ( void ) __attribute__((weak, alias("Dummy_Handler")));
 extern void NVMCTRL_Handler            ( void ) __attribute__((weak, alias("Dummy_Handler")));
 extern void USB_Handler                ( void ) __attribute__((weak, alias("Dummy_Handler")));
 extern void EVSYS_Handler              ( void ) __attribute__((weak, alias("Dummy_Handler")));
@@ -114,7 +111,7 @@ __attribute__ ((section(".vectors"), used))
 const H3DeviceVectors exception_table=
 {
     /* Configure Initial Stack Pointer, using linker-generated symbols */
-    .pvStack = &__stack,
+    .pvStack = &_stack,
 
     .pfnReset_Handler              = Reset_Handler,
     .pfnNonMaskableInt_Handler     = NonMaskableInt_Handler,
@@ -126,7 +123,7 @@ const H3DeviceVectors exception_table=
     .pfnSYSCTRL_Handler            = SYSCTRL_Handler,
     .pfnWDT_Handler                = WDT_Handler,
     .pfnRTC_Handler                = RTC_Handler,
-    .pfnEIC_Handler                = EIC_Handler,
+    .pfnEIC_Handler                = EIC_InterruptHandler,
     .pfnNVMCTRL_Handler            = NVMCTRL_Handler,
     .pfnDMAC_Handler               = DMAC_InterruptHandler,
     .pfnUSB_Handler                = USB_Handler,

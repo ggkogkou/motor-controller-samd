@@ -1,24 +1,16 @@
 #pragma once
 
+#include <cstdint>
+#include <cstring>
 #include <type_traits>
-#include "HardwareDiagnosticsLogger.hpp"
+#include "ResetBreadcrumb.hpp"
 #include "definitions.h"
 
 template <typename T>
 class TMR {
 public:
         static_assert(std::is_trivially_copyable_v<T>);
-
-        /**
-         * Enum that indicates the diagnostic result of the voting process
-         */
-        enum class Fault : uint8_t {
-                NONE = 0, /// All three copies agree
-                VARIABLE_1 = 1, /// Variable 1 is considered corrupted
-                VARIABLE_2 = 2, /// Variable 2 is considered corrupted
-                VARIABLE_3 = 3, /// Variable 3 is considered corrupted
-                UNRECOVERABLE = 4, /// No majority could be established
-        };
+        static_assert(sizeof(T) <= sizeof(uint32_t));
 
         /**
          * Constructor that assigns variables as references to the TMR variables
@@ -30,91 +22,39 @@ public:
         explicit TMR(const T&) = delete;
 
         /**
-         * The voting function that returns the majority value without repairing the variables
+         * The voting function that returns the majority value and repairs the variables if needed
          *
          * @return The variable content that at least two variables have
          */
         [[nodiscard]] T read() const {
-                if (variable1 == variable2 || variable1 == variable3)
-                        return variable1;
+                const T copy1 = variable1;
+                const T copy2 = variable2;
+                const T copy3 = variable3;
 
-                if (variable2 == variable3)
-                        return variable2;
+                if (copy1 == copy2) {
+                        if (copy1 != copy3)
+                                write(copy1);
 
-                HardwareDiagnostics::diagnosticsLogger.writeLiteral("RESET REQUESTED: TMR FAILED\r\n");
+                        return copy1;
+                }
 
-                for (uint32_t i = 0; i < 3000000U; i++)
-                        __NOP();
+                if (copy1 == copy3) {
+                        write(copy1);
+                        return copy1;
+                }
 
+                if (copy2 == copy3) {
+                        write(copy2);
+                        return copy2;
+                }
+
+                __disable_irq();
+                ResetBreadcrumb::recordTMR(&variable1, &variable2, &variable3, encodeForBreadcrumb(copy1),
+                                           encodeForBreadcrumb(copy2), encodeForBreadcrumb(copy3));
                 NVIC_SystemReset();
 
                 while (true) {
                 }
-        }
-
-        /**
-         * The voting function that returns the majority and reports which variable was considered faulty
-         *
-         * @param fault Diagnostic output that contains the faulty variable number
-         * @return The variable content that at least two variables have
-         */
-        [[nodiscard]] T read(Fault& fault) const {
-                if (variable1 == variable2 && variable1 == variable3) {
-                        fault = Fault::NONE;
-                        return variable1;
-                }
-
-                if (variable1 == variable2) {
-                        fault = Fault::VARIABLE_3;
-                        return variable1;
-                }
-
-                if (variable1 == variable3) {
-                        fault = Fault::VARIABLE_2;
-                        return variable1;
-                }
-
-                if (variable2 == variable3) {
-                        fault = Fault::VARIABLE_1;
-                        return variable2;
-                }
-
-                fault = Fault::UNRECOVERABLE;
-                NVIC_SystemReset();
-
-                while (true) {
-                }
-        }
-
-        /**
-         * The voting function that returns the majority; repair the values if there is a corrupted variable
-         *
-         * @return The variable content that at least two variables have
-         */
-        [[nodiscard]] T readAndRepair() {
-                Fault fault = Fault::NONE;
-                const T value = read(fault);
-
-                if (fault == Fault::VARIABLE_1 || fault == Fault::VARIABLE_2 || fault == Fault::VARIABLE_3)
-                        write(value);
-
-                return value;
-        }
-
-        /**
-         * The voting function that returns the majority; repair the values if there is a corrupted variable
-         * and report which variable was considered faulty
-         *
-         * @param fault Diagnostic output that contains the faulty variable number
-         * @return The variable content that at least two variables have
-         */
-        [[nodiscard]] T readAndRepair(Fault& fault) {
-                const T value = read(fault);
-
-                if (fault == Fault::VARIABLE_1 || fault == Fault::VARIABLE_2 || fault == Fault::VARIABLE_3)
-                        write(value);
-
-                return value;
         }
 
         /**
@@ -122,7 +62,7 @@ public:
          *
          * @param value
          */
-        void write(T value) {
+        void write(T value) const {
                 variable1 = value;
                 variable2 = value;
                 variable3 = value;
@@ -143,4 +83,10 @@ private:
          * Reference to variable 3 that goes to RAM section tmr_c
          */
         T& variable3;
+
+        [[nodiscard]] static uint32_t encodeForBreadcrumb(const T& value) {
+                uint32_t encoded = 0;
+                std::memcpy(&encoded, &value, sizeof(T));
+                return encoded;
+        }
 };

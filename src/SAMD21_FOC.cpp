@@ -147,16 +147,13 @@ void __attribute__((section(".ramfunc"))) SAMD21_FOC::ADC_Callback(ADC_STATUS st
                 adcScanIndex ^= 1u;
 
                 if (adcScanIndex != 0) {
-                        // BENCHMARK_IO_Set();
-                        // BENCHMARK_IO_Clear();
-
                         ADC_ConversionStart();
                         return;
                 }
 
-                // BENCHMARK_IO_Set();
-                // BENCHMARK_IO_Clear();
                 adcResultsReady = true;
+
+                healthMonitor.adcPairsReadyCounter = healthMonitor.adcPairsReadyCounter + 1;
 
                 if (focState.read() == FOC_State::FAULT_DETECTED || not switchToCloseLoop.read() || not offsetsReady.read() ||
                     not rotorPositionValid)
@@ -169,8 +166,10 @@ void __attribute__((section(".ramfunc"))) SAMD21_FOC::ADC_Callback(ADC_STATUS st
                                               adcOffsetV.read(), encoderErrorCode.read());
 
                 motor.runCurrentLoop(currents, dutyCycles, rotorPositionCached);
+
+                healthMonitor.adcValidCounter = healthMonitor.adcValidCounter + 1;
+
                 setPWM_DutyCycles();
-                // BENCHMARK_IO_Clear();
         }
 
         if (status & ADC_INTFLAG_OVERRUN_Msk)
@@ -179,6 +178,10 @@ void __attribute__((section(".ramfunc"))) SAMD21_FOC::ADC_Callback(ADC_STATUS st
 
 void __attribute__((section(".ramfunc"))) SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_STATUS status) {
         (void)status;
+
+        healthMonitor.tc3EnterCounter = healthMonitor.tc3EnterCounter + 1;
+
+        bool tc3CycleValid = false;
 
         const auto updateEncoder = [&](uint16_t& rotorPosition) -> bool {
                 static constexpr uint16_t EncoderMask = 0x3FFF;
@@ -189,23 +192,27 @@ void __attribute__((section(".ramfunc"))) SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_S
                 if (not RotorResult.has_value()) {
                         const auto EncoderError = RotorResult.error();
                         encoderErrorCode.write(static_cast<uint32_t>(EncoderError));
+
                         if (EncoderError == AS5047P::ReadError::PARITY_ERROR || EncoderError == AS5047P::ReadError::ERROR_FLAG_SET) {
                                 encoderFaulted.write(true);
                                 motor.stopMotor(dutyCycles);
                                 setPWM_DutyCycles();
                                 focState.write(FOC_State::FAULT_DETECTED);
-                                HardwareDiagnostics::diagnosticsLogger.writeLiteral("ENCODER FAUL DETECTED\r\n");
+                                healthMonitor.faultCounter = healthMonitor.faultCounter + 1;
+                                HardwareDiagnostics::diagnosticsLogger.writeString("ENCODER FAULT DETECTED\r\n");
                                 return false;
                         }
-                } else {
-                        encoderErrorCode.write(0u);
-                        angle = static_cast<uint16_t>(RotorResult.value() & EncoderMask);
-                        rotorPositionCached = angle;
-                        rotorPositionValid = true;
+
+                        return false;
                 }
 
+                encoderErrorCode.write(0u);
+                angle = static_cast<uint16_t>(RotorResult.value() & EncoderMask);
+                rotorPositionCached = angle;
+                rotorPositionValid = true;
                 rotorPosition = angle;
 
+                healthMonitor.encoderUpdatesCounter = healthMonitor.encoderUpdatesCounter + 1;
                 return true;
         };
 
@@ -219,12 +226,6 @@ void __attribute__((section(".ramfunc"))) SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_S
                         positionLoopDividerCounter = nextDividerCounter;
 
                         if (positionLoopDividerCounter >= positionLoopDivider.read()) {
-                                const auto ALU_HealthCheckPrevious = aluHealthCheckCounter;
-                                aluHealthCheckCounter = aluHealthCheckCounter + 1;
-
-                                if (aluHealthCheckCounter != static_cast<uint32_t>(ALU_HealthCheckPrevious + 1))
-                                        NVIC_SystemReset();
-
                                 positionLoopDividerCounter = 0u;
                                 motor.runPositionLoop(rotorPosition);
                         }
@@ -236,12 +237,15 @@ void __attribute__((section(".ramfunc"))) SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_S
                                 motor.fillTelemetryPayload(tp, rotorPosition);
                                 telemetryLogger->updateLatest(tp);
                         }
+
+                        tc3CycleValid = true;
                 }
 
                 if (not AS5047P::sensorBusy())
                         (void)encoder.request(AS5047P::RegisterAddress::ANGLECOM);
 
-                BENCHMARK_IO_Clear();
+                if (tc3CycleValid)
+                        healthMonitor.tc3ValidCounter = healthMonitor.tc3ValidCounter + 1;
 
                 return;
         }
@@ -250,33 +254,42 @@ void __attribute__((section(".ramfunc"))) SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_S
         case FOC_State::PRIME_ENCODER:
                 (void)encoder.request(AS5047P::RegisterAddress::ANGLECOM);
                 focState.write(FOC_State::CALIBRATE_ADC_ZERO_OFFSETS);
+                tc3CycleValid = true;
                 break;
+
         case FOC_State::CALIBRATE_ADC_ZERO_OFFSETS:
                 if (not offsetsReady.read()) {
                         motor.stopMotor(dutyCycles);
                         setPWM_DutyCycles();
                         adcZeroOffsetCalibration();
+                        tc3CycleValid = true;
                         break;
                 }
+
                 focState.write(FOC_State::STARTUP_CALIBRATIONS);
                 [[fallthrough]];
+
         case FOC_State::STARTUP_CALIBRATIONS:
                 {
                         uint16_t rotorPosition = 0;
+
                         if (not updateEncoder(rotorPosition))
                                 break;
 
                         if (not switchToCloseLoop.read()) {
                                 switchToCloseLoop.write(motor.startupCalibration(dutyCycles, rotorPosition));
                                 setPWM_DutyCycles();
+
                                 if (switchToCloseLoop.read())
                                         focState.write(FOC_State::CLOSED_LOOP);
-                                break;
+                        } else {
+                                focState.write(FOC_State::CLOSED_LOOP);
                         }
 
-                        focState.write(FOC_State::CLOSED_LOOP);
+                        tc3CycleValid = true;
                         break;
                 }
+
         case FOC_State::FAULT_DETECTED:
         default:
                 motor.stopMotor(dutyCycles);
@@ -286,6 +299,9 @@ void __attribute__((section(".ramfunc"))) SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_S
 
         if (not AS5047P::sensorBusy())
                 (void)encoder.request(AS5047P::RegisterAddress::ANGLECOM);
+
+        if (tc3CycleValid)
+                healthMonitor.tc3ValidCounter = healthMonitor.tc3ValidCounter + 1;
 }
 
 void SAMD21_FOC::setPWM_DutyCycles() const {

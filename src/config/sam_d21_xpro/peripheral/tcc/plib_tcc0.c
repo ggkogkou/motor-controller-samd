@@ -78,8 +78,6 @@ void TCC0_PWMInitialize(void) {
         TCC0_REGS->TCC_CC[3] = 0U;
         TCC0_REGS->TCC_PER = 1000U;
 
-        TCC0_REGS->TCC_DRVCTRL = TCC_DRVCTRL_INVEN1_Msk | TCC_DRVCTRL_INVEN5_Msk;
-
         /* Event output configuration: counter event at END (BOTTOM in dual-slope) */
         TCC0_REGS->TCC_EVCTRL = TCC_EVCTRL_MCEO3_Msk;
 

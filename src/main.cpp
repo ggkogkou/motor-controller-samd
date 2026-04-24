@@ -26,23 +26,56 @@
 
 #include "DeviceStartup.hpp"
 #include "HardwareDiagnosticsLogger.hpp"
+#include "HealthMonitor.hpp"
 #include "RadiationTestDemo.hpp"
+#include "ResetBreadcrumb.hpp"
 #include "ResetEventMonitor.hpp"
 #include "SAMD21_FOC.hpp"
 #include "definitions.h"
 
-inline constexpr frequency_kHz_t PWM_Frequency = 17.0f;
+inline constexpr frequency_kHz_t PWM_Frequency = 16.0f;
 inline constexpr bool EnableLogging = true;
 
+static volatile bool extWdtWakeFlag = false;
+
+static HealthSnapshot previousHealthSnapshot{};
+static bool healthSnapshotInitialized = false;
+
+static SupervisionMode currentSupervisionMode(PermanentMagnetSynchronousMotor::FOC_State state) {
+        using PermanentMagnetSynchronousMotor::FOC_State;
+
+        switch (state) {
+        case FOC_State::PRIME_ENCODER:
+        case FOC_State::CALIBRATE_ADC_ZERO_OFFSETS:
+        case FOC_State::STARTUP_CALIBRATIONS:
+                return SupervisionMode::STARTUP;
+
+        case FOC_State::CLOSED_LOOP:
+                return SupervisionMode::CLOSED_LOOP;
+
+        case FOC_State::FAULT_DETECTED:
+        default:
+                return SupervisionMode::FAULTED;
+        }
+}
+
+static void extWdtWakeCallback(uintptr_t) {
+        extWdtWakeFlag = true;
+}
+
 [[noreturn]] int main() {
-        SYS_Initialize(NULL);
+        SYS_Initialize(nullptr);
         SYSTICK_TimerStart();
         SPI_Buffer::init();
 
         HardwareDiagnostics::diagnostics.init();
         HardwareDiagnostics::diagnosticsLogger.logBoot();
 
-        ResetEventMonitor::determineResetCause();
+        const uint8_t resetCause = ResetEventMonitor::determineResetCause();
+        ResetBreadcrumb::logAndClear(resetCause);
+
+        EIC_CallbackRegister(EIC_PIN_7, extWdtWakeCallback, 0);
+        EIC_InterruptEnable(EIC_PIN_7);
 
         USART_TxStream logging{DMAC_CHANNEL_0};
         TelemetryLogger<TelemetryPayload12> telemetry;
@@ -57,12 +90,47 @@ inline constexpr bool EnableLogging = true;
         RadiationTestDemo radiationTestDemo(foc, telemetryPtr);
         radiationTestDemo.start();
 
-        HardwareDiagnostics::diagnosticsLogger.writeLiteral("STATE: MAIN-LOOP ENTERED\r\n");
+        EXT_WDT_DONE_Set();
+        SYSTICK_DelayMs(50);
+        EXT_WDT_DONE_Clear();
 
         while (true) {
-                if (radiationTestDemo.loggingEnabled())
+                SYSTICK_DelayMs(500);
+
+                if constexpr (EnableLogging)
                         telemetry.writeFrame(logging);
 
-                // SYSTICK_DelayMs(1);
+                if (extWdtWakeFlag) {
+                        extWdtWakeFlag = false;
+
+                        const HealthSnapshot now = takeHealthSnapshot();
+
+                        if (not healthSnapshotInitialized) {
+                                previousHealthSnapshot = now;
+                                healthSnapshotInitialized = true;
+
+                                EXT_WDT_DONE_Set();
+                                SYSTICK_DelayMs(50);
+                                EXT_WDT_DONE_Clear();
+
+                                HardwareDiagnostics::diagnosticsLogger.writeString("FIRST WDT PET\r\n");
+
+                        } else {
+                                const SupervisionMode mode = currentSupervisionMode(foc.currentState());
+                                const HealthDecision decision = evaluateHealthWindow(now, previousHealthSnapshot, mode);
+
+                                previousHealthSnapshot = now;
+
+                                if (decision.healthy) {
+                                        EXT_WDT_DONE_Set();
+                                        SYSTICK_DelayMs(50);
+                                        EXT_WDT_DONE_Clear();
+                                        HardwareDiagnostics::diagnosticsLogger.writeString("EXT WDT KICKED\r\n");
+                                } else {
+                                        HardwareDiagnostics::diagnosticsLogger.writeString(
+                                                "EXT WDT NOT KICKED - HEALTH CHECK FAILED\r\n");
+                                }
+                        }
+                }
         }
 }

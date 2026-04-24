@@ -1,11 +1,13 @@
 #include "InterruptHandlers.hpp"
 
 #include <plib_port.h>
+#include "ResetBreadcrumb.hpp"
 
 extern "C" {
 
 [[noreturn]] void DefaultHandler() {
         __disable_irq();
+        ResetBreadcrumb::recordDefaultHandler(__get_IPSR(), __get_PRIMASK());
         NVIC_SystemReset();
 }
 

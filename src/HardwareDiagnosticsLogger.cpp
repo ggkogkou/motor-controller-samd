@@ -45,7 +45,7 @@ bool HardwareDiagnosticsLogger::write(std::span<const uint8_t> bytes) {
         return true;
 }
 
-bool HardwareDiagnosticsLogger::writeLiteral(const char* message) {
+bool HardwareDiagnosticsLogger::writeString(const char* message) {
         if (message == nullptr)
                 return false;
 
@@ -58,55 +58,55 @@ bool HardwareDiagnosticsLogger::writeLiteral(const char* message) {
 }
 
 bool HardwareDiagnosticsLogger::logBoot() {
-        return writeLiteral("\n\r\n\rBOOT\r\n");
+        return writeString("\n\r\n\rBOOT\r\n");
 }
 
 bool HardwareDiagnosticsLogger::logResetPOR() {
-        return writeLiteral("RESET: POR\r\n");
+        return writeString("RESET: POR\r\n");
 }
 
 bool HardwareDiagnosticsLogger::logResetWDT() {
-        return writeLiteral("RESET: WDT\r\n");
+        return writeString("RESET: WDT\r\n");
 }
 
 bool HardwareDiagnosticsLogger::logResetSoftware() {
-        return writeLiteral("RESET: SOFTWARE\r\n");
+        return writeString("RESET: SOFTWARE\r\n");
 }
 
 bool HardwareDiagnosticsLogger::logResetExternal() {
-        return writeLiteral("RESET: EXTERNAL\r\n");
+        return writeString("RESET: EXTERNAL\r\n");
 }
 
 bool HardwareDiagnosticsLogger::logResetBOD33() {
-        return writeLiteral("RESET: BOD33\r\n");
+        return writeString("RESET: BOD33\r\n");
 }
 
 bool HardwareDiagnosticsLogger::logResetUnknown() {
-        return writeLiteral("RESET: UNKNOWN\r\n");
+        return writeString("RESET: UNKNOWN\r\n");
 }
 
 bool HardwareDiagnosticsLogger::logFaultEncoder() {
-        return writeLiteral("FAULT: ENCODER\r\n");
+        return writeString("FAULT: ENCODER\r\n");
 }
 
 bool HardwareDiagnosticsLogger::logFaultMemoryCorruption() {
-        return writeLiteral("FAULT: MEMORY_CORRUPTION\r\n");
+        return writeString("FAULT: MEMORY_CORRUPTION\r\n");
 }
 
 bool HardwareDiagnosticsLogger::logStartupCalibrationBegin() {
-        return writeLiteral("STATE: STARTUP_CALIBRATION_BEGIN\r\n");
+        return writeString("STATE: STARTUP_CALIBRATION_BEGIN\r\n");
 }
 
 bool HardwareDiagnosticsLogger::logStartupCalibrationDone() {
-        return writeLiteral("STATE: STARTUP_CALIBRATION_DONE\r\n");
+        return writeString("STATE: STARTUP_CALIBRATION_DONE\r\n");
 }
 
 bool HardwareDiagnosticsLogger::logClosedLoopEntered() {
-        return writeLiteral("STATE: CLOSED_LOOP\r\n");
+        return writeString("STATE: CLOSED_LOOP\r\n");
 }
 
 bool HardwareDiagnosticsLogger::logMotorStopped() {
-        return writeLiteral("STATE: MOTOR_STOPPED\r\n");
+        return writeString("STATE: MOTOR_STOPPED\r\n");
 }
 
 } // namespace HardwareDiagnostics

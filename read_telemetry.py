@@ -134,8 +134,7 @@ def main() -> int:
                 continue
 
             ia_mA, ib_mA, angle_raw = latest_values
-            sys.stdout.write(f"\r{ia_mA}\t{ib_mA}\t{angle_raw}   ")
-            sys.stdout.flush()
+            print(f"{ia_mA}\t{ib_mA}\t{angle_raw}", flush=True)
             last_render = now
 
 
