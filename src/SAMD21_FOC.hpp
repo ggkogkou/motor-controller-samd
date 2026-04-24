@@ -269,7 +269,7 @@ private:
 
         static constexpr int32_t SenseGain = 100;
 
-        int32_t opAmpOffset_mV = 1'100;
+        int32_t opAmpOffset_mV = 1'250;
 
         TMR<FOC_State> focState;
 

@@ -35,7 +35,7 @@ __attribute__((section(".vectors"), used)) const DeviceVectorsSAMD21 deviceVecto
         .pfnSERCOM1_Handler = SERCOM1_Handler,
         .pfnSERCOM2_Handler = SERCOM2_Handler,
         .pfnSERCOM3_Handler = SERCOM3_USART_InterruptHandler,
-        .pfnSERCOM4_Handler = SERCOM4_Handler,
+        .pfnSERCOM4_Handler = SERCOM4_USART_InterruptHandler,
         .pfnSERCOM5_Handler = SERCOM5_SPI_InterruptHandler,
         .pfnTCC0_Handler = TCC0_Handler,
         .pfnTCC1_Handler = TCC1_Handler,

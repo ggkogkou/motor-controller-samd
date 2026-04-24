@@ -14,6 +14,7 @@ __ROM_SIZE = 0x00040000;
 /* SAMD21x18A: 32KB RAM */
 __RAM_BASE = 0x20000000;
 __RAM_SIZE = 0x00008000;
+__NOINIT_SIZE = 0x00000100;
 
 /* 8KB Stack */
 __STACK_SIZE = 0x00002000;
@@ -34,7 +35,8 @@ ENTRY(Reset_Handler)
 MEMORY
 {
     flash (rx)  : ORIGIN = __ROM_BASE, LENGTH = __ROM_SIZE
-    ram   (rwx) : ORIGIN = __RAM_BASE, LENGTH = __RAM_SIZE
+    ram   (rwx) : ORIGIN = __RAM_BASE, LENGTH = __RAM_SIZE - __NOINIT_SIZE
+    noinit (rwx) : ORIGIN = __RAM_BASE + __RAM_SIZE - __NOINIT_SIZE, LENGTH = __NOINIT_SIZE
 }
 
 SECTIONS
@@ -250,8 +252,19 @@ SECTIONS
         __HeapLimit = .;
     } > ram
 
+    .noinit (NOLOAD) :
+    {
+        . = ALIGN(4);
+        __noinit_start__ = .;
+        KEEP(*(.noinit))
+        KEEP(*(.noinit.*))
+        . = ALIGN(4);
+        __noinit_end__ = .;
+    } > noinit
+
     /* Check if data + heap + stack exceeds RAM limit */
     ASSERT(__HeapLimit <= (ORIGIN(ram) + LENGTH(ram)), "32kB RAM is not enough!!!")
+    ASSERT((__noinit_end__ - __noinit_start__) <= __NOINIT_SIZE, ".noinit does not fit in reserved RAM")
 
     /* Check if the TMR bank size and ordering checks */
     ASSERT((__tmr_bank_1_end__ - __tmr_bank_1_start__) == __TMR_BANK_SIZE, "TMR bank 1 wrong size")

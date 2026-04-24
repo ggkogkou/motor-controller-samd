@@ -45,7 +45,7 @@ public:
          * @param message Null-terminated string literal
          * @return True if the message was submitted to the TX stream
          */
-        bool writeLiteral(const char* message);
+        bool writeString(const char* message);
 
         /**
          * Send a raw byte span.

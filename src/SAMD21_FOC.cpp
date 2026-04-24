@@ -199,7 +199,7 @@ void __attribute__((section(".ramfunc"))) SAMD21_FOC::TC3_FOC_Handler(TC_TIMER_S
                                 setPWM_DutyCycles();
                                 focState.write(FOC_State::FAULT_DETECTED);
                                 healthMonitor.faultCounter = healthMonitor.faultCounter + 1;
-                                HardwareDiagnostics::diagnosticsLogger.writeLiteral("ENCODER FAULT DETECTED\r\n");
+                                HardwareDiagnostics::diagnosticsLogger.writeString("ENCODER FAULT DETECTED\r\n");
                                 return false;
                         }
 

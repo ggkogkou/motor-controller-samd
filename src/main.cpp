@@ -28,12 +28,13 @@
 #include "HardwareDiagnosticsLogger.hpp"
 #include "HealthMonitor.hpp"
 #include "RadiationTestDemo.hpp"
+#include "ResetBreadcrumb.hpp"
 #include "ResetEventMonitor.hpp"
 #include "SAMD21_FOC.hpp"
 #include "definitions.h"
 
-inline constexpr frequency_kHz_t PWM_Frequency = 17.0f;
-inline constexpr bool EnableLogging = false;
+inline constexpr frequency_kHz_t PWM_Frequency = 16.0f;
+inline constexpr bool EnableLogging = true;
 
 static volatile bool extWdtWakeFlag = false;
 
@@ -70,7 +71,8 @@ static void extWdtWakeCallback(uintptr_t) {
         HardwareDiagnostics::diagnostics.init();
         HardwareDiagnostics::diagnosticsLogger.logBoot();
 
-        ResetEventMonitor::determineResetCause();
+        const uint8_t resetCause = ResetEventMonitor::determineResetCause();
+        ResetBreadcrumb::logAndClear(resetCause);
 
         EIC_CallbackRegister(EIC_PIN_7, extWdtWakeCallback, 0);
         EIC_InterruptEnable(EIC_PIN_7);
@@ -88,26 +90,31 @@ static void extWdtWakeCallback(uintptr_t) {
         RadiationTestDemo radiationTestDemo(foc, telemetryPtr);
         radiationTestDemo.start();
 
-        HardwareDiagnostics::diagnosticsLogger.writeLiteral("\r\nSTATE: MAIN-LOOP ENTERED\r\n");
-
         EXT_WDT_DONE_Set();
         SYSTICK_DelayMs(50);
         EXT_WDT_DONE_Clear();
 
         while (true) {
+                SYSTICK_DelayMs(500);
+
                 if constexpr (EnableLogging)
                         telemetry.writeFrame(logging);
 
                 if (extWdtWakeFlag) {
                         extWdtWakeFlag = false;
 
-                        HardwareDiagnostics::diagnosticsLogger.writeLiteral("The WDT ISR was executed\r\n");
-
                         const HealthSnapshot now = takeHealthSnapshot();
 
                         if (not healthSnapshotInitialized) {
                                 previousHealthSnapshot = now;
                                 healthSnapshotInitialized = true;
+
+                                EXT_WDT_DONE_Set();
+                                SYSTICK_DelayMs(50);
+                                EXT_WDT_DONE_Clear();
+
+                                HardwareDiagnostics::diagnosticsLogger.writeString("FIRST WDT PET\r\n");
+
                         } else {
                                 const SupervisionMode mode = currentSupervisionMode(foc.currentState());
                                 const HealthDecision decision = evaluateHealthWindow(now, previousHealthSnapshot, mode);
@@ -118,9 +125,9 @@ static void extWdtWakeCallback(uintptr_t) {
                                         EXT_WDT_DONE_Set();
                                         SYSTICK_DelayMs(50);
                                         EXT_WDT_DONE_Clear();
-                                        HardwareDiagnostics::diagnosticsLogger.writeLiteral("EXT WDT KICKED\r\n");
+                                        HardwareDiagnostics::diagnosticsLogger.writeString("EXT WDT KICKED\r\n");
                                 } else {
-                                        HardwareDiagnostics::diagnosticsLogger.writeLiteral(
+                                        HardwareDiagnostics::diagnosticsLogger.writeString(
                                                 "EXT WDT NOT KICKED - HEALTH CHECK FAILED\r\n");
                                 }
                         }

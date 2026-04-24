@@ -12621,7 +12621,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;sercom3&gt;
   &lt;sercom3 dnOrder=&quot;0&quot; id=&quot;USART_BAUD_RATE&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;User dnOrder=&quot;0&quot; value=&quot;460800&quot;/&gt;
+      &lt;User dnOrder=&quot;0&quot; value=&quot;115200&quot;/&gt;
     &lt;/Values&gt;
   &lt;/sercom3&gt;
 &lt;/sercom3&gt;
@@ -12632,7 +12632,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;sercom3&gt;
   &lt;sercom3 dnOrder=&quot;0&quot; id=&quot;USART_BAUD_VALUE&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;sercom3&quot; value=&quot;55469&quot;/&gt;
+      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;sercom3&quot; value=&quot;63020&quot;/&gt;
     &lt;/Values&gt;
   &lt;/sercom3&gt;
 &lt;/sercom3&gt;
@@ -13799,7 +13799,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;sercom4&gt;
   &lt;sercom4 dnOrder=&quot;0&quot; id=&quot;USART_BAUD_RATE&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;User dnOrder=&quot;0&quot; value=&quot;460800&quot;/&gt;
+      &lt;User dnOrder=&quot;0&quot; value=&quot;115200&quot;/&gt;
     &lt;/Values&gt;
   &lt;/sercom4&gt;
 &lt;/sercom4&gt;
@@ -13810,7 +13810,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;sercom4&gt;
   &lt;sercom4 dnOrder=&quot;0&quot; id=&quot;USART_BAUD_VALUE&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;sercom4&quot; value=&quot;55469&quot;/&gt;
+      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;sercom4&quot; value=&quot;63020&quot;/&gt;
     &lt;/Values&gt;
   &lt;/sercom4&gt;
 &lt;/sercom4&gt;
